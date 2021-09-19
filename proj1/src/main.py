@@ -46,9 +46,9 @@ def solve():
     # attempt to follow this path plan, observing cells in its field of view as it moves
 
     # this loop examines all possible directions and adds them to PQ
-    while curr != goal:
+    while curr != goal or not fringe.isEmpty():
 
-        # test all directions
+        # test all directions (generate children)
         for i in range(len(directions)):
             x = curr[0] + directions[0]
             y = curr[1] + directions[1]

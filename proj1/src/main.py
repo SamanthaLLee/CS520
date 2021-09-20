@@ -1,5 +1,6 @@
 from array import *
 from queue import PriorityQueue
+import numpy as np
 import random
 
 # remove globals
@@ -18,7 +19,9 @@ directions = [[1, 0],
 
 def generateGridworld(dim, p):
     """Generates a random gridworld based on user inputs"""
-    global curr, goal
+    global curr, goal, gridworld
+
+    gridworld = [[0 for x in range(dim)] for y in range(dim)]
 
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
     for i in range(dim):
@@ -27,16 +30,19 @@ def generateGridworld(dim, p):
             if rand < p:
                 gridworld[i][j] = 1
 
-    # Exclude the upper left corner (chosen to be the start position) and the lower right corner (chosen to be the end position) from being blocked.
-    gridworld[0][0]
+    # Exclude the upper left corner(chosen to be the start position) and the lower right corner(chosen to be the end position) from being blocked.
+    gridworld[0][0] = 0
     gridworld[dim-1][dim-1] = 0
     curr = [0, 0]
     goal = [dim-1, dim-1]
 
+    print(np.matrix(gridworld))
+
 
 def solve():
     global curr, goal
-    parent = []  # how will this be used?
+    parent = []
+    path = []
 
     # plan shortest presumed path from its current position to the goal.
     # is this needed? or is this part caputured with fringe.get()?
@@ -48,25 +54,25 @@ def solve():
     # this loop examines all possible directions and adds them to PQ
     while curr != goal or not fringe.isEmpty():
 
+        # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
+        # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
+        if(gridworld[curr[0]][curr[1]] == 1):
+            curr = parent
+            visited[curr[0]][curr[1]] == 1
+            continue
+
         # test all directions (generate children)
         for i in range(len(directions)):
-            x = curr[0] + directions[0]
-            y = curr[1] + directions[1]
+            x = curr[0] + directions[i][0]
+            y = curr[1] + directions[i][1]
             if isInBounds():
                 # case: see unblocked path
-                if visited[x][y] == 0 and gridworld[x][y] == 0:
+                if visited[x][y] == 0:
                     g = g + 1
                     f = g + getHeuristic(x, y)
                     fringe.put([x, y], f)
 
-                # case: see blocked path
-                # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
-                elif gridworld[x][y] == 1:
-                    # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
-                    visited[x][y] = 1
-
         # the cycle repeats until the agent either a) reaches the target or b) determines that there is no unblocked pathto the target.
-
         parent = curr
         curr = fringe.get()
 
@@ -82,11 +88,10 @@ def getHeuristic(x, y):
 
 
 if __name__ == "__main__":
-    print("do thing")
     # prompt user to enter dimensions
     dim = input("What is the length of your gridworld? ")
     p = input("With what probability will a cell be blocked? ")
-    while p > 1 or p < 0:
+    while float(p) > 1 or float(p) < 0:
         p = input("Enter a valid probability. ")
-    generateGridworld(dim, p)
+    generateGridworld(int(dim), float(p))
     solve()

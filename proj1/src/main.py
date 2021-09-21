@@ -5,21 +5,12 @@ import random
 
 # remove globals
 gridworld = []
-visited = []  # bool
-fringe = PriorityQueue()
-g = 0  # length of the shortest path
-h = 0  # heuristic (manhattan distance)
 goal = []
-curr = []
-directions = [[1, 0],
-              [-1, 0],
-              [0, 1],
-              [0, -1]]
 
 
 def generateGridworld(dim, p):
     """Generates a random gridworld based on user inputs"""
-    global curr, goal, gridworld
+    global goal, gridworld
 
     gridworld = [[0 for x in range(dim)] for y in range(dim)]
 
@@ -33,56 +24,64 @@ def generateGridworld(dim, p):
     # Exclude the upper left corner(chosen to be the start position) and the lower right corner(chosen to be the end position) from being blocked.
     gridworld[0][0] = 0
     gridworld[dim-1][dim-1] = 0
-    curr = [0, 0]
     goal = [dim-1, dim-1]
 
     print(np.matrix(gridworld))
 
 
 def solve():
-    global curr, goal
+    global goal, gridworld
+    visited = []  # bool
     parent = []
-    path = []
+    g = 0  # length of the shortest path
+    fringe = PriorityQueue()
+
+    directions = [[1, 0],
+                  [-1, 0],
+                  [0, 1],
+                  [0, -1]]
 
     # plan shortest presumed path from its current position to the goal.
-    # is this needed? or is this part caputured with fringe.get()?
-    path[0] = goal[0] - curr[0]
-    path[1] = goal[1] - curr[0]
-
     # attempt to follow this path plan, observing cells in its field of view as it moves
+
+    fringe.put([0, 0], getHeuristic(0, 0))
 
     # this loop examines all possible directions and adds them to PQ
     while curr != goal or not fringe.isEmpty():
 
+        parent = curr
+        curr = fringe.get()
+
         # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
         # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
         if(gridworld[curr[0]][curr[1]] == 1):
-            curr = parent
-            visited[curr[0]][curr[1]] == 1
+            curr = parent  # backtrack to parent cell
+            visited[curr[0]][curr[1]] == 1  # update environment
+            g = g - 1  # is this necessary to undoing the step? or do we still count the step toward the cost?
             continue
 
         # test all directions (generate children)
         for i in range(len(directions)):
             x = curr[0] + directions[i][0]
             y = curr[1] + directions[i][1]
-            if isInBounds():
-                # case: see unblocked path
+            if isInBounds(curr):
+                # case: see unblocked (or just unvisited) path
                 if visited[x][y] == 0:
                     g = g + 1
                     f = g + getHeuristic(x, y)
                     fringe.put([x, y], f)
 
         # the cycle repeats until the agent either a) reaches the target or b) determines that there is no unblocked pathto the target.
-        parent = curr
-        curr = fringe.get()
 
 
-def isInBounds():
+def isInBounds(curr):
+    global gridworld
     """Determines whether next move is within bounds"""
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
 
 def getHeuristic(x, y):
+    global goal
     """Calculates Manhattan distance"""
     return abs(x-goal[0]) + abs(y-goal[1])
 

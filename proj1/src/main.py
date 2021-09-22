@@ -8,7 +8,6 @@ from .cell import Cell
 # remove globals
 gridworld = []
 goal = []
-path = []
 
 
 def generateGridworld(dim, p):
@@ -40,8 +39,8 @@ def generateGridworld(dim, p):
     print(np.matrix(gridworld))
 
 
-def AStar():
-    global goal, path, gridworld
+def AStar(start):
+    global goal, gridworld
     g = 0  # Length of the shortest path
     fringe = PriorityQueue()
 
@@ -54,7 +53,8 @@ def AStar():
     ptr = path
 
     # Add start to fringe
-    fringe.put(gridworld[0][0].f, gridworld[0, 0])
+    curr = start
+    fringe.put(curr.f, curr)
 
     # Generate all children and add to fringe
     while not fringe.isEmpty() or curr != goal:
@@ -88,8 +88,23 @@ def AStar():
 
 
 def solve():
-    global goal, path, gridworld
+    global goal, gridworld
     print("do thing")
+
+    curr = AStar(gridworld[0, 0])
+
+    while(True):
+        if(curr.child is None):
+            # goal found
+            break
+
+        # Run into blocked cell
+        if curr.blocked == True:
+            curr.seen == True
+            curr = AStar(curr.parent)
+            continue
+
+        curr = curr.child
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves

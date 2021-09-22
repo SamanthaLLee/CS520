@@ -2,7 +2,8 @@ from array import *
 from queue import PriorityQueue
 import numpy as np
 import random
-from cell.py import Cell
+
+from .cell import Cell
 
 # remove globals
 gridworld = []

@@ -6,6 +6,6 @@ class Cell:
         self.h = float('inf')
         self.f = float('inf')
         self.blocked = False
-        self.visited = False
+        self.seen = False
         self.parent = None
-        
+        self.child = None

@@ -8,13 +8,14 @@ from .cell import Cell
 # remove globals
 gridworld = []
 goal = []
+path = []
 
 
 def generateGridworld(dim, p):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld
 
-    # Cell(g, h, f, blocked, visited, parent)
+    # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
 
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
@@ -24,13 +25,13 @@ def generateGridworld(dim, p):
             if rand < p:
                 gridworld[i][j].blocked = 1
 
-    # Exclude the upper left corner(chosen to be the start position) and 
+    # Exclude the upper left corner(chosen to be the start position) and
     # the lower right corner(chosen to be the end position) from being blocked.
     # Initialize starting cell values
     gridworld[0][0].g = 0
     gridworld[0][0].h = getHeuristic(0, 0)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
-    gridworld[0][0].visited = True
+    gridworld[0][0].seen = True
 
     gridworld[0][0].blocked = 0
     gridworld[dim-1][dim-1].blocked = 0
@@ -39,9 +40,9 @@ def generateGridworld(dim, p):
     print(np.matrix(gridworld))
 
 
-def solve():
-    global goal, gridworld
-    g = 0  # length of the shortest path
+def AStar():
+    global goal, path, gridworld
+    g = 0  # Length of the shortest path
     fringe = PriorityQueue()
 
     directions = [[1, 0],
@@ -49,39 +50,44 @@ def solve():
                   [0, 1],
                   [0, -1]]
 
-    # plan shortest presumed path from its current position to the goal.
-    # attempt to follow this path plan, observing cells in its field of view as it moves
+    path = Cell(-1, -1)  # Dummy
+    ptr = path
 
-    # Starting cell values set in generateGridworld
     # Add start to fringe
-    fringe.put(gridworld[0, 0], gridworld[0][0].f)
+    fringe.put(gridworld[0][0].f, gridworld[0, 0])
 
-    # this loop examines all possible directions and adds them to PQ
+    # Generate all children and add to fringe
     while not fringe.isEmpty() or curr != goal:
-
-        parent = curr
         curr = fringe.get()
 
-        # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
-        # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
-        if(gridworld[curr[0]][curr[1]] == 1):
-            curr = parent  # backtrack to parent cell
-            visited[curr[0]][curr[1]] == 1  # update environment
-            g = g - 1  # is this necessary to undoing the step? or do we still count the step toward the cost?
-            continue
-
-        # test all directions (generate children)
         for i in range(len(directions)):
             x = curr[0] + directions[i][0]
             y = curr[1] + directions[i][1]
             if isInBounds(curr):
-                # case: see unblocked (or just unvisited) path
-                if visited[x][y] == 0:
+                if gridworld[x][y].seen == False:
                     g = g + 1
                     f = g + getHeuristic(x, y)
-                    fringe.put([x, y], f)
+                    fringe.put(f, gridworld[x, y])
 
-        # the cycle repeats until the agent either a) reaches the target or b) determines that there is no unblocked pathto the target.
+        ptr.child = curr
+        prevCell = ptr
+        ptr = ptr.child
+        ptr.parent = prevCell
+
+    return path.child
+
+
+def solve():
+    global goal, path, gridworld
+    print("do thing")
+
+    # plan shortest presumed path from its current position to the goal.
+    # attempt to follow this path plan, observing cells in its field of view as it moves
+
+    # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
+    # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
+    # elif gridworld[x][y].blocked == True:
+    #     gridworld[x][y].seen == True
 
 
 def isInBounds(curr):

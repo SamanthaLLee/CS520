@@ -2,6 +2,7 @@ from array import *
 from queue import PriorityQueue
 import numpy as np
 import random
+from cell.py import Cell
 
 # remove globals
 gridworld = []
@@ -12,18 +13,26 @@ def generateGridworld(dim, p):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld
 
-    gridworld = [[0 for x in range(dim)] for y in range(dim)]
+    # Cell(g, h, f, blocked, visited, parent)
+    gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
 
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
     for i in range(dim):
         for j in range(dim):
             rand = random.random()
             if rand < p:
-                gridworld[i][j] = 1
+                gridworld[i][j].blocked = 1
 
-    # Exclude the upper left corner(chosen to be the start position) and the lower right corner(chosen to be the end position) from being blocked.
-    gridworld[0][0] = 0
-    gridworld[dim-1][dim-1] = 0
+    # Exclude the upper left corner(chosen to be the start position) and 
+    # the lower right corner(chosen to be the end position) from being blocked.
+    # Initialize starting cell values
+    gridworld[0][0].g = 0
+    gridworld[0][0].h = getHeuristic(0, 0)
+    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
+    gridworld[0][0].visited = True
+
+    gridworld[0][0].blocked = 0
+    gridworld[dim-1][dim-1].blocked = 0
     goal = [dim-1, dim-1]
 
     print(np.matrix(gridworld))
@@ -31,8 +40,6 @@ def generateGridworld(dim, p):
 
 def solve():
     global goal, gridworld
-    visited = []  # bool
-    parent = []
     g = 0  # length of the shortest path
     fringe = PriorityQueue()
 
@@ -44,10 +51,12 @@ def solve():
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves
 
-    fringe.put([0, 0], getHeuristic(0, 0))
+    # Starting cell values set in generateGridworld
+    # Add start to fringe
+    fringe.put(gridworld[0, 0], gridworld[0][0].f)
 
     # this loop examines all possible directions and adds them to PQ
-    while curr != goal or not fringe.isEmpty():
+    while not fringe.isEmpty() or curr != goal:
 
         parent = curr
         curr = fringe.get()

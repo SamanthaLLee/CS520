@@ -54,7 +54,8 @@ def AStar():
     ptr = path
 
     # Add start to fringe
-    fringe.put(gridworld[0][0].f, gridworld[0, 0])
+    curr = gridworld[0][0]
+    fringe.put(curr.f, curr)
 
     # Generate all children and add to fringe
     while not fringe.isEmpty() or curr != goal:

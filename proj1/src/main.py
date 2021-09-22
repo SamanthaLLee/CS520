@@ -45,10 +45,10 @@ def AStar():
     g = 0  # Length of the shortest path
     fringe = PriorityQueue()
 
-    directions = [[1, 0],
-                  [-1, 0],
-                  [0, 1],
-                  [0, -1]]
+    directions = [(1, 0),
+                  (-1, 0),
+                  (0, 1),
+                  (0, -1)]
 
     path = Cell(-1, -1)  # Dummy
     ptr = path
@@ -60,14 +60,24 @@ def AStar():
     while not fringe.isEmpty() or curr != goal:
         curr = fringe.get()
 
-        for i in range(len(directions)):
-            x = curr[0] + directions[i][0]
-            y = curr[1] + directions[i][1]
-            if isInBounds(curr):
-                if gridworld[x][y].seen == False:
-                    g = g + 1
-                    f = g + getHeuristic(x, y)
-                    fringe.put(f, gridworld[x, y])
+        for x, y in directions:
+            xx = curr.x + x
+            yy = curr.y + y
+            nextCell = gridworld[xx][yy]
+            # Add neighbors to gridworld if inbounds, not blocked, and unseen
+            if isInBounds([xx,yy]) and not nextCell.blocked:
+                # don't add to fringe i think? not sure
+                if nextCell.seen:
+
+                # compare f value to one in fringe, update if nextCell's < cell in fringe
+                elif nextCell in fringe:
+                    
+                else:
+                # Update cell info
+                    nextCell.g = curr.g + 1
+                    nextCell.h = getHeuristic(x, y)
+                    nextCell.f = nextCell.g + nextCell.h
+                    fringe.put(nextCell.f, nextCell)
 
         ptr.child = curr
         prevCell = ptr

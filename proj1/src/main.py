@@ -80,28 +80,17 @@ def astar(start):
             yy = curr.y + y
             nextCell = gridworld[xx][yy]
 
-            # Add children to gridworld if inbounds, not blocked, and unseen
-            if isinbounds([xx, yy]) and not nextCell.blocked and not nextCell.seen:
-                if(nextCell not in fringe or nextCell.g < curr.g + 1):
+            # Add children to fringe if inbounds AND unblocked and unseen
+            if isinbounds([xx, yy]) and not (nextCell.blocked and nextCell.seen):
+                # Add child if not already in fringe
+                # If in fringe, update child in fringe if old g value > new g value
+                if(nextCell not in fringe or nextCell.g > curr.g + 1):
                     nextCell.g = curr.g + 1
-                    nextCell.h = getheuristic(x, y)
+                    nextCell.h = getheuristic(xx, yy)
                     nextCell.f = nextCell.g + nextCell.h
                     fringe.put(nextCell.f, nextCell)
 
-                # # don't add to fringe i think? not sure
-                # if nextCell.seen:
-                #     print("do thing")
-                # compare f value to one in fringe, update if nextCell's < cell in fringe
-                # if nextCell in fringe:
-                #     print("do thing")
-                # else:
-                #     # Update Cell attributes and add to fringe
-                #     if(nextCell not in fringe or nextCell.g < curr.g + 1):
-                #         nextCell.g = curr.g + 1
-                #         nextCell.h = getheuristic(x, y)
-                #         nextCell.f = nextCell.g + nextCell.h
-                #         fringe.put(nextCell.f, nextCell)
-
+        # Adds curr cell to return doubly linked list
         ptr.child = curr
         prevCell = ptr
         ptr = ptr.child
@@ -129,9 +118,11 @@ def solve():
             curr.seen == True
             path = astar(curr.parent)
             curr = path
-            continue
 
-        curr = curr.child
+        # Continue along A* path
+        else:
+            curr.seen = True
+            curr = curr.child
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves

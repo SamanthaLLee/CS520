@@ -46,10 +46,10 @@ def astar(start):
     """Performs the A* algorithm on the gridworld
 
     Args:
-        start (Cell): The cell from which AStar will find a path to the goal
+        start (Cell): The cell from which A* will find a path to the goal
 
     Returns:
-        Cell: The first cell in the shortest path and the head of a linked list representing the shortest path
+        Cell: The head of a Cell linked list containing the shortest path
     """
     global goal, gridworld
     fringe = PriorityQueue()
@@ -81,20 +81,26 @@ def astar(start):
             nextCell = gridworld[xx][yy]
 
             # Add children to gridworld if inbounds, not blocked, and unseen
-            # double check this. we need to use the current knowledge of the agent.
-            if isinbounds([xx, yy]) and not nextCell.blocked:
-                # don't add to fringe i think? not sure
-                if nextCell.seen:
-                    print("do thing")
-                    # compare f value to one in fringe, update if nextCell's < cell in fringe
-                elif nextCell in fringe:
-                    print("do thing")
-                else:
-                    # Update cell info
+            if isinbounds([xx, yy]) and not nextCell.blocked and not nextCell.seen:
+                if(nextCell not in fringe or nextCell.g < curr.g + 1):
                     nextCell.g = curr.g + 1
                     nextCell.h = getheuristic(x, y)
                     nextCell.f = nextCell.g + nextCell.h
                     fringe.put(nextCell.f, nextCell)
+
+                # # don't add to fringe i think? not sure
+                # if nextCell.seen:
+                #     print("do thing")
+                # compare f value to one in fringe, update if nextCell's < cell in fringe
+                # if nextCell in fringe:
+                #     print("do thing")
+                # else:
+                #     # Update Cell attributes and add to fringe
+                #     if(nextCell not in fringe or nextCell.g < curr.g + 1):
+                #         nextCell.g = curr.g + 1
+                #         nextCell.h = getheuristic(x, y)
+                #         nextCell.f = nextCell.g + nextCell.h
+                #         fringe.put(nextCell.f, nextCell)
 
         ptr.child = curr
         prevCell = ptr
@@ -115,8 +121,8 @@ def solve():
 
     while(True):
         if(curr.child is None):
-            # goal found, return path
-            break
+            # Goal found
+            return path
 
         # Run into blocked cell
         if curr.blocked == True:
@@ -126,8 +132,6 @@ def solve():
             continue
 
         curr = curr.child
-
-    return path
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves

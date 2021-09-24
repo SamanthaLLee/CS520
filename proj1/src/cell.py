@@ -33,6 +33,6 @@ class Cell:
         self.h = float('inf')
         self.f = float('inf')
         self.blocked = False
-        self.seen = False  # we need to clarify our understandings of this value
+        self.seen = False
         self.parent = None
         self.child = None

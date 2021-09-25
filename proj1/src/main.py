@@ -42,7 +42,7 @@ def generategridworld(dim, p, heuristic):
     goal.blocked = 0
 
     # Initialize starting cell values
-    gridworld[0][0].g = 0
+    gridworld[0][0].g = 1
     gridworld[0][0].h = heuristic(0, 0)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
@@ -62,8 +62,6 @@ def astar(start, heuristic):
     global goal, gridworld, directions
     fringe = PriorityQueue()
     fringeSet = set()
-
-    
 
     # Dummy cell to anchor final path
     path = Cell(-1, -1)
@@ -95,6 +93,8 @@ def astar(start, heuristic):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
+                        print("adding", nextCell.x,
+                              nextCell.y, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
@@ -122,7 +122,7 @@ def solve(heuristic):
     curr = path
 
     while(curr is not None):
-        print(curr.x, curr.y)
+        print(curr.x, curr.y, curr.h, curr.f)
         curr = curr.child
 
     # print(path)
@@ -131,7 +131,7 @@ def solve(heuristic):
     #     # Goal found
     #     if(curr.child is None):
     #         return path
-        
+
     #     # Run into blocked cell
     #     if curr.blocked == True:
     #         curr.seen == True
@@ -144,10 +144,9 @@ def solve(heuristic):
     #         for dx, dy in directions:
     #             xx, yy = curr.x + dx, curr.y + dy
     #             if isinbounds([xx, yy]):
-    #                 gridworld[xx, yy].seen = True 
+    #                 gridworld[xx, yy].seen = True
     #         curr.seen = True    # Don't think this line is necessary but we can keep it for now
     #         curr = curr.child
-
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves
@@ -158,24 +157,33 @@ def solve(heuristic):
     #     gridworld[x][y].seen == True
 
 # Determines whether next move is within bounds
+
+
 def isinbounds(curr):
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
 # Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)
+
+
 def getManhattanDistance(x, y):
     global goal
     return abs(x-goal.x) + abs(y-goal.y)
 
 # Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)
+
+
 def getEuclideanDistance(x, y):
     global goal
     return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
 
 # Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))
+
+
 def getChebyshevDistance(x, y):
     global goal
     return max((x - goal.x), (y - goal.y))
+
 
 def isfloat(str):
     """Determines whether a given string can be converted to float"""

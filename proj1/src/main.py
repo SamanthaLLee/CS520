@@ -109,12 +109,6 @@ def astar(start, heuristic):
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
-        # Adds curr cell to return doubly linked list
-        # ptr.child = curr
-        # prevCell = ptr
-        # ptr = ptr.child
-        # ptr.parent = prevCell
-
     return goal
 
 

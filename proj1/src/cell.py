@@ -19,7 +19,8 @@ class Cell(object):
     blocked : boolean
         whether the cell is actually blocked in the gridworld
     seen : boolean
-        whether the agent has seen that the current cell is blocked
+        blocked cells: whether the agent has seen that the current cell is blocked
+        free cells: whether the agent has occupied the current cell
     parent : Cell
         a pointer to the previous node along the shortest path to n
     child : Cell

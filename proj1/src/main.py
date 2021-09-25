@@ -67,8 +67,13 @@ def astar(start, heuristic):
     # Pointer to move along path
     ptr = path
 
-    # while start has no valid neighbors:
-    #     start = start.parent
+    # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell 
+    while not hasValidNeighbors(start):
+        start = start.parent
+
+    # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
+    if start is None:
+        return None
 
     # Add start to fringe
     curr = start
@@ -131,7 +136,6 @@ def solve(heuristic):
 
     #     # Run into blocked cell
     #     if curr.blocked == True:
-    #         curr.seen == True
     #         path = astar(curr.parent)
     #         curr = path
 
@@ -140,11 +144,38 @@ def solve(heuristic):
     #         # Take note of environment within viewing distance (adjacent cells)
     #         for dx, dy in directions:
     #             xx, yy = curr.x + dx, curr.y + dy
-    #             if isinbounds([xx, yy]):
-    #                 gridworld[xx, yy].seen = True
-    #         curr.seen = True    # Don't think this line is necessary but we can keep it for now
+    #             neighbor = gridworld[xx][yy]
+    #             # Only mark blocked neighbors as seen  
+    #             if isinbounds([xx, yy]) and neighbor.blocked:
+    #                 neighbor.seen = True
+    #         # Mark current cell as seen and move onto next cell along A* path
+    #         curr.seen = True
     #         curr = curr.child
 
+
+def hasValidNeighbors(cell):
+    """Determines if a cell has any valid neighbors. Valid is defined as being in bounds and not (blocked and seen)
+    Args:
+        cell (cell): input cell
+
+    Returns:
+        boolean: If valid neighbors exist True, else False
+    """
+    global gridworld, directions
+    for x, y in directions:
+        xx, yy = cell.x + x, cell.y + y
+        neighbor = gridworld[xx][yy]
+        # To be valid, neighbor must be inbounds
+        if isinbounds([xx,yy]):
+            # Must be unseen if blocked - don't think this is possible since
+            # we are only looking at adjacent cells within viewing distance
+            if neighbor.blocked and not neighbor.seen:
+                return True
+            # Must be unseen if free
+            if not neighbor.blocked and not neighbor.seen:
+                return True
+    return False
+    
 
 def isinbounds(curr):
     """Determines whether next move is within bounds"""

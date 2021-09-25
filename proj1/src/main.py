@@ -4,6 +4,7 @@ import numpy as np
 import random
 from cell import Cell
 import math
+import string
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -165,29 +166,21 @@ def solve(heuristic):
     #     gridworld[x][y].seen == True
 
 # Determines whether next move is within bounds
-
-
 def isinbounds(curr):
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
 # Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)
-
-
 def getManhattanDistance(x, y):
     global goal
     return abs(x-goal.x) + abs(y-goal.y)
 
 # Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)
-
-
 def getEuclideanDistance(x, y):
     global goal
     return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
 
 # Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))
-
-
 def getChebyshevDistance(x, y):
     global goal
     return max((x - goal.x), (y - goal.y))
@@ -201,6 +194,22 @@ def isfloat(str):
     except ValueError:
         return False
 
+def printGridworld():
+    global gridworld
+    leng = len(gridworld)
+    
+    string = ''
+    for i in range(leng):
+        string += ('-'*(leng*2+1) + '\n')
+        for j in range(leng):
+            string += '|'
+            if gridworld[i][j].blocked:
+                string += 'B'
+            else:
+                string += ' '
+        string += '|\n'
+    string += ('-'*(leng*2+1))
+    print(string)
 
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")
@@ -211,7 +220,8 @@ if __name__ == "__main__":
         p = input("Enter a valid probability. ")
     heuristic = getManhattanDistance
     generategridworld(int(dim), float(p), heuristic)
-    solve(heuristic)
+    printGridworld()
+    #solve(heuristic)
 
 # new priority queue
 # have dict alongside q

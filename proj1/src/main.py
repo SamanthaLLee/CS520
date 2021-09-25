@@ -189,8 +189,8 @@ def isfloat(str):
 def printGridworld():
     global gridworld
     leng = len(gridworld)
-    string = ''
     
+    string = ''
     for i in range(leng):
         string += ('-'*(leng*2+1) + '\n')
         for j in range(leng):
@@ -199,11 +199,9 @@ def printGridworld():
                 string += 'B'
             else:
                 string += ' '
-        string += '|'
-        if i != leng-1:
-            string += '\n'
+        string += '|\n'
+    string += ('-'*(leng*2+1))
     print(string)
-    print('-'*(leng*2+1))
 
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")

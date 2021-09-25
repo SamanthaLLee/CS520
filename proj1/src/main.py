@@ -74,22 +74,19 @@ def astar(start, heuristic):
     
     # while start has no valid neighbors:
     #     start = start.parent
-    
+
     # Add start to fringe
-    prev = None
     curr = start
     fringe.put((start.f, start))
     fringeSet.add(start.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
-    while len(fringeSet) != 0 and curr != goal:
+    while len(fringeSet) != 0:
         f, curr = fringe.get()
-
-        while prev is not None and curr.parent is not None and curr.parent != prev:
-            lastCurr = curr
-            f, curr = fringe.get()
-            fringe.put((lastCurr.f, lastCurr))
+        print("picking", curr.x, curr.y, curr.f)
+        if curr is goal:
+            break
 
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
@@ -113,16 +110,7 @@ def astar(start, heuristic):
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
-        # Adds curr cell to return doubly linked list
-        ptr.child = curr
-        prevCell = ptr
-        ptr = ptr.child
-        ptr.parent = prevCell
-
-        curr.parent = prev
-        prev = curr
-
-    return path.child
+    return goal
 
 
 def solve(heuristic):
@@ -135,9 +123,9 @@ def solve(heuristic):
 
     curr = path
 
-    while(curr is not None):
-        print(curr.x, curr.y, curr.h, curr.f)
-        curr = curr.child
+    # while(curr is not None):
+    #     print(curr.x, curr.y, curr.h, curr.f)
+    #     curr = curr.parent
 
     # print(path)
 
@@ -200,10 +188,11 @@ def isfloat(str):
     except ValueError:
         return False
 
+
 def printGridworld():
     global gridworld
     leng = len(gridworld)
-    
+
     string = ''
     for i in range(leng):
         string += ('-'*(leng*2+1) + '\n')
@@ -216,6 +205,7 @@ def printGridworld():
         string += '|\n'
     string += ('-'*(leng*2+1))
     print(string)
+
 
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")

@@ -1,10 +1,8 @@
 from array import *
-from queue import PriorityQueue
-import numpy as np
-import random
 from cell import Cell
+from queue import PriorityQueue
+import random
 import math
-import string
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -47,8 +45,6 @@ def generategridworld(dim, p, heuristic):
     gridworld[0][0].h = heuristic(0, 0)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
-
-    print(np.matrix(gridworld))
 
 
 def astar(start, heuristic):
@@ -148,14 +144,6 @@ def solve(heuristic):
     #                 gridworld[xx, yy].seen = True
     #         curr.seen = True    # Don't think this line is necessary but we can keep it for now
     #         curr = curr.child
-
-    # plan shortest presumed path from its current position to the goal.
-    # attempt to follow this path plan, observing cells in its field of view as it moves
-
-    # if the agent discovers a block in its planned path, it re-plans, based on its current knowledge of the environment.
-    # update the agent’s knowledge of the environment as it observes blocked an unblocked cells
-    # elif gridworld[x][y].blocked == True:
-    #     gridworld[x][y].seen == True
 
 # Determines whether next move is within bounds
 

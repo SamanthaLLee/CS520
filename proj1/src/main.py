@@ -71,6 +71,7 @@ def astar(start, heuristic):
     # Pointer to move along path
     ptr = path
 
+    
     # while start has no valid neighbors:
     #     start = start.parent
     
@@ -169,23 +170,24 @@ def solve(heuristic):
     # elif gridworld[x][y].blocked == True:
     #     gridworld[x][y].seen == True
 
-# Determines whether next move is within bounds
+
 def isinbounds(curr):
+    """Determines whether next move is within bounds"""
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
-# Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)
 def getManhattanDistance(x, y):
+    """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
     global goal
     return abs(x-goal.x) + abs(y-goal.y)
 
-# Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)
 def getEuclideanDistance(x, y):
+    """Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)"""
     global goal
     return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
 
-# Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))
 def getChebyshevDistance(x, y):
+    """Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))"""
     global goal
     return max((x - goal.x), (y - goal.y))
 

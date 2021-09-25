@@ -10,6 +10,9 @@ gridworld = []
 # Global goal cell
 goal = []
 
+# Vectors that represent the four cardinal directions
+directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
 
 def generategridworld(dim, p):
     """Generates a random gridworld based on user inputs"""
@@ -51,14 +54,10 @@ def astar(start):
     Returns:
         Cell: The head of a Cell linked list containing the shortest path
     """
-    global goal, gridworld
+    global goal, gridworld, directions
     fringe = PriorityQueue()
 
-    # Vectors that represent the four cardinal directions
-    directions = [(1, 0),
-                  (-1, 0),
-                  (0, 1),
-                  (0, -1)]
+    
 
     # Dummy cell to anchor final path
     path = Cell(-1, -1)
@@ -103,7 +102,7 @@ def solve():
     """
     Solves the gridworld using Repeated Forward A*.
     """
-    global goal, gridworld
+    global goal, gridworld, directions
 
     path = astar(gridworld[0, 0])
     curr = path
@@ -121,6 +120,11 @@ def solve():
 
         # Continue along A* path
         else:
+            for dx, dy in directions:
+                xx = curr.x + dx
+                yy = curr.y + dy
+                if isinbounds([xx, yy]):
+                    gridworld[xx, yy].seen = True 
             curr.seen = True
             curr = curr.child
 

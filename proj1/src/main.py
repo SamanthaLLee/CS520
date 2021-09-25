@@ -75,14 +75,21 @@ def astar(start, heuristic):
     #     start = start.parent
     
     # Add start to fringe
+    prev = None
     curr = start
-    fringe.put((curr.f, curr))
-    fringeSet.add(curr.id)
+    fringe.put((start.f, start))
+    fringeSet.add(start.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0 and curr != goal:
         f, curr = fringe.get()
+
+        while prev is not None and curr.parent is not None and curr.parent != prev:
+            lastCurr = curr
+            f, curr = fringe.get()
+            fringe.put((lastCurr.f, lastCurr))
+
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
         for x, y in directions:
@@ -96,11 +103,12 @@ def astar(start, heuristic):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
+                        nextCell.parent = curr
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        print("adding", nextCell.x,
-                              nextCell.y, nextCell.g, nextCell.h, nextCell.f)
+                        print("adding", xx,
+                              yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
@@ -110,11 +118,10 @@ def astar(start, heuristic):
         ptr = ptr.child
         ptr.parent = prevCell
 
+        curr.parent = prev
+        prev = curr
+
     return path.child
-
-
-# def exists(self, item):
-#     return item in (x[1] for x in self)
 
 
 def solve(heuristic):

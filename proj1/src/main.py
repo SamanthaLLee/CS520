@@ -71,23 +71,20 @@ def astar(start, heuristic):
     ptr = path
 
     # Add start to fringe
-    prev = None
     curr = start
     fringe.put((start.f, start))
     fringeSet.add(start.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
-    while len(fringeSet) != 0 and curr != goal:
+    while len(fringeSet) != 0:
         f, curr = fringe.get()
-
-        while prev is not None and curr.parent is not None and curr.parent != prev:
-            lastCurr = curr
-            f, curr = fringe.get()
-            fringe.put((lastCurr.f, lastCurr))
+        print("picking", curr.x, curr.y, curr.f)
+        if curr is goal:
+            break
 
         fringeSet.remove(curr.id)
-        print("picking", curr.x, curr.y, curr.parent)
+
         for x, y in directions:
             xx = curr.x + x
             yy = curr.y + y
@@ -109,15 +106,12 @@ def astar(start, heuristic):
                         fringeSet.add(nextCell.id)
 
         # Adds curr cell to return doubly linked list
-        ptr.child = curr
-        prevCell = ptr
-        ptr = ptr.child
-        ptr.parent = prevCell
+        # ptr.child = curr
+        # prevCell = ptr
+        # ptr = ptr.child
+        # ptr.parent = prevCell
 
-        curr.parent = prev
-        prev = curr
-
-    return path.child
+    return goal
 
 
 def solve(heuristic):
@@ -130,9 +124,9 @@ def solve(heuristic):
 
     curr = path
 
-    while(curr is not None):
-        print(curr.x, curr.y, curr.h, curr.f)
-        curr = curr.child
+    # while(curr is not None):
+    #     print(curr.x, curr.y, curr.h, curr.f)
+    #     curr = curr.parent
 
     # print(path)
 
@@ -166,21 +160,29 @@ def solve(heuristic):
     #     gridworld[x][y].seen == True
 
 # Determines whether next move is within bounds
+
+
 def isinbounds(curr):
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
 # Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)
+
+
 def getManhattanDistance(x, y):
     global goal
     return abs(x-goal.x) + abs(y-goal.y)
 
 # Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)
+
+
 def getEuclideanDistance(x, y):
     global goal
     return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
 
 # Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))
+
+
 def getChebyshevDistance(x, y):
     global goal
     return max((x - goal.x), (y - goal.y))
@@ -194,10 +196,11 @@ def isfloat(str):
     except ValueError:
         return False
 
+
 def printGridworld():
     global gridworld
     leng = len(gridworld)
-    
+
     string = ''
     for i in range(leng):
         string += ('-'*(leng*2+1) + '\n')
@@ -211,6 +214,7 @@ def printGridworld():
     string += ('-'*(leng*2+1))
     print(string)
 
+
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")
     while not dim.isdigit() or int(dim) < 0:
@@ -221,7 +225,7 @@ if __name__ == "__main__":
     heuristic = getManhattanDistance
     generategridworld(int(dim), float(p), heuristic)
     printGridworld()
-    #solve(heuristic)
+    solve(heuristic)
 
 # new priority queue
 # have dict alongside q

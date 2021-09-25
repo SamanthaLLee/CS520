@@ -3,6 +3,7 @@ from queue import PriorityQueue
 import numpy as np
 import random
 from cell import Cell
+import math
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -14,7 +15,7 @@ goal = []
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
-def generategridworld(dim, p):
+def generategridworld(dim, p, heuristic):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld
 
@@ -22,30 +23,34 @@ def generategridworld(dim, p):
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
 
+    id = 0
+
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
     for i in range(dim):
         for j in range(dim):
+            gridworld[i][j].id = id
+            id = id + 1
             rand = random.random()
             if rand < p:
                 gridworld[i][j].blocked = 1
 
     # Set the goal node
-    goal = [dim-1, dim-1]
+    goal = gridworld[dim-1][dim-1]
 
     # Ensure that the start and end positions are unblocked
     gridworld[0][0].blocked = 0
-    gridworld[dim-1][dim-1].blocked = 0
+    goal.blocked = 0
 
     # Initialize starting cell values
     gridworld[0][0].g = 0
-    gridworld[0][0].h = getheuristic(0, 0)
+    gridworld[0][0].h = heuristic(0, 0)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
     print(np.matrix(gridworld))
 
 
-def astar(start):
+def astar(start, heuristic):
     """Performs the A* algorithm on the gridworld
 
     Args:
@@ -56,6 +61,7 @@ def astar(start):
     """
     global goal, gridworld, directions
     fringe = PriorityQueue()
+    fringeSet = set()
 
     
 
@@ -67,27 +73,30 @@ def astar(start):
 
     # Add start to fringe
     curr = start
-    fringe.put(curr.f, curr)
+    fringe.put((curr.f, curr))
+    fringeSet.add(curr.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
-    while not fringe.isEmpty() or curr != goal:
-        curr = fringe.get()
-
+    while len(fringeSet) != 0 and curr != goal:
+        f, curr = fringe.get()
+        fringeSet.remove(curr.id)
         for x, y in directions:
             xx = curr.x + x
             yy = curr.y + y
-            nextCell = gridworld[xx][yy]
 
-            # Add children to fringe if inbounds AND unblocked and unseen
-            if isinbounds([xx, yy]) and not (nextCell.blocked and nextCell.seen):
-                # Add child if not already in fringe
-                # If in fringe, update child in fringe if old g value > new g value
-                if(nextCell not in fringe or nextCell.g > curr.g + 1):
-                    nextCell.g = curr.g + 1
-                    nextCell.h = getheuristic(xx, yy)
-                    nextCell.f = nextCell.g + nextCell.h
-                    fringe.put(nextCell.f, nextCell)
+            if isinbounds([xx, yy]):
+                nextCell = gridworld[xx][yy]
+                # Add children to fringe if inbounds AND unblocked and unseen
+                if not (nextCell.blocked and nextCell.seen):
+                    # Add child if not already in fringe
+                    # If in fringe, update child in fringe if old g value > new g value
+                    if((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)):
+                        nextCell.g = curr.g + 1
+                        nextCell.h = heuristic(xx, yy)
+                        nextCell.f = nextCell.g + nextCell.h
+                        fringe.put((nextCell.f, nextCell))
+                        fringeSet.add(nextCell.id)
 
         # Adds curr cell to return doubly linked list
         ptr.child = curr
@@ -98,35 +107,47 @@ def astar(start):
     return path.child
 
 
-def solve():
+# def exists(self, item):
+#     return item in (x[1] for x in self)
+
+
+def solve(heuristic):
     """
     Solves the gridworld using Repeated Forward A*.
     """
     global goal, gridworld, directions
 
-    path = astar(gridworld[0, 0])
+    path = astar(gridworld[0][0], heuristic)
+
     curr = path
 
-    while(True):
-        if(curr.child is None):
-            # Goal found
-            return path
+    while(curr is not None):
+        print(curr.x, curr.y)
+        curr = curr.child
 
-        # Run into blocked cell
-        if curr.blocked == True:
-            curr.seen == True
-            path = astar(curr.parent)
-            curr = path
+    # print(path)
 
-        # Continue along A* path
-        else:
-            for dx, dy in directions:
-                xx = curr.x + dx
-                yy = curr.y + dy
-                if isinbounds([xx, yy]):
-                    gridworld[xx, yy].seen = True 
-            curr.seen = True
-            curr = curr.child
+    # while(True):
+    #     # Goal found
+    #     if(curr.child is None):
+    #         return path
+        
+    #     # Run into blocked cell
+    #     if curr.blocked == True:
+    #         curr.seen == True
+    #         path = astar(curr.parent)
+    #         curr = path
+
+    #     # Continue along A* path
+    #     else:
+    #         # Take note of environment within viewing distance (adjacent cells)
+    #         for dx, dy in directions:
+    #             xx, yy = curr.x + dx, curr.y + dy
+    #             if isinbounds([xx, yy]):
+    #                 gridworld[xx, yy].seen = True 
+    #         curr.seen = True    # Don't think this line is necessary but we can keep it for now
+    #         curr = curr.child
+
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves
@@ -136,18 +157,25 @@ def solve():
     # elif gridworld[x][y].blocked == True:
     #     gridworld[x][y].seen == True
 
-
+# Determines whether next move is within bounds
 def isinbounds(curr):
-    """Determines whether next move is within bounds"""
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
 
-
-def getheuristic(x, y):
-    """Calculates Manhattan distance"""
+# Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)
+def getManhattanDistance(x, y):
     global goal
-    return abs(x-goal[0]) + abs(y-goal[1])
+    return abs(x-goal.x) + abs(y-goal.y)
 
+# Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)
+def getEuclideanDistance(x, y):
+    global goal
+    return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
+
+# Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))
+def getChebyshevDistance(x, y):
+    global goal
+    return max((x - goal.x), (y - goal.y))
 
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
@@ -165,5 +193,9 @@ if __name__ == "__main__":
     p = input("With what probability will a cell be blocked? ")
     while not isfloat(p) or float(p) > 1 or float(p) < 0:
         p = input("Enter a valid probability. ")
-    generategridworld(int(dim), float(p))
-    solve()
+    heuristic = getManhattanDistance
+    generategridworld(int(dim), float(p), heuristic)
+    solve(heuristic)
+
+# new priority queue
+# have dict alongside q

@@ -1,4 +1,4 @@
-class Cell:
+class Cell(object):
     """
     A class used to represent a Cell in the gridworld
 
@@ -29,6 +29,7 @@ class Cell:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.id = int
         self.g = float('inf')
         self.h = float('inf')
         self.f = float('inf')
@@ -36,3 +37,9 @@ class Cell:
         self.seen = False
         self.parent = None
         self.child = None
+
+    def __lt__(self, other):
+        return self.x < other.x
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y

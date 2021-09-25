@@ -19,19 +19,23 @@ def generategridworld(dim, p):
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
 
+    id = 0
+
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
     for i in range(dim):
         for j in range(dim):
+            gridworld[i][j].id = id
+            id = id + 1
             rand = random.random()
             if rand < p:
                 gridworld[i][j].blocked = 1
 
     # Set the goal node
-    goal = [dim-1, dim-1]
+    goal = gridworld[dim-1][dim-1]
 
     # Ensure that the start and end positions are unblocked
     gridworld[0][0].blocked = 0
-    gridworld[dim-1][dim-1].blocked = 0
+    goal.blocked = 0
 
     # Initialize starting cell values
     gridworld[0][0].g = 0
@@ -53,6 +57,7 @@ def astar(start):
     """
     global goal, gridworld
     fringe = PriorityQueue()
+    fringeSet = set()
 
     # Vectors that represent the four cardinal directions
     directions = [(1, 0),
@@ -68,27 +73,30 @@ def astar(start):
 
     # Add start to fringe
     curr = start
-    fringe.put(curr.f, curr)
+    fringe.put((curr.f, curr))
+    fringeSet.add(curr.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
-    while not fringe.isEmpty() or curr != goal:
-        curr = fringe.get()
-
+    while len(fringeSet) != 0 and curr != goal:
+        f, curr = fringe.get()
+        fringeSet.remove(curr.id)
         for x, y in directions:
             xx = curr.x + x
             yy = curr.y + y
-            nextCell = gridworld[xx][yy]
 
-            # Add children to fringe if inbounds AND unblocked and unseen
-            if isinbounds([xx, yy]) and not (nextCell.blocked and nextCell.seen):
-                # Add child if not already in fringe
-                # If in fringe, update child in fringe if old g value > new g value
-                if(nextCell not in fringe or nextCell.g > curr.g + 1):
-                    nextCell.g = curr.g + 1
-                    nextCell.h = getheuristic(xx, yy)
-                    nextCell.f = nextCell.g + nextCell.h
-                    fringe.put(nextCell.f, nextCell)
+            if isinbounds([xx, yy]):
+                nextCell = gridworld[xx][yy]
+                # Add children to fringe if inbounds AND unblocked and unseen
+                if not (nextCell.blocked and nextCell.seen):
+                    # Add child if not already in fringe
+                    # If in fringe, update child in fringe if old g value > new g value
+                    if(not nextCell.id in fringeSet or nextCell.g > curr.g + 1):
+                        nextCell.g = curr.g + 1
+                        nextCell.h = getheuristic(xx, yy)
+                        nextCell.f = nextCell.g + nextCell.h
+                        fringe.put((nextCell.f, nextCell))
+                        fringeSet.add(nextCell.id)
 
         # Adds curr cell to return doubly linked list
         ptr.child = curr
@@ -99,30 +107,43 @@ def astar(start):
     return path.child
 
 
+# def exists(self, item):
+#     return item in (x[1] for x in self)
+
+
 def solve():
     """
     Solves the gridworld using Repeated Forward A*.
     """
     global goal, gridworld
 
-    path = astar(gridworld[0, 0])
+    path = astar(gridworld[0][0])
+
     curr = path
 
-    while(True):
-        if(curr.child is None):
-            # Goal found
-            return path
+    while(curr is not None):
+        print(curr.x, curr.y)
+        curr = curr.child
 
-        # Run into blocked cell
-        if curr.blocked == True:
-            curr.seen == True
-            path = astar(curr.parent)
-            curr = path
+    # print(path)
 
-        # Continue along A* path
-        else:
-            curr.seen = True
-            curr = curr.child
+    # curr = path
+
+    # while(True):
+    #     if(curr.child is None):
+    #         # Goal found
+    #         return path
+
+    #     # Run into blocked cell
+    #     if curr.blocked == True:
+    #         curr.seen == True
+    #         path = astar(curr.parent)
+    #         curr = path
+
+    #     # Continue along A* path
+    #     else:
+    #         curr.seen = True
+    #         curr = curr.child
 
     # plan shortest presumed path from its current position to the goal.
     # attempt to follow this path plan, observing cells in its field of view as it moves
@@ -142,7 +163,7 @@ def isinbounds(curr):
 def getheuristic(x, y):
     """Calculates Manhattan distance"""
     global goal
-    return abs(x-goal[0]) + abs(y-goal[1])
+    return abs(x-goal.x) + abs(y-goal.y)
 
 
 def isfloat(str):
@@ -163,3 +184,6 @@ if __name__ == "__main__":
         p = input("Enter a valid probability. ")
     generategridworld(int(dim), float(p))
     solve()
+
+# new priority queue
+# have dict alongside q

@@ -63,6 +63,7 @@ def astar(start, heuristic):
     global goal, gridworld, directions
     fringe = PriorityQueue()
     fringeSet = set()
+    seenSet = set()
 
     # Dummy cell to anchor final path
     path = Cell(-1, -1)
@@ -70,6 +71,9 @@ def astar(start, heuristic):
     # Pointer to move along path
     ptr = path
 
+    # while start has no valid neighbors:
+    #     start = start.parent
+    
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -80,6 +84,7 @@ def astar(start, heuristic):
     while len(fringeSet) != 0 and curr != goal:
         f, curr = fringe.get()
         fringeSet.remove(curr.id)
+        seenSet.add(curr.id)
         for x, y in directions:
             xx = curr.x + x
             yy = curr.y + y
@@ -90,7 +95,7 @@ def astar(start, heuristic):
                 if not (nextCell.blocked and nextCell.seen):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
-                    if((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)):
+                    if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
@@ -213,7 +218,4 @@ if __name__ == "__main__":
     heuristic = getManhattanDistance
     generategridworld(int(dim), float(p), heuristic)
     printGridworld()
-    #solve(heuristic)
-
-# new priority queue
-# have dict alongside q
+    solve(heuristic)

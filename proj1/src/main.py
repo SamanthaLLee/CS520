@@ -179,9 +179,9 @@ def hasValidNeighbors(cell):
     global gridworld, directions
     for x, y in directions:
         xx, yy = cell.x + x, cell.y + y
-        neighbor = gridworld[xx][yy]
         # To be valid, neighbor must be inbounds
         if isinbounds([xx, yy]):
+            neighbor = gridworld[xx][yy]
             # Must be unseen if blocked - don't think this is possible since
             # we are only looking at adjacent cells within viewing distance
             if neighbor.blocked and not neighbor.seen:

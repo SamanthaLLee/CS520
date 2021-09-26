@@ -17,6 +17,39 @@ goal = None
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
+def generategridworld2():
+    global goal, gridworld
+    dim = 5
+    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
+
+    id = 0
+
+    # Let each cell independently be blocked with probability p, and empty with probability 1−p.
+    for i in range(dim):
+        for j in range(dim):
+            gridworld[i][j].id = id
+            id = id + 1
+
+     # Set the goal node
+    goal = gridworld[dim-1][dim-1]
+
+    # Ensure that the start and end positions are unblocked
+    gridworld[0][0].blocked = 0
+    goal.blocked = 0
+
+    # Initialize starting cell values
+    gridworld[0][0].g = 1
+    gridworld[0][0].h = heuristic(0, 0)
+    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
+    gridworld[0][0].seen = True
+
+    gridworld[1][1].blocked = 1
+    gridworld[2][4].blocked = 1
+    gridworld[3][0].blocked = 1
+    gridworld[3][2].blocked = 1
+    gridworld[3][3].blocked = 1
+
+
 def generategridworld(dim, p, heuristic):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld
@@ -82,9 +115,7 @@ def astar(start, heuristic):
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
-        print(fringe.queue)
         f, curr = fringe.get()
-        print("picking", curr.x, curr.y, curr.f)
         if curr is goal:
             break
 
@@ -105,8 +136,8 @@ def astar(start, heuristic):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        print("adding", xx,
-                              yy, nextCell.g, nextCell.h, nextCell.f)
+                        # print("adding", xx,
+                        #       yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
@@ -117,6 +148,7 @@ def astar(start, heuristic):
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
     childPtr = None
+    temp = start.parent
     start.parent = None
     while(parentPtr is not None):
         if childPtr is not None:
@@ -125,6 +157,7 @@ def astar(start, heuristic):
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
+    start.parent = temp
 
     return start
 
@@ -150,6 +183,11 @@ def solve(heuristic):
 
     curr = path
     while(True):
+
+        if(curr is None):
+            print("unsolvable gridworld")
+            return None
+
         print("curr", curr.x, curr.y)
         # Goal found
         if(curr.child is None):
@@ -335,9 +373,11 @@ if __name__ == "__main__":
     while not isfloat(p) or float(p) > 1 or float(p) < 0:
         p = input("Enter a valid probability. ")
     heuristic = getManhattanDistance
-    generategridworld(int(dim), float(p), heuristic)
+    # generategridworld(int(dim), float(p), heuristic)
+    generategridworld2()
     printGridworld()
     solve(heuristic)
+    printGridworld()
 
     # Question 4
     # solvability(getManhattanDistance)

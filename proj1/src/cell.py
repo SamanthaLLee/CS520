@@ -44,3 +44,9 @@ class Cell(object):
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
+
+    def __str__(self):
+        return str(self.x) + "," + str(self.y) + ":" + str(self.h)
+
+    def __repr__(self):
+        return self.__str__()

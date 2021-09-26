@@ -16,39 +16,6 @@ goal = None
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
-def generategridworld2():
-    global goal, gridworld
-    dim = 5
-    gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
-
-    id = 0
-
-    # Let each cell independently be blocked with probability p, and empty with probability 1−p.
-    for i in range(dim):
-        for j in range(dim):
-            gridworld[i][j].id = id
-            id = id + 1
-
-     # Set the goal node
-    goal = gridworld[dim-1][dim-1]
-
-    # Ensure that the start and end positions are unblocked
-    gridworld[0][0].blocked = 0
-    goal.blocked = 0
-
-    # Initialize starting cell values
-    gridworld[0][0].g = 1
-    gridworld[0][0].h = heuristic(0, 0)
-    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
-    gridworld[0][0].seen = True
-
-    gridworld[1][1].blocked = 1
-    gridworld[2][4].blocked = 1
-    gridworld[3][0].blocked = 1
-    gridworld[3][2].blocked = 1
-    gridworld[3][3].blocked = 1
-
-
 def generategridworld(dim, p, heuristic):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld

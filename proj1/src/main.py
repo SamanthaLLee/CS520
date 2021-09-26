@@ -63,12 +63,15 @@ def astar(start, heuristic):
 
     # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell
     while not hasValidNeighbors(start):
+        # print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors.")
         start = start.parent
-
-    # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
-    if start is None:
-        return None
-
+        
+        # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
+        if start is None:
+            print("A* ret none")
+            return None
+        else:
+            print(start.x, start.y)            
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -130,17 +133,19 @@ def solve(heuristic):
     global goal, gridworld, directions
 
     path = astar(gridworld[0][0], heuristic)
-    curr = path
 
     if path is None:
-        print("handle case")
-        return
+        print("unsolvable gridworld")
+        return None
+    if path is not None:
+        print("shouldnt be here")
 
     # printer = path
     # while(printer is not None):
     #     print(printer.x, printer.y, printer.h, printer.f)
     #     printer = printer.child
-
+    
+    curr = path
     while(True):
         print("curr", curr.x, curr.y)
         # Goal found
@@ -177,15 +182,14 @@ def hasValidNeighbors(cell):
         boolean: If valid neighbors exist True, else False
     """
     global gridworld, directions
+    if cell is None:
+        return False
+
     for x, y in directions:
         xx, yy = cell.x + x, cell.y + y
         # To be valid, neighbor must be inbounds
         if isinbounds([xx, yy]):
             neighbor = gridworld[xx][yy]
-            # Must be unseen if blocked - don't think this is possible since
-            # we are only looking at adjacent cells within viewing distance
-            if neighbor.blocked and not neighbor.seen:
-                return True
             # Must be unseen if free
             if not neighbor.blocked and not neighbor.seen:
                 return True

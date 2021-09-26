@@ -232,6 +232,13 @@ def isfloat(str):
 
 
 def printGridworld():
+    """Prints out the current state of the gridworld.
+       Key:
+            B: blocked and seen
+            b: blocked and unseen
+            *: current path
+            ' ': free space
+    """
     global gridworld
     leng = len(gridworld)
 

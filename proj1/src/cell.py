@@ -40,13 +40,13 @@ class Cell(object):
         self.child = None
 
     def __lt__(self, other):
-        return self.x < other.x
+        return self.id < other.id
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return self.id == other.id
 
     def __str__(self):
-        return str(self.x) + "," + str(self.y) + ":" + str(self.h)
+        return "("+str(self.x) + "," + str(self.y) + ") | id: " + str(self.id)
 
     def __repr__(self):
         return self.__str__()

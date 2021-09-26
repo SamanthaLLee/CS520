@@ -61,13 +61,7 @@ def astar(start, heuristic):
     fringeSet = set()
     seenSet = set()
 
-    # Dummy cell to anchor final path
-    path = Cell(-1, -1)
-
-    # Pointer to move along path
-    ptr = path
-
-    # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell 
+    # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell
     while not hasValidNeighbors(start):
         start = start.parent
 
@@ -77,14 +71,14 @@ def astar(start, heuristic):
 
     # Add start to fringe
     curr = start
-    fringe.put((start.f, start))
-    fringeSet.add(start.id)
+    fringe.put((curr.f, curr))
+    fringeSet.add(curr.id)
 
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
         f, curr = fringe.get()
-        print("picking", curr.x, curr.y, curr.f)
+        # print("picking", curr.x, curr.y, curr.f)
         if curr is goal:
             break
 
@@ -105,12 +99,28 @@ def astar(start, heuristic):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        print("adding", xx,
-                              yy, nextCell.g, nextCell.h, nextCell.f)
+                        # print("adding", xx,
+                        #       yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
-    return goal
+    # Return None if no solution exists
+    if len(fringeSet) == 0:
+        return None
+
+    # Starting from goal cell, work backwards and reassign child attributes correctly
+    parentPtr = goal
+    childPtr = None
+    while(parentPtr is not None):
+        print("set return val", parentPtr.x,
+              parentPtr.y, parentPtr.h, parentPtr.f)
+        parentPtr.child = childPtr
+        childPtr = parentPtr
+        parentPtr = parentPtr.parent
+
+    print("CHECKING GOAL CHILD JUST IN CASE", goal.child)
+
+    return start
 
 
 def solve(heuristic):
@@ -120,37 +130,42 @@ def solve(heuristic):
     global goal, gridworld, directions
 
     path = astar(gridworld[0][0], heuristic)
-
     curr = path
 
-    # while(curr is not None):
-    #     print(curr.x, curr.y, curr.h, curr.f)
-    #     curr = curr.parent
+    if path is None:
+        print("handle case")
+        return
 
-    # print(path)
+    # printer = path
+    # while(printer is not None):
+    #     print(printer.x, printer.y, printer.h, printer.f)
+    #     printer = printer.child
 
-    # while(True):
-    #     # Goal found
-    #     if(curr.child is None):
-    #         return path
+    while(True):
+        print("curr", curr.x, curr.y)
+        # Goal found
+        if(curr.child is None):
+            print("curr.child is none for", curr.x, curr.y)
+            return path
 
-    #     # Run into blocked cell
-    #     if curr.blocked == True:
-    #         path = astar(curr.parent)
-    #         curr = path
+        # Run into blocked cell
+        if curr.blocked == True:
+            path = astar(curr.parent, heuristic)
+            curr = path
 
-    #     # Continue along A* path
-    #     else:
-    #         # Take note of environment within viewing distance (adjacent cells)
-    #         for dx, dy in directions:
-    #             xx, yy = curr.x + dx, curr.y + dy
-    #             neighbor = gridworld[xx][yy]
-    #             # Only mark blocked neighbors as seen  
-    #             if isinbounds([xx, yy]) and neighbor.blocked:
-    #                 neighbor.seen = True
-    #         # Mark current cell as seen and move onto next cell along A* path
-    #         curr.seen = True
-    #         curr = curr.child
+        # Continue along A* path
+        else:
+            # Take note of environment within viewing distance (adjacent cells)
+            for dx, dy in directions:
+                xx, yy = curr.x + dx, curr.y + dy
+
+                # Only mark blocked neighbors as seen
+                if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
+                    neighbor = gridworld[xx][yy]
+                    neighbor.seen = True
+            # Mark current cell as seen and move onto next cell along A* path
+            curr.seen = True
+            curr = curr.child
 
 
 def hasValidNeighbors(cell):
@@ -166,7 +181,7 @@ def hasValidNeighbors(cell):
         xx, yy = cell.x + x, cell.y + y
         neighbor = gridworld[xx][yy]
         # To be valid, neighbor must be inbounds
-        if isinbounds([xx,yy]):
+        if isinbounds([xx, yy]):
             # Must be unseen if blocked - don't think this is possible since
             # we are only looking at adjacent cells within viewing distance
             if neighbor.blocked and not neighbor.seen:
@@ -175,7 +190,7 @@ def hasValidNeighbors(cell):
             if not neighbor.blocked and not neighbor.seen:
                 return True
     return False
-    
+
 
 def isinbounds(curr):
     """Determines whether next move is within bounds"""

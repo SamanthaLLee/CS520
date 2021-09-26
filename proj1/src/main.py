@@ -111,14 +111,11 @@ def astar(start, heuristic):
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
     childPtr = None
+    start.parent = None
     while(parentPtr is not None):
-        print("set return val", parentPtr.x,
-              parentPtr.y, parentPtr.h, parentPtr.f)
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
-
-    print("CHECKING GOAL CHILD JUST IN CASE", goal.child)
 
     return start
 

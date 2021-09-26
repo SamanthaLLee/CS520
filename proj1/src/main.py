@@ -8,10 +8,43 @@ import math
 gridworld = []
 
 # Global goal cell
-goal = []
+goal = None
 
 # Vectors that represent the four cardinal directions
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+
+def generategridworld2():
+    global goal, gridworld
+    dim = 5
+    gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
+
+    id = 0
+
+    # Let each cell independently be blocked with probability p, and empty with probability 1−p.
+    for i in range(dim):
+        for j in range(dim):
+            gridworld[i][j].id = id
+            id = id + 1
+
+     # Set the goal node
+    goal = gridworld[dim-1][dim-1]
+
+    # Ensure that the start and end positions are unblocked
+    gridworld[0][0].blocked = 0
+    goal.blocked = 0
+
+    # Initialize starting cell values
+    gridworld[0][0].g = 1
+    gridworld[0][0].h = heuristic(0, 0)
+    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
+    gridworld[0][0].seen = True
+
+    gridworld[1][1].blocked = 1
+    gridworld[2][4].blocked = 1
+    gridworld[3][0].blocked = 1
+    gridworld[3][2].blocked = 1
+    gridworld[3][3].blocked = 1
 
 
 def generategridworld(dim, p, heuristic):
@@ -78,7 +111,7 @@ def astar(start, heuristic):
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
         f, curr = fringe.get()
-        # print("picking", curr.x, curr.y, curr.f)
+        print("picking", curr.x, curr.y, curr.f)
         if curr is goal:
             break
 
@@ -99,8 +132,8 @@ def astar(start, heuristic):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        # print("adding", xx,
-                        #       yy, nextCell.g, nextCell.h, nextCell.f)
+                        print("adding", xx,
+                              yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
@@ -113,6 +146,9 @@ def astar(start, heuristic):
     childPtr = None
     start.parent = None
     while(parentPtr is not None):
+        if childPtr is not None:
+            print(parentPtr.x, parentPtr.y,
+                  "is parent of", childPtr.x, childPtr.y)
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
@@ -142,11 +178,12 @@ def solve(heuristic):
         print("curr", curr.x, curr.y)
         # Goal found
         if(curr.child is None):
-            print("curr.child is none for", curr.x, curr.y)
             return path
 
         # Run into blocked cell
         if curr.blocked == True:
+            print("redo astar")
+            curr.seen = True
             path = astar(curr.parent, heuristic)
             curr = path
 
@@ -241,13 +278,14 @@ def printGridworld():
 
 
 if __name__ == "__main__":
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 0:
-        dim = input("Enter a valid length. ")
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 0:
+    #     dim = input("Enter a valid length. ")
+    # p = input("With what probability will a cell be blocked? ")
+    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
+    #     p = input("Enter a valid probability. ")
     heuristic = getManhattanDistance
-    generategridworld(int(dim), float(p), heuristic)
+    # generategridworld(int(dim), float(p), heuristic)
+    generategridworld2()
     printGridworld()
     solve(heuristic)

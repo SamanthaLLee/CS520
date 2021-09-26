@@ -23,7 +23,6 @@ def generategridworld(dim, p, heuristic):
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
-    
     id = 0
 
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.

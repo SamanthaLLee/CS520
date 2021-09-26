@@ -234,6 +234,13 @@ def isfloat(str):
 
 
 def printGridworld():
+    """Prints out the current state of the gridworld.
+       Key:
+            B: blocked and seen
+            b: blocked and unseen
+            *: current path
+            ' ': free space
+    """
     global gridworld
     leng = len(gridworld)
 
@@ -242,8 +249,13 @@ def printGridworld():
         string += ('-'*(leng*2+1) + '\n')
         for j in range(leng):
             string += '|'
-            if gridworld[i][j].blocked:
+            curr = gridworld[i][j]
+            if curr.blocked and curr.seen:
                 string += 'B'
+            elif curr.blocked and not curr.seen:
+                string += 'b'
+            elif not curr.blocked and curr.seen:
+                string += '*'
             else:
                 string += ' '
         string += '|\n'
@@ -259,35 +271,33 @@ def solvability(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
     # Initialize results matrix where arg1 is p value, arg2 is number of solvable gridworlds out of 10
-
     results = [[0 for x in range(100)] for y in range(2)]
     for x in range(100):
         results[0][x] = x
 
     # Solve gridworlds
     for x in range(100):
-        # for _ in range(10):
-        #     generategridworld(101, float(x/100), heuristic)
-        #     if solve(heuristic) is None:
-        #         results[x][1] += 1
-        results[1][x] = 5
+        for _ in range(10):
+            generategridworld(101, float(x/100), heuristic)
+            if solve(heuristic) is None:
+                results[1][x] += 1
 
     # Plot results
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
-    print("after show")
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 0:
-    #     dim = input("Enter a valid length. ")
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 0:
+        dim = input("Enter a valid length. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
     heuristic = getManhattanDistance
-    # generategridworld(int(dim), float(p), heuristic)
-    generategridworld2()
+    generategridworld(int(dim), float(p), heuristic)
     printGridworld()
     solve(heuristic)
+
+    # Question 4
     # solvability(getManhattanDistance)

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 gridworld = []
 
 # Global goal cell
-goal = []
+goal = None
 
 # Vectors that represent the four cardinal directions
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -22,7 +22,7 @@ def generategridworld(dim, p, heuristic):
 
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
-    gridworld = [[Cell(x, y) for x in range(dim)] for y in range(dim)]
+    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
     id = 0
 
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
@@ -66,13 +66,13 @@ def astar(start, heuristic):
     while not hasValidNeighbors(start):
         # print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors.")
         start = start.parent
-        
+
         # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
         if start is None:
             print("A* ret none")
             return None
         else:
-            print(start.x, start.y)            
+            print(start.x, start.y)
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -81,8 +81,9 @@ def astar(start, heuristic):
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
+        print(fringe.queue)
         f, curr = fringe.get()
-        # print("picking", curr.x, curr.y, curr.f)
+        print("picking", curr.x, curr.y, curr.f)
         if curr is goal:
             break
 
@@ -103,8 +104,8 @@ def astar(start, heuristic):
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        # print("adding", xx,
-                        #       yy, nextCell.g, nextCell.h, nextCell.f)
+                        print("adding", xx,
+                              yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
@@ -115,14 +116,14 @@ def astar(start, heuristic):
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
     childPtr = None
+    start.parent = None
     while(parentPtr is not None):
-        print("set return val", parentPtr.x,
-              parentPtr.y, parentPtr.h, parentPtr.f)
+        if childPtr is not None:
+            print(parentPtr.x, parentPtr.y,
+                  "is parent of", childPtr.x, childPtr.y)
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
-
-    print("CHECKING GOAL CHILD JUST IN CASE", goal.child)
 
     return start
 
@@ -145,17 +146,18 @@ def solve(heuristic):
     # while(printer is not None):
     #     print(printer.x, printer.y, printer.h, printer.f)
     #     printer = printer.child
-    
+
     curr = path
     while(True):
         print("curr", curr.x, curr.y)
         # Goal found
         if(curr.child is None):
-            print("curr.child is none for", curr.x, curr.y)
             return path
 
         # Run into blocked cell
         if curr.blocked == True:
+            print("redo astar")
+            curr.seen = True
             path = astar(curr.parent, heuristic)
             curr = path
 
@@ -278,9 +280,9 @@ def solvability(heuristic):
             generategridworld(101, float(x/100), heuristic)
             if solve(heuristic) is None:
                 results[1][x] += 1
-        
+
     # Plot results
-    plt.scatter(results[0], results[1]) #plotting the column as histogram 
+    plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
 

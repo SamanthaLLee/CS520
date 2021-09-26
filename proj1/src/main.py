@@ -5,6 +5,7 @@ import random
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import timeit
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -285,6 +286,46 @@ def solvability(heuristic):
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
+def compareHeuristics():
+    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
+    """
+    # Initialize results matrix - results[1][3]: Euclidean runtime on graph 4
+    results = [[0 for x in range(10)] for y in range(3)]
+    
+    heuristics = [getManhattanDistance, getEuclideanDistance, getChebyshevDistance]
+    # For a range of [0,9] p values, generate gridworlds
+    for p in range(10):s
+        generategridworld(20, float(p/10), heuristic) # not sure what to do about the gridworld being unique to 1 heuristic
+
+        # For each heuristic, solve the gridworld 5 times and average the times
+        for index, heuristic in enumerate(heuristics):
+            for _ in range(5):
+                start = timeit.default_timer()
+                solve(heuristic)
+                stop = timeit.default_timer()
+                results[index][p] += stop - start
+            results[index][p] /= 5
+
+    # Plot results
+    N = 3
+    ind = np.arange(N) 
+    width = 0.25
+    
+    xvals = results[0]
+    bar1 = plt.bar(ind, xvals, width, color = 'r')
+    
+    yvals = results[1]
+    bar2 = plt.bar(ind+width, yvals, width, color='g')
+    
+    zvals = results[2]
+    bar3 = plt.bar(ind+width*2, zvals, width, color = 'b')
+    
+    plt.xlabel('p')
+    plt.ylabel('Average Time')
+    
+    plt.xticks(ind+width,['0', '.1', '.2', '.3', '.4', '.5', '.6', '.7', '.8', '.9'])
+    plt.legend( (bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev') )
+    plt.show()
 
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")

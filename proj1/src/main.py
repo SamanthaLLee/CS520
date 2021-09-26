@@ -3,6 +3,8 @@ from cell import Cell
 from queue import PriorityQueue
 import random
 import math
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -247,14 +249,43 @@ def printGridworld():
     print(string)
 
 
+def solvability(heuristic):
+    """Automates Question 4: plot density vs solvability of various p values to find a value 
+        p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
+
+    Args:
+        heuristic (function([int][int])): passes heuristic  into generategridworld
+    """
+    # Initialize results matrix where arg1 is p value, arg2 is number of solvable gridworlds out of 10
+
+    results = [[0 for x in range(2)] for y in range(100)]
+    for x in range(100):
+        results[x][0] = x
+
+    # Solve gridworlds
+    for x in range(100):
+        # for _ in range(10):
+        #     generategridworld(101, float(x/100), heuristic)
+        #     if solve(heuristic) is None:
+        #         results[x][1] += 1
+        results[x][1] = 5
+        
+    # Plot results
+    plt.hist(results) #plotting the column as histogram 
+    plt.show()
+    print("after show")
+
+
+
 if __name__ == "__main__":
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 0:
-        dim = input("Enter a valid length. ")
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
-    heuristic = getManhattanDistance
-    generategridworld(int(dim), float(p), heuristic)
-    printGridworld()
-    solve(heuristic)
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 0:
+    #     dim = input("Enter a valid length. ")
+    # p = input("With what probability will a cell be blocked? ")
+    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
+    #     p = input("Enter a valid probability. ")
+    # heuristic = getManhattanDistance
+    # generategridworld(int(dim), float(p), heuristic)
+    # printGridworld()
+    # solve(heuristic)
+    solvability(getManhattanDistance)

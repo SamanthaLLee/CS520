@@ -10,7 +10,7 @@ def solvability(heuristic):
         p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
 
     Args:
-        heuristic (function([int][int])): passes heuristic  into generategridworld
+        heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
     """
     # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
     results = [[0 for _ in range(100)] for _ in range(2)]
@@ -30,7 +30,6 @@ def solvability(heuristic):
                 results[1][p] += 1
         results[1][p] = (results[1][p]/30)*100
 
-    # print(results)
     # Plot results
     plt.title('Density vs. Solvability')
     plt.xlabel('Density')

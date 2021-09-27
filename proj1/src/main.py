@@ -117,7 +117,7 @@ def densityvtrajectorylength(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
 
-    trialsperp = 100
+    trialsperp = 40
 
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
     interval = .33/10
@@ -142,6 +142,7 @@ def densityvtrajectorylength(heuristic):
                 tempsum = tempsum + solve.trajectorylen
         p += interval
         results[1][x] = tempsum/trialsperp
+        print(x, "probabilities done")
 
     # print(results)
     # Plot results
@@ -159,32 +160,39 @@ def densityvavg1(heuristic):
     Args:
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
-    global trajectorylen
 
-    trialsperp = 20
+    trialsperp = 40
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
+    interval = .33/10
+    p = 0
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
+
+    p = 0
 
     # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            trajectorylen = 0
-            solve.generategridworld(10, float(x/100), heuristic)
-            result = solve(heuristic)
+            solve.trajectorylen = 0
+            solve.generategridworld(101, p, heuristic)
+            result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
             else:
                 path, pathlen = solve.astar(
                     solve.gridworld[0][0], heuristic)
-                currratio = trajectorylen/pathlen
+                currratio = solve.trajectorylen/pathlen
                 tempsum = tempsum + currratio
+        p += interval
         results[1][x] = tempsum/trialsperp
+        print(x, "probabilities done")
 
     # print(results)
     # Plot results
+    plt.title('Density vs. Trajectory/Shortest Path in Discovered Gridworld')
     plt.xlabel('Density')
     plt.ylabel(
         'Avg (Trajectory / Shortest Path in Discovered Gridworld)')
@@ -331,5 +339,5 @@ if __name__ == "__main__":
     # Question 4
     # solvability(solve.getManhattanDistance)
     # compareHeuristics()
-    densityvtrajectorylength(solve.getChebyshevDistance)
-    # densityvavg2(solve.getChebyshevDistance)
+    # densityvtrajectorylength(solve.getChebyshevDistance)
+    densityvavg1(solve.getChebyshevDistance)

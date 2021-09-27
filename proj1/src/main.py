@@ -92,7 +92,7 @@ def compare_heuristics():
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)/5)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)/step)] for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]

@@ -30,6 +30,31 @@ def solvability(heuristic):
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
+def solvability_range(heuristic):
+    """Automates Question 4: plot density vs solvability of range of p values to find a value 
+        p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
+
+    Args:
+        heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
+    """
+    # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
+    results = [[0 for _ in range(20)] for _ in range(2)]
+    for x in range(15, 36):
+        results[0][x] = x
+
+    # Solve gridworlds
+    for p in range(15, 36):
+        for _ in range(20):
+            solve.generategridworld(101, float(p/100), heuristic)
+            if solve(heuristic) is None:
+                results[1][p] += 1
+
+    checkfullgridworld = False
+
+    # Plot results
+    plt.scatter(results[0], results[1])  # plotting the column as histogram
+    plt.show()
+
 
 def compareHeuristics():
     """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities

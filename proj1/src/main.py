@@ -74,24 +74,30 @@ def solvability_range(heuristic):
     plt.show()
 
 
-def compareHeuristics():
+def compare_heuristics():
     """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
     """
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
     solve.checkfullgridworld = True
 
-    # Constants: cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
-    cycles = 30
+    # Initialize constants: 
+    #   range [start, end), difference, # of gridworlds per p
+    #   cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
+    start = 0  # inclusive
+    end = 46    # exclusive
+    step = 5
+    diff = end - 1 - start
+    cycles = 50
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range(10)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)/5)] for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
     # For a range of [0,9] p values, generate gridworlds
-    for p in range(10):
+    for p in range(start, end, step):
         # For "cycles" gridworlds for each p value
         i = 0
         redos = 0
@@ -118,12 +124,12 @@ def compareHeuristics():
                     if redos >= max_redos:
                         break
                 stop = timeit.default_timer()
-                results[heur_num][p] += stop - start
+                results[heur_num][p/step] += stop - start
             i += 1
 
         # Average out times
         for x in range(3):
-            results[x][p] /= cycles
+            results[x][p/step] /= cycles
 
     # Set back to false
     checkfullgridworld = False
@@ -146,8 +152,11 @@ def compareHeuristics():
     plt.xlabel('Density')
     plt.ylabel('Average Time (s)')
 
-    plt.xticks(ind+width, ['0', '.1', '.2', '.3',
-               '.4', '.5', '.6', '.7', '.8', '.9'])
+    # Make xticks list
+    xtick_list = []
+    for i, x in enumerate(range(start, end, step)):
+        xtick_list.append(str(x/100))
+    plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
     plt.show()
 
@@ -372,6 +381,6 @@ if __name__ == "__main__":
 
     # Question 4
     # solvability(solve.getManhattanDistance)
-    # compareHeuristics()
+    # compare_heuristics()
     densityvtrajectorylength(solve.getChebyshevDistance)
     # densityvavg2(solve.getChebyshevDistance)

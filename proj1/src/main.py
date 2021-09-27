@@ -37,6 +37,7 @@ def solvability(heuristic):
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
+
 def solvability_range(heuristic):
     """Automates Question 4: plot density vs solvability of range of p values to find a value 
         p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
@@ -81,7 +82,7 @@ def compare_heuristics():
     # As per directions, "you may take each gridworld as known, and thus only search once"
     solve.checkfullgridworld = True
 
-    # Initialize constants: 
+    # Initialize constants:
     #   range [start, end), difference, # of gridworlds per p
     #   cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
     start = 0  # inclusive
@@ -92,7 +93,7 @@ def compare_heuristics():
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)/step)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)//step + 1)] for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
@@ -116,20 +117,20 @@ def compare_heuristics():
                     solve.gridworld[0][0].h
 
                 # Time the solve
-                start = timeit.default_timer()
+                start_time = timeit.default_timer()
                 # If the gridworld is unsolvable, inc redos
                 if solve.solve(heuristic) is None:
                     redos += 1
                     # Go to next p if max_redos met/exceeded
                     if redos >= max_redos:
                         break
-                stop = timeit.default_timer()
-                results[heur_num][p/step] += stop - start
+                stop_time = timeit.default_timer()
+                results[heur_num][p//step] += stop_time - start_time
             i += 1
 
         # Average out times
         for x in range(3):
-            results[x][p/step] /= cycles
+            results[x][p//step] /= cycles
 
     # Set back to false
     checkfullgridworld = False
@@ -168,7 +169,7 @@ def densityvtrajectorylength(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
 
-    trialsperp = 100
+    trialsperp = 40
 
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
     interval = .33/10
@@ -193,6 +194,7 @@ def densityvtrajectorylength(heuristic):
                 tempsum = tempsum + solve.trajectorylen
         p += interval
         results[1][x] = tempsum/trialsperp
+        print(x, "probabilities done")
 
     # print(results)
     # Plot results
@@ -210,32 +212,39 @@ def densityvavg1(heuristic):
     Args:
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
-    global trajectorylen
 
-    trialsperp = 20
+    trialsperp = 40
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
+    interval = .33/10
+    p = 0
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
+
+    p = 0
 
     # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            trajectorylen = 0
-            solve.generategridworld(10, float(x/100), heuristic)
-            result = solve(heuristic)
+            solve.trajectorylen = 0
+            solve.generategridworld(101, p, heuristic)
+            result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
             else:
                 path, pathlen = solve.astar(
                     solve.gridworld[0][0], heuristic)
-                currratio = trajectorylen/pathlen
+                currratio = solve.trajectorylen/pathlen
                 tempsum = tempsum + currratio
+        p += interval
         results[1][x] = tempsum/trialsperp
+        print(x, "probabilities done")
 
     # print(results)
     # Plot results
+    plt.title('Density vs. Trajectory/Shortest Path in Discovered Gridworld')
     plt.xlabel('Density')
     plt.ylabel(
         'Avg (Trajectory / Shortest Path in Discovered Gridworld)')
@@ -250,17 +259,21 @@ def densityvavg2(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
     global checkfullgridworld
-    trialsperp = 20
+    trialsperp = 10
+    interval = .33/10
+    p = 0
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
 
+    p = 0
     # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            solve.generategridworld(50, float(x/100), heuristic)
+            solve.generategridworld(10, p, heuristic)
             result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
@@ -274,6 +287,7 @@ def densityvavg2(heuristic):
                 tempsum = tempsum + currratio
         print("done with", x)
         results[1][x] = tempsum/trialsperp
+        p += interval
 
     print(results)
     # Plot results
@@ -381,6 +395,7 @@ if __name__ == "__main__":
 
     # Question 4
     # solvability(solve.getManhattanDistance)
+    # compareHeuristics()
+    # densityvtrajectorylength(solve.getChebyshevDistance)
+    densityvavg2(solve.getChebyshevDistance)
     # compare_heuristics()
-    densityvtrajectorylength(solve.getChebyshevDistance)
-    # densityvavg2(solve.getChebyshevDistance)

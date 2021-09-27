@@ -171,8 +171,11 @@ def astar(start, heuristic):
     fringeSet = set()
     seenSet = set()
 
+    infcount = 0
     # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell
     while not hasValidNeighbors(start):
+        if infcount > 10:
+            exit()
         # print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors.")
         start = start.parent
 
@@ -182,6 +185,7 @@ def astar(start, heuristic):
             return None
         else:
             print(start.x, start.y)  # infinite loop
+        infcount = infcount+1
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -195,7 +199,8 @@ def astar(start, heuristic):
         f, curr = fringe.get()
         if curr is goal:
             break
-
+        if curr.id not in fringeSet:
+            continue
         # print("removing", curr)
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
@@ -272,6 +277,7 @@ def solve(heuristic):
         print("curr", curr.x, curr.y)
         # Goal found
         if(curr.child is None):
+            curr.seen = True
             return path
 
         # Run into blocked cell
@@ -314,7 +320,7 @@ def hasValidNeighbors(cell):
         if isinbounds([xx, yy]):
             neighbor = gridworld[xx][yy]
             # Must be unseen if free
-            if not neighbor.blocked and not neighbor.seen:
+            if not neighbor.blocked or not neighbor.seen:
                 return True
     return False
 

@@ -125,6 +125,40 @@ def generategridworld2():
     # gridworld[9][5].blocked = 1
     # gridworld[9][6].blocked = 1
 
+def generategridworld3():
+    global goal, gridworld
+    dim = 5
+    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
+
+    id = 0
+
+    # Let each cell independently be blocked with probability p, and empty with probability 1−p.
+    for i in range(dim):
+        for j in range(dim):
+            gridworld[i][j].id = id
+            id = id + 1
+
+     # Set the goal node
+    goal = gridworld[dim-1][dim-1]
+
+    # Ensure that the start and end positions are unblocked
+    gridworld[0][0].blocked = 0
+    goal.blocked = 0
+
+    # Initialize starting cell values
+    gridworld[0][0].g = 1
+    gridworld[0][0].h = heuristic(0, 0)
+    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
+    gridworld[0][0].seen = True
+
+    gridworld[0][1].blocked = 1
+    gridworld[0][4].blocked = 1
+    gridworld[2][1].blocked = 1
+    gridworld[2][2].blocked = 1
+    gridworld[2][4].blocked = 1
+    gridworld[3][1].blocked = 1
+    gridworld[3][3].blocked = 1
+    gridworld[4][3].blocked = 1
 
 def generategridworld(dim, p, heuristic):
     """Generates a random gridworld based on user inputs"""
@@ -146,16 +180,22 @@ def generategridworld(dim, p, heuristic):
 
     # Set the goal node
     goal = gridworld[dim-1][dim-1]
-
+    start = gridworld[0][0]
     # Ensure that the start and end positions are unblocked
-    gridworld[0][0].blocked = 0
+    start.blocked = 0
     goal.blocked = 0
 
     # Initialize starting cell values
-    gridworld[0][0].g = 1
-    gridworld[0][0].h = heuristic(0, 0)
-    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
-    gridworld[0][0].seen = True
+    start.g = 1
+    start.h = heuristic(0, 0)
+    start.f = start.g + start.h
+    start.seen = True
+
+    # Only mark blocked neighbors as seen
+    if isinbounds([1, 0]) and gridworld[1][0].blocked:
+        gridworld[1][0].seen = True
+    if isinbounds([0, 1]) and gridworld[0][1].blocked:
+        gridworld[0][1].seen = True
 
 
 def astar(start, heuristic):
@@ -172,12 +212,9 @@ def astar(start, heuristic):
     fringeSet = set()
     seenSet = set()
 
-    infcount = 0
-    # Backtrack if start is stuck until a parent has a valid, unexplored neighbor cell
+    # Backtrack if start is stuck until a parent has a valid, unexplored, unblocked neighbor cell
     while not hasValidNeighbors(start):
-        if infcount > 10:
-            exit()
-        # print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors.")
+        print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors. Moving to parent.")
         start = start.parent
 
         # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
@@ -185,8 +222,9 @@ def astar(start, heuristic):
             print("A* ret none")
             return None
         else:
-            print(start.x, start.y)  # infinite loop
-        infcount = infcount+1
+            print("onto the parent")  # infinite loop
+    print(f"CELL: ({start.x}, {start.y}) HAS VALID NEIGHBORS.")
+    
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -198,23 +236,30 @@ def astar(start, heuristic):
         # print("fringe contains", fringeSet)
         # print("fringe contains", fringe.queue)
         f, curr = fringe.get()
+        print(f"popping cell: ({curr.x}, {curr.y})")
         if curr is goal:
             break
-        if curr.id not in fringeSet:
-            continue
-        # print("removing", curr)
+        # if curr.id not in fringeSet:
+        #     continue
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
-        for x, y in directions:
-            xx = curr.x + x
-            yy = curr.y + y
 
+
+        count = 0
+        # Iterate through curr's neighbors to find children to add to the fringe
+        for x, y in directions:
+            xx, yy = curr.x + x, curr.y + y
+            count+=1
+            print(count)
             if isinbounds([xx, yy]):
                 nextCell = gridworld[xx][yy]
-                # Add children to fringe if inbounds AND unblocked and unseen
-                if not (nextCell.blocked and nextCell.seen):
-                    # Add child if not already in fringe
+                # Child must be unseen if it is blocked
+                # Child must be unseen if unblocked
+                if not nextCell.seen:
+                    
+                    # Add child if not already in fringe, or must be better than child already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
+                    # Child must not have been part of A*'s path (seenSet is keeping track of seen unblocked cells)
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
                         if(nextCell.g > curr.g + 1 and nextCell.id in fringeSet):
                             print(nextCell.id, "requires update")
@@ -226,16 +271,21 @@ def astar(start, heuristic):
                         #       yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
+                        print(f"    adding cell: ({nextCell.x}, {nextCell.y})")
 
     # Return None if no solution exists
     if len(fringeSet) == 0:
+        print("empty fringe - ran out of things to pop before if statement returns True on \"curr is goal\"")
         return None
-
+    print("nonempty fringe")
+    
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
     childPtr = None
-    # gridworld[0][0].parent = None
+    
     temp = start.parent
+    if start.parent is not None:
+        print("storing away start's parent" + str(start.parent.x) + " " + str(start.parent.y))
     start.parent = None
     while(parentPtr is not None):
         # if childPtr is not None:
@@ -245,7 +295,19 @@ def astar(start, heuristic):
         childPtr = parentPtr
         parentPtr = parentPtr.parent
     start.parent = temp
-
+    if start.parent is not None:
+        print("setting start's parent to " + str(temp.x) + " " + str(temp.y))
+    
+    iterptr = goal
+    infcount = 0
+    while iterptr is not None:
+        print(iterptr.x, iterptr.y)
+        iterptr = iterptr.parent
+    
+        if infcount > 100:
+            printGridworld()
+            exit()
+        infcount = infcount+1
     return start
 
 
@@ -256,12 +318,6 @@ def solve(heuristic):
     global goal, gridworld, directions
 
     path = astar(gridworld[0][0], heuristic)
-
-    if path is None:
-        print("unsolvable gridworld")
-        return None
-    if path is not None:
-        print("shouldnt be here")
 
     # printer = path
     # while(printer is not None):
@@ -296,8 +352,8 @@ def solve(heuristic):
 
                 # Only mark blocked neighbors as seen
                 if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
-                    neighbor = gridworld[xx][yy]
-                    neighbor.seen = True
+                    gridworld[xx][yy].seen = True
+
             # Mark current cell as seen and move onto next cell along A* path
             curr.seen = True
             curr = curr.child
@@ -319,10 +375,11 @@ def hasValidNeighbors(cell):
         xx, yy = cell.x + x, cell.y + y
         # To be valid, neighbor must be inbounds
         if isinbounds([xx, yy]):
-            neighbor = gridworld[xx][yy]
             # Must be unseen if free
-            if not neighbor.blocked or not neighbor.seen:
+            if not gridworld[xx][yy].blocked and not gridworld[xx][yy].seen:
                 return True
+                
+    print(f"WTF IS cell: ({cell.x}, {cell.y}) DOING HERE? IT DOESN'T HAVE ANY VALID NEIGHBORS")
     return False
 
 
@@ -420,7 +477,7 @@ def compareHeuristics():
     
     heuristics = [getManhattanDistance, getEuclideanDistance, getChebyshevDistance]
     # For a range of [0,9] p values, generate gridworlds
-    for p in range(10):s
+    for p in range(10):
         generategridworld(20, float(p/10), heuristic) # not sure what to do about the gridworld being unique to 1 heuristic
 
         # For each heuristic, solve the gridworld 5 times and average the times
@@ -463,6 +520,7 @@ if __name__ == "__main__":
     heuristic = getManhattanDistance
     generategridworld(int(dim), float(p), heuristic)
     # generategridworld2()
+    # generategridworld3()
     printGridworld()
     solve(heuristic)
     printGridworld()

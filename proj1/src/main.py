@@ -15,16 +15,26 @@ def solvability(heuristic):
     # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
     results = [[0 for _ in range(100)] for _ in range(2)]
     for x in range(100):
-        results[0][x] = x
+        results[0][x] = x/100
 
     # Solve gridworlds
     for p in range(100):
-        for _ in range(10):
+        for _ in range(30):
             solve.generategridworld(101, float(p/100), heuristic)
-            if solve(heuristic) is None:
+            solve.checkfullgridworld = True
+            # if solve.solve(heuristic) is not None:
+            #     results[1][p] += 1
+            path, len = solve.astar(
+                solve.gridworld[0][0], heuristic)
+            if path is not None:
                 results[1][p] += 1
+        results[1][p] = (results[1][p]/30)*100
 
+    # print(results)
     # Plot results
+    plt.title('Density vs. Solvability')
+    plt.xlabel('Density')
+    plt.ylabel('Percent of Solvable Gridworlds')
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
@@ -49,7 +59,7 @@ def compareHeuristics():
         while i < 5:
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(
-                20, float(p/10), solve.getManhattanDistance)
+                101, float(p/10), solve.getManhattanDistance)
 
             # For each heuristic, solve the gridworld 5 times and average the times
             for heur_num, heuristic in enumerate(heuristics):
@@ -63,8 +73,8 @@ def compareHeuristics():
                 # Time the solve
                 start = timeit.default_timer()
                 # If the gridworld is unsolvable, decrement i so 5 solvable gridworlds are tested
-                if solve(heuristic) is None:
-                    i -= 1
+                if solve.solve(heuristic) is None:
+                    # i -= 1
                     break
                 stop = timeit.default_timer()
                 results[heur_num][p] += stop - start
@@ -79,7 +89,7 @@ def compareHeuristics():
 
     # Plot results
     N = 3
-    ind = np.arange(N)
+    ind = np.arange(min(len(results[0]), len(results[1]), len(results[2])))
     width = 0.25
 
     xvals = results[0]
@@ -91,8 +101,9 @@ def compareHeuristics():
     zvals = results[2]
     bar3 = plt.bar(ind+width*2, zvals, width, color='b')
 
-    plt.xlabel('p')
-    plt.ylabel('Average Time')
+    plt.title('Density vs. Runtime by Heuristic')
+    plt.xlabel('Density')
+    plt.ylabel('Average Time (s)')
 
     plt.xticks(ind+width, ['0', '.1', '.2', '.3',
                '.4', '.5', '.6', '.7', '.8', '.9'])
@@ -107,30 +118,35 @@ def densityvtrajectorylength(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
 
-    trialsperp = 20
+    trialsperp = 100
 
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
+    interval = .33/10
+    p = 0
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
 
-    # Solve gridworlds
+    p = 0
+    # # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
             solve.trajectorylen = 0
-            solve.generategridworld(10, float(x/100), heuristic)
+            solve.generategridworld(101, p, heuristic)
             result = solve.solve(heuristic)
-            print(solve.trajectorylen)
+            # print(solve.trajectorylen)
             if result is None:
                 trialsperp = trialsperp-1
             else:
                 tempsum = tempsum + solve.trajectorylen
+        p += interval
         results[1][x] = tempsum/trialsperp
 
-    print(results)
+    # print(results)
     # Plot results
-
+    plt.title('Density vs. Trajectory')
     plt.xlabel('Density')
     plt.ylabel('Avg Trajectory Length')
 
@@ -168,7 +184,7 @@ def densityvavg1(heuristic):
                 tempsum = tempsum + currratio
         results[1][x] = tempsum/trialsperp
 
-    print(results)
+    # print(results)
     # Plot results
     plt.xlabel('Density')
     plt.ylabel(
@@ -195,7 +211,7 @@ def densityvavg2(heuristic):
         tempsum = 0
         for _ in range(trialsperp):
             solve.generategridworld(50, float(x/100), heuristic)
-            result = solve(heuristic)
+            result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
             else:
@@ -206,6 +222,7 @@ def densityvavg2(heuristic):
                     solve.gridworld[0][0], heuristic)
                 currratio = discoveredpathlen/fullpathlen
                 tempsum = tempsum + currratio
+        print("done with", x)
         results[1][x] = tempsum/trialsperp
 
     print(results)
@@ -284,34 +301,36 @@ if __name__ == "__main__":
     #     w = input("Enter a valid weight. ")
     # heuristicweight = float(w)
 
-    # heuristic = getManhattanDistance
+    # heuristic = solve.getManhattanDistance
 
-    # generategridworld(int(dim), float(p), heuristic)
+    # solve.generategridworld(int(dim), float(p), heuristic)
     # # generategridworld2()
-    # printGridworld()
+    # solve.printGridworld()
     # starttime = time.time()
-    # result = solve(heuristic)
-    # printGridworld()
+    # result = solve.solve(heuristic)
+    # solve.printGridworld()
     # endtime = time.time()
     # if (result is None):
     #     print("No solution.")
 
-    # trajectorylen = trajectorylen if result is not None else None
-    # print("Trajectory length:", trajectorylen)
-    # print("Cells processed: ", numcellsprocessed)
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
+    # print("Cells processed: ", solve.numcellsprocessed)
     # print("Runtime: ", endtime - starttime, "s")
 
-    # shortestpathindiscovered, shortestpathindiscoveredlen = astar(
-    #     gridworld[0][0], heuristic)
+    # shortestpathindiscovered, shortestpathindiscoveredlen = solve.astar(
+    #     solve.gridworld[0][0], heuristic)
     # print("Length of Shortest Path in Final Discovered Gridworld: ",
     #       shortestpathindiscoveredlen)
 
-    # checkfullgridworld = True
-    # shortestpath, shortestpathlen = astar(
-    #     gridworld[0][0], heuristic)
+    # solve.checkfullgridworld = True
+    # shortestpath, shortestpathlen = solve.astar(
+    #     solve.gridworld[0][0], heuristic)
     # print("Length of Shortest Path in Full Gridworld: ",
     #       shortestpathlen)
 
     # Question 4
-    # solvability(getManhattanDistance)
-    densityvtrajectorylength(solve.getManhattanDistance)
+    # solvability(solve.getManhattanDistance)
+    # compareHeuristics()
+    densityvtrajectorylength(solve.getChebyshevDistance)
+    # densityvavg2(solve.getChebyshevDistance)

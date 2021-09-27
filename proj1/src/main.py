@@ -5,7 +5,7 @@ import random
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-
+import time
 # Global gridworld of Cell objects
 gridworld = []
 
@@ -18,7 +18,7 @@ directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 def generategridworld2():
     global goal, gridworld
-    dim = 10
+    dim = 3
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
 
     id = 0
@@ -42,87 +42,10 @@ def generategridworld2():
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
-    gridworld[0][9].blocked = 1
-    gridworld[0][8].blocked = 1
-    gridworld[0][7].blocked = 1
-    gridworld[0][4].blocked = 1
-    gridworld[0][3].blocked = 1
     gridworld[0][2].blocked = 1
-
-    gridworld[1][6].blocked = 1
-    gridworld[1][5].blocked = 1
-    gridworld[1][4].blocked = 1
-    gridworld[1][3].blocked = 1
-
-    gridworld[2][8].blocked = 1
-    gridworld[2][9].blocked = 1
-
-    gridworld[3][1].blocked = 1
-    gridworld[3][2].blocked = 1
-    gridworld[3][3].blocked = 1
-    gridworld[3][5].blocked = 1
-
-    gridworld[4][0].blocked = 1
-    gridworld[4][3].blocked = 1
-    gridworld[4][9].blocked = 1
-
-    gridworld[5][0].blocked = 1
-    gridworld[5][2].blocked = 1
-    gridworld[5][8].blocked = 1
-    gridworld[5][6].blocked = 1
-
-    gridworld[6][2].blocked = 1
-    gridworld[6][3].blocked = 1
-    gridworld[6][5].blocked = 1
-    gridworld[6][6].blocked = 1
-    gridworld[6][7].blocked = 1
-
-    gridworld[7][2].blocked = 1
-    gridworld[7][3].blocked = 1
-    gridworld[7][4].blocked = 1
-    gridworld[7][9].blocked = 1
-    gridworld[7][7].blocked = 1
-
-    gridworld[8][0].blocked = 1
-    gridworld[8][2].blocked = 1
-    gridworld[8][3].blocked = 1
-    gridworld[8][6].blocked = 1
-
-    gridworld[9][7].blocked = 1
-
-    # gridworld[0][9].blocked = 1
-    # gridworld[0][7].blocked = 1
-    # gridworld[1][9].blocked = 1
-    # gridworld[1][7].blocked = 1
-    # gridworld[1][6].blocked = 1
-    # gridworld[1][2].blocked = 1
-    # gridworld[2][4].blocked = 1
-    # gridworld[2][0].blocked = 1
-    # gridworld[2][2].blocked = 1
-    # gridworld[3][9].blocked = 1
-    # gridworld[3][5].blocked = 1
-    # gridworld[3][4].blocked = 1
-    # gridworld[4][9].blocked = 1
-    # gridworld[4][6].blocked = 1
-    # gridworld[4][4].blocked = 1
-    # gridworld[4][1].blocked = 1
-    # gridworld[5][9].blocked = 1
-    # gridworld[5][7].blocked = 1
-    # gridworld[5][5].blocked = 1
-    # gridworld[5][4].blocked = 1
-    # gridworld[5][2].blocked = 1
-    # gridworld[5][1].blocked = 1
-    # gridworld[6][1].blocked = 1
-    # gridworld[6][7].blocked = 1
-    # gridworld[6][8].blocked = 1
-    # gridworld[7][3].blocked = 1
-    # gridworld[7][2].blocked = 1
-    # gridworld[7][5].blocked = 1
-    # gridworld[7][9].blocked = 1
-    # gridworld[8][6].blocked = 1
-    # gridworld[9][3].blocked = 1
-    # gridworld[9][5].blocked = 1
-    # gridworld[9][6].blocked = 1
+    gridworld[1][2].blocked = 1
+    gridworld[2][0].blocked = 1
+    gridworld[2][1].blocked = 1
 
 
 def generategridworld(dim, p, heuristic):
@@ -322,6 +245,9 @@ def hasValidNeighbors(cell):
             # Must be unseen if free
             if not neighbor.blocked or not neighbor.seen:
                 return True
+                # if the neighbor is unblocked, according to current
+                # if not (neighbor.blocked and neighbor.seen):
+                #
     return False
 
 
@@ -414,17 +340,20 @@ def solvability(heuristic):
 
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 0:
+    while not dim.isdigit() or int(dim) < 2:
         dim = input("Enter a valid length. ")
     p = input("With what probability will a cell be blocked? ")
     while not isfloat(p) or float(p) > 1 or float(p) < 0:
         p = input("Enter a valid probability. ")
     heuristic = getManhattanDistance
+
     generategridworld(int(dim), float(p), heuristic)
     # generategridworld2()
     printGridworld()
+    start = time.time()
     solve(heuristic)
     printGridworld()
-
+    end = time.time()
+    print(end - start)
     # Question 4
     # solvability(getManhattanDistance)

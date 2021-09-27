@@ -20,6 +20,7 @@ numcellsprocessed = 0
 trajectorylen = 0
 checkfullgridworld = False
 
+
 def generategridworld(dim, p, heuristic):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld
@@ -76,11 +77,11 @@ def astar(start, heuristic):
 
         # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
         if start is None:
-            print("A* ret none")
+            # print("A* ret none")
             return None, None
-        else:
-            print(start.x, start.y)  # infinite loop
-        infcount = infcount+1
+        # else:
+            # print(start.x, start.y)  # infinite loop
+        # infcount = infcount+1
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -93,7 +94,6 @@ def astar(start, heuristic):
         if curr is goal:
             break
         if curr.id not in fringeSet:
-            print("pls dear god don't print this")
             continue
         # print("removing", curr)
         fringeSet.remove(curr.id)
@@ -113,7 +113,8 @@ def astar(start, heuristic):
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
                         nextCell.parent = curr
                         nextCell.g = curr.g + 1
-                        nextCell.h = heuristic(xx, yy, goal.x, goal.y, heuristicweight)
+                        nextCell.h = heuristic(
+                            xx, yy, goal.x, goal.y, heuristicweight)
                         nextCell.f = nextCell.g + nextCell.h
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
@@ -149,8 +150,8 @@ def solve(heuristic):
     if path is None:
         print("unsolvable gridworld")
         return None
-    if path is not None:
-        print("shouldnt be here")
+    # if path is not None:
+    #     print("shouldnt be here")
 
     # printer = path
     # while(printer is not None):
@@ -161,10 +162,10 @@ def solve(heuristic):
     while(True):
 
         if(curr is None):
-            print("unsolvable gridworld")
+            # print("unsolvable gridworld")
             return None
 
-        print("curr", curr.x, curr.y)
+        # print("curr", curr.x, curr.y)
 
         trajectorylen = trajectorylen + 1
         # Goal found
@@ -175,7 +176,7 @@ def solve(heuristic):
         # Run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
-            print("redo astar")
+            # print("redo astar")
             curr.seen = True
             path, len = astar(curr.parent, heuristic)
             curr = path
@@ -256,4 +257,3 @@ def printGridworld():
         string += '|\n'
     string += ('-'*(leng*2+1))
     print(string)
-

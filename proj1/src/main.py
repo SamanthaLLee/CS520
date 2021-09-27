@@ -328,17 +328,17 @@ def solvability(heuristic):
     Args:
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
-    # Initialize results matrix where arg1 is p value, arg2 is number of solvable gridworlds out of 10
-    results = [[0 for x in range(100)] for y in range(2)]
+    # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
+    results = [[0 for _ in range(100)] for _ in range(2)]
     for x in range(100):
         results[0][x] = x
 
     # Solve gridworlds
-    for x in range(100):
+    for p in range(100):
         for _ in range(10):
-            generategridworld(101, float(x/100), heuristic)
+            generategridworld(101, float(p/100), heuristic)
             if solve(heuristic) is None:
-                results[1][x] += 1
+                results[1][p] += 1
 
     # Plot results
     plt.scatter(results[0], results[1])  # plotting the column as histogram
@@ -347,22 +347,46 @@ def solvability(heuristic):
 def compareHeuristics():
     """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
     """
-    # Initialize results matrix - results[1][3]: Euclidean runtime on graph 4
-    results = [[0 for x in range(10)] for y in range(3)]
+    global gridworld, checkfullgridworld
+
+    # As per directions, "you may take each gridworld as known, and thus only search once"
+    checkfullgridworld = True
+
+    # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
+    results = [[0 for _ in range(10)] for _ in range(3)]
     
     heuristics = [getManhattanDistance, getEuclideanDistance, getChebyshevDistance]
     # For a range of [0,9] p values, generate gridworlds
     for p in range(10):
-        generategridworld(20, float(p/10), heuristic) # not sure what to do about the gridworld being unique to 1 heuristic
+        # For 5 gridworlds for each p value
+        i = 0
+        while i < 5:
+            # Generate gridworld as Manhattan distance but manually set later
+            generategridworld(20, float(p/10), getManhattanDistance)
+            
+            # For each heuristic, solve the gridworld 5 times and average the times
+            for heur_num, heuristic in enumerate(heuristics):
+                
+                # Initialize starting cell value for each heuristic
+                gridworld[0][0].h = heuristic(0, 0)
+                gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
 
-        # For each heuristic, solve the gridworld 5 times and average the times
-        for index, heuristic in enumerate(heuristics):
-            for _ in range(5):
+                # Time the solve
                 start = timeit.default_timer()
-                solve(heuristic)
+                # If the gridworld is unsolvable, decrement i so 5 solvable gridworlds are tested
+                if solve(heuristic) is None:
+                    i -= 1
+                    break
                 stop = timeit.default_timer()
-                results[index][p] += stop - start
-            results[index][p] /= 5
+                results[heur_num][p] += stop - start
+            i += 1
+
+        # Average out times
+        for x in range(3):
+            results[x][p] /= 5
+
+    # Set back to false
+    checkfullgridworld = False
 
     # Plot results
     N = 3

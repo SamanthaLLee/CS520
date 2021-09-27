@@ -6,6 +6,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import timeit
+import time
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -16,10 +17,16 @@ goal = None
 # Vectors that represent the four cardinal directions
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
+heuristicweight = 1
+haslimitedview = False
+numcellsprocessed = 0
+trajectorylen = 0
+checkfullgridworld = False
+
 
 def generategridworld2():
     global goal, gridworld
-    dim = 10
+    dim = 3
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
 
     id = 0
@@ -43,87 +50,10 @@ def generategridworld2():
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
-    gridworld[0][9].blocked = 1
-    gridworld[0][8].blocked = 1
-    gridworld[0][7].blocked = 1
-    gridworld[0][4].blocked = 1
-    gridworld[0][3].blocked = 1
     gridworld[0][2].blocked = 1
-
-    gridworld[1][6].blocked = 1
-    gridworld[1][5].blocked = 1
-    gridworld[1][4].blocked = 1
-    gridworld[1][3].blocked = 1
-
-    gridworld[2][8].blocked = 1
-    gridworld[2][9].blocked = 1
-
-    gridworld[3][1].blocked = 1
-    gridworld[3][2].blocked = 1
-    gridworld[3][3].blocked = 1
-    gridworld[3][5].blocked = 1
-
-    gridworld[4][0].blocked = 1
-    gridworld[4][3].blocked = 1
-    gridworld[4][9].blocked = 1
-
-    gridworld[5][0].blocked = 1
-    gridworld[5][2].blocked = 1
-    gridworld[5][8].blocked = 1
-    gridworld[5][6].blocked = 1
-
-    gridworld[6][2].blocked = 1
-    gridworld[6][3].blocked = 1
-    gridworld[6][5].blocked = 1
-    gridworld[6][6].blocked = 1
-    gridworld[6][7].blocked = 1
-
-    gridworld[7][2].blocked = 1
-    gridworld[7][3].blocked = 1
-    gridworld[7][4].blocked = 1
-    gridworld[7][9].blocked = 1
-    gridworld[7][7].blocked = 1
-
-    gridworld[8][0].blocked = 1
-    gridworld[8][2].blocked = 1
-    gridworld[8][3].blocked = 1
-    gridworld[8][6].blocked = 1
-
-    gridworld[9][7].blocked = 1
-
-    # gridworld[0][9].blocked = 1
-    # gridworld[0][7].blocked = 1
-    # gridworld[1][9].blocked = 1
-    # gridworld[1][7].blocked = 1
-    # gridworld[1][6].blocked = 1
-    # gridworld[1][2].blocked = 1
-    # gridworld[2][4].blocked = 1
-    # gridworld[2][0].blocked = 1
-    # gridworld[2][2].blocked = 1
-    # gridworld[3][9].blocked = 1
-    # gridworld[3][5].blocked = 1
-    # gridworld[3][4].blocked = 1
-    # gridworld[4][9].blocked = 1
-    # gridworld[4][6].blocked = 1
-    # gridworld[4][4].blocked = 1
-    # gridworld[4][1].blocked = 1
-    # gridworld[5][9].blocked = 1
-    # gridworld[5][7].blocked = 1
-    # gridworld[5][5].blocked = 1
-    # gridworld[5][4].blocked = 1
-    # gridworld[5][2].blocked = 1
-    # gridworld[5][1].blocked = 1
-    # gridworld[6][1].blocked = 1
-    # gridworld[6][7].blocked = 1
-    # gridworld[6][8].blocked = 1
-    # gridworld[7][3].blocked = 1
-    # gridworld[7][2].blocked = 1
-    # gridworld[7][5].blocked = 1
-    # gridworld[7][9].blocked = 1
-    # gridworld[8][6].blocked = 1
-    # gridworld[9][3].blocked = 1
-    # gridworld[9][5].blocked = 1
-    # gridworld[9][6].blocked = 1
+    gridworld[1][2].blocked = 1
+    gridworld[2][0].blocked = 1
+    gridworld[2][1].blocked = 1
 
 
 def generategridworld(dim, p, heuristic):
@@ -167,7 +97,7 @@ def astar(start, heuristic):
     Returns:
         Cell: The head of a Cell linked list containing the shortest path
     """
-    global goal, gridworld, directions
+    global goal, gridworld, directions, numcellsprocessed
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
@@ -183,7 +113,7 @@ def astar(start, heuristic):
         # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
         if start is None:
             print("A* ret none")
-            return None
+            return None, None
         else:
             print(start.x, start.y)  # infinite loop
         infcount = infcount+1
@@ -195,16 +125,16 @@ def astar(start, heuristic):
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
-        # print("fringe contains", fringeSet)
-        # print("fringe contains", fringe.queue)
         f, curr = fringe.get()
         if curr is goal:
             break
         if curr.id not in fringeSet:
+            print("pls dear god don't print this")
             continue
         # print("removing", curr)
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
+        numcellsprocessed = numcellsprocessed + 1
         for x, y in directions:
             xx = curr.x + x
             yy = curr.y + y
@@ -212,50 +142,45 @@ def astar(start, heuristic):
             if isinbounds([xx, yy]):
                 nextCell = gridworld[xx][yy]
                 # Add children to fringe if inbounds AND unblocked and unseen
-                if not (nextCell.blocked and nextCell.seen):
+
+                if (not (nextCell.blocked and nextCell.seen) and not checkfullgridworld) or (not nextCell.blocked and checkfullgridworld):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
-                        if(nextCell.g > curr.g + 1 and nextCell.id in fringeSet):
-                            print(nextCell.id, "requires update")
                         nextCell.parent = curr
                         nextCell.g = curr.g + 1
                         nextCell.h = heuristic(xx, yy)
                         nextCell.f = nextCell.g + nextCell.h
-                        # print("adding", xx,
-                        #       yy, nextCell.g, nextCell.h, nextCell.f)
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
 
-    # Return None if no solution exists
+                    # Return None if no solution exists
     if len(fringeSet) == 0:
-        return None
+        return None, None
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
     childPtr = None
-    # gridworld[0][0].parent = None
-    temp = start.parent
+    oldParent = start.parent
     start.parent = None
+    astarlen = 0
     while(parentPtr is not None):
-        # if childPtr is not None:
-        # print(parentPtr.x, parentPtr.y,
-        #       "is parent of", childPtr.x, childPtr.y)
+        astarlen = astarlen + 1
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
-    start.parent = temp
+    start.parent = oldParent
 
-    return start
+    return start, astarlen
 
 
 def solve(heuristic):
     """
     Solves the gridworld using Repeated Forward A*.
     """
-    global goal, gridworld, directions
+    global goal, gridworld, directions, trajectorylen
 
-    path = astar(gridworld[0][0], heuristic)
+    path, len = astar(gridworld[0][0], heuristic)
 
     if path is None:
         print("unsolvable gridworld")
@@ -276,6 +201,8 @@ def solve(heuristic):
             return None
 
         print("curr", curr.x, curr.y)
+
+        trajectorylen = trajectorylen + 1
         # Goal found
         if(curr.child is None):
             curr.seen = True
@@ -283,21 +210,23 @@ def solve(heuristic):
 
         # Run into blocked cell
         if curr.blocked == True:
+            trajectorylen = trajectorylen - 2
             print("redo astar")
             curr.seen = True
-            path = astar(curr.parent, heuristic)
+            path, len = astar(curr.parent, heuristic)
             curr = path
 
         # Continue along A* path
         else:
-            # Take note of environment within viewing distance (adjacent cells)
-            for dx, dy in directions:
-                xx, yy = curr.x + dx, curr.y + dy
+            if not haslimitedview:
+                # Take note of environment within viewing distance (adjacent cells)
+                for dx, dy in directions:
+                    xx, yy = curr.x + dx, curr.y + dy
 
-                # Only mark blocked neighbors as seen
-                if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
-                    neighbor = gridworld[xx][yy]
-                    neighbor.seen = True
+                    # Only mark blocked neighbors as seen
+                    if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
+                        neighbor = gridworld[xx][yy]
+                        neighbor.seen = True
             # Mark current cell as seen and move onto next cell along A* path
             curr.seen = True
             curr = curr.child
@@ -323,6 +252,9 @@ def hasValidNeighbors(cell):
             # Must be unseen if free
             if not neighbor.blocked or not neighbor.seen:
                 return True
+                # if the neighbor is unblocked, according to current
+                # if not (neighbor.blocked and neighbor.seen):
+                #
     return False
 
 
@@ -335,19 +267,19 @@ def isinbounds(curr):
 def getManhattanDistance(x, y):
     """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
     global goal
-    return abs(x-goal.x) + abs(y-goal.y)
+    return (abs(x-goal.x) + abs(y-goal.y))*heuristicweight
 
 
 def getEuclideanDistance(x, y):
     """Euclidean: d((x1, y1),(x2, y2)) = sqrt((x1 - x2)2 + (y1 - y2)2)"""
     global goal
-    return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)
+    return math.sqrt((x-goal.x)**2 + (y-goal.y)**2)*heuristicweight
 
 
 def getChebyshevDistance(x, y):
     """Chebyshev: d((x1, y1),(x2, y2)) = max((x1 - x2), (y1 - y2))"""
     global goal
-    return max((x - goal.x), (y - goal.y))
+    return max((x - goal.x), (y - goal.y))*heuristicweight
 
 
 def isfloat(str):
@@ -420,7 +352,7 @@ def compareHeuristics():
     
     heuristics = [getManhattanDistance, getEuclideanDistance, getChebyshevDistance]
     # For a range of [0,9] p values, generate gridworlds
-    for p in range(10):s
+    for p in range(10):
         generategridworld(20, float(p/10), heuristic) # not sure what to do about the gridworld being unique to 1 heuristic
 
         # For each heuristic, solve the gridworld 5 times and average the times
@@ -453,19 +385,80 @@ def compareHeuristics():
     plt.legend( (bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev') )
     plt.show()
 
+def densityvtrajectorylength(heuristic):
+    """Automates Question 7: plot density vs trajectory 
+
+    Args:
+        heuristic (function([int][int])): passes heuristic  into generategridworld
+    """
+    # Initialize results matrix where arg1 is p value, arg2 is number of solvable gridworlds out of 10
+    results = [[0 for x in range(100)] for y in range(2)]
+    for x in range(100):
+        results[0][x] = x
+
+    # Solve gridworlds
+    for x in range(100):  # probability
+        tempsum = 0
+        for _ in range(10):
+            generategridworld(101, float(x/100), heuristic)
+            tempsum = tempsum + trajectorylen
+        results[1][x] = tempsum/100
+
+    print(results)
+    # # Plot results
+    # plt.scatter(results[0], results[1])  # plotting the column as histogram
+    # plt.show()
+
+
 if __name__ == "__main__":
     dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 0:
+    while not dim.isdigit() or int(dim) < 2:
         dim = input("Enter a valid length. ")
+
     p = input("With what probability will a cell be blocked? ")
     while not isfloat(p) or float(p) > 1 or float(p) < 0:
         p = input("Enter a valid probability. ")
+
+    # Question 7
+    v = input("Set field of view to 1? Y/N ")
+    while v != 'Y' and v != 'y' and v != 'N' and v != 'n':
+        v = input("Enter a valid input. ")
+    fieldofview = True if v != 'Y' or v != 'y' else False
+
+    # Question 9
+    w = input("Assign a weight to the heuristic (enter '1' for default). ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        w = input("Enter a valid weight. ")
+    heuristicweight = float(w)
+
     heuristic = getManhattanDistance
+
     generategridworld(int(dim), float(p), heuristic)
     # generategridworld2()
     printGridworld()
-    solve(heuristic)
+    starttime = time.time()
+    result = solve(heuristic)
     printGridworld()
+    endtime = time.time()
+    if (result is None):
+        print("No solution.")
+
+    trajectorylen = trajectorylen if result is not None else None
+    print("Trajectory length:", trajectorylen)
+    print("Cells processed: ", numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")
+
+    shortestpathindiscovered, shortestpathindiscoveredlen = astar(
+        gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Final Discovered Gridworld: ",
+          shortestpathindiscoveredlen)
+
+    checkfullgridworld = True
+    shortestpath, shortestpathlen = astar(
+        gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Full Gridworld: ",
+          shortestpathlen)
 
     # Question 4
     # solvability(getManhattanDistance)
+    # densityvtrajectorylength(getManhattanDistance)

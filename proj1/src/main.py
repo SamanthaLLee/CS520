@@ -44,21 +44,32 @@ def solvability_range(heuristic):
     Args:
         heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
     """
+    # Initialize constants: range [start, end), difference, # of gridworlds per p
+    start = 15  # inclusive
+    end = 36    # exclusive
+    diff = end - 1 - start
+    cycles = 100
+
     # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
-    results = [[0 for _ in range(20)] for _ in range(2)]
-    for x in range(15, 36):
-        results[0][x] = x
+    results = [[0 for _ in range(diff)] for _ in range(2)]
+    for x in range(start, end):
+        results[0][x] = x/100
 
     # Solve gridworlds
-    for p in range(15, 36):
-        for _ in range(20):
-            solve.generategridworld(101, float(p/100), heuristic)
-            if solve(heuristic) is None:
+    for p in range(start, end):
+        for _ in range(cycles):
+            path, len = solve.astar(
+                solve.gridworld[0][0], heuristic)
+            if path is not None:
                 results[1][p] += 1
+        results[1][p] = (results[1][p]/cycles)*100
 
     checkfullgridworld = False
 
     # Plot results
+    plt.title('Density vs. Solvability')
+    plt.xlabel('Density')
+    plt.ylabel('Percent of Solvable Gridworlds')
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
@@ -66,10 +77,13 @@ def solvability_range(heuristic):
 def compareHeuristics():
     """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
     """
-    global gridworld, checkfullgridworld
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
-    checkfullgridworld = True
+    solve.checkfullgridworld = True
+
+    # Constants: cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
+    cycles = 30
+    max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
     results = [[0 for _ in range(10)] for _ in range(3)]
@@ -78,9 +92,10 @@ def compareHeuristics():
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
     # For a range of [0,9] p values, generate gridworlds
     for p in range(10):
-        # For 5 gridworlds for each p value
+        # For "cycles" gridworlds for each p value
         i = 0
-        while i < 5:
+        redos = 0
+        while i < cycles:
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(
                 101, float(p/10), solve.getManhattanDistance)
@@ -96,17 +111,19 @@ def compareHeuristics():
 
                 # Time the solve
                 start = timeit.default_timer()
-                # If the gridworld is unsolvable, decrement i so 5 solvable gridworlds are tested
+                # If the gridworld is unsolvable, inc redos
                 if solve.solve(heuristic) is None:
-                    # i -= 1
-                    break
+                    redos += 1
+                    # Go to next p if max_redos met/exceeded
+                    if redos >= max_redos:
+                        break
                 stop = timeit.default_timer()
                 results[heur_num][p] += stop - start
             i += 1
 
         # Average out times
         for x in range(3):
-            results[x][p] /= 5
+            results[x][p] /= cycles
 
     # Set back to false
     checkfullgridworld = False

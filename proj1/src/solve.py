@@ -1,7 +1,6 @@
 import random
 from array import *
 from queue import PriorityQueue
-
 from heuristics import *
 from cell import Cell
 
@@ -52,6 +51,7 @@ def generategridworld(dim, p, heuristic):
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
+
 def astar(start, heuristic):
     """Performs the A* algorithm on the gridworld
 
@@ -60,6 +60,7 @@ def astar(start, heuristic):
 
     Returns:
         Cell: The head of a Cell linked list containing the shortest path
+        int: Length of returned final path
     """
     global goal, gridworld, directions, numcellsprocessed
     fringe = PriorityQueue()
@@ -132,13 +133,6 @@ def solve(heuristic):
 
     if path is None:
         return None
-    # if path is not None:
-    #     print("shouldnt be here")
-
-    # printer = path
-    # while(printer is not None):
-    #     print(printer.x, printer.y, printer.h, printer.f)
-    #     printer = printer.child
 
     curr = path
     while(True):
@@ -157,7 +151,6 @@ def solve(heuristic):
         # Run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
-            # print("redo astar")
             curr.seen = True
             path, len = astar(curr.parent, heuristic)
             curr = path
@@ -238,52 +231,6 @@ def printGridworld():
     print(string)
 
 
-
-
-
-
-
-
-
-
-
-def generategridworld2():
-    """Generates a random gridworld based on user inputs"""
-    global goal, gridworld
-
-    # Cells are constructed in the following way:
-    # Cell(g, h, f, blocked, seen, parent)
-    dim = 5
-    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
-    id = 0
-    for i in range(dim):
-        for j in range(dim):
-            gridworld[i][j].id = id
-            id = id + 1
-
-    # Set the goal node
-    goal = gridworld[dim-1][dim-1]
-
-    # Ensure that the start and end positions are unblocked
-    gridworld[0][0].blocked = 0
-    goal.blocked = 0
-
-    # Initialize starting cell values
-    gridworld[0][0].g = 1
-    gridworld[0][0].h = getManhattanDistance(0, 0, goal.x, goal.y, heuristicweight)
-    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
-    gridworld[0][0].seen = True
-
-    gridworld[1][1].blocked = 1
-    gridworld[1][3].blocked = 1
-    gridworld[1][4].blocked = 1
-    gridworld[2][1].blocked = 1
-    gridworld[3][1].blocked = 1
-    gridworld[4][1].blocked = 1
-
-    gridworld[1][2].blocked = 1
-
-
 def astar_backtracking(start, heuristic):
     """Performs the A* algorithm on the gridworld
 
@@ -298,7 +245,7 @@ def astar_backtracking(start, heuristic):
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
-        
+
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -332,7 +279,7 @@ def astar_backtracking(start, heuristic):
                     nextCell.f = nextCell.g + nextCell.h
                     fringe.put((nextCell.f, nextCell))
                     fringeSet.add(nextCell.id)
-                    
+
                     # print("fringe add: ", nextCell)
 
     # Return None if no solution exists - shouldn't happen since should only return None when referencing [0][0]'s parent
@@ -355,6 +302,7 @@ def astar_backtracking(start, heuristic):
     start.parent = oldParent
 
     return start, astarlen
+
 
 def solve_back():
     """

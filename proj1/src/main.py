@@ -5,39 +5,6 @@ import time
 import solve
 
 
-def solvability(heuristic):
-    """Automates Question 4: plot density vs solvability of various p values to find a value 
-        p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
-
-    Args:
-        heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
-    """
-    # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
-    results = [[0 for _ in range(100)] for _ in range(2)]
-    for x in range(100):
-        results[0][x] = x/100
-
-    # Solve gridworlds
-    for p in range(100):
-        for _ in range(30):
-            solve.generategridworld(101, float(p/100), heuristic)
-            solve.checkfullgridworld = True
-            # if solve.solve(heuristic) is not None:
-            #     results[1][p] += 1
-            path, len = solve.astar(
-                solve.gridworld[0][0], heuristic)
-            if path is not None:
-                results[1][p] += 1
-        results[1][p] = (results[1][p]/30)*100
-
-    # Plot results
-    plt.title('Density vs. Solvability')
-    plt.xlabel('Density')
-    plt.ylabel('Percent of Solvable Gridworlds')
-    plt.scatter(results[0], results[1])  # plotting the column as histogram
-    plt.show()
-
-
 def solvability_range(heuristic):
     """Automates Question 4: plot density vs solvability of range of p values to find a value 
         p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
@@ -45,28 +12,34 @@ def solvability_range(heuristic):
     Args:
         heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
     """
-    # Initialize constants: range [start, end], difference, # of gridworlds per p
+
+    # Initialize constants: range [start, end), difference, # of gridworlds per p
     start = 15  # inclusive
-    end = 35    # inclusive
+    end = 35    # exclusive
     diff = end - start
     cycles = 100
+
+    solve.checkfullgridworld = True
 
     # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
     results = [[0 for _ in range(diff)] for _ in range(2)]
     for x in range(diff):
-        results[0][x] = x/100
+        results[0][x] = (x+15)/100
+    print(results)
 
     # Solve gridworlds
-    for p in range(diff):
+    for p in range(start, end):
+        p_index = p - start
+        print(p, p_index)
         for _ in range(cycles):
-            path, len = solve.astar(
-                solve.gridworld[0][0], heuristic)
-            if path is not None:
-                results[1][p] += 1
-        results[1][p] = (results[1][p]/cycles)*100
+            # Generate and solve
+            solve.generategridworld(101, float(p/100), heuristic)
 
-    checkfullgridworld = False
+            if solve.solve(heuristic) is not None:
+                results[1][p_index] += 1
+        results[1][p_index] = (results[1][p_index]/cycles)*100
 
+    print(results)
     # Plot results
     plt.title('Density vs. Solvability')
     plt.xlabel('Density')
@@ -139,6 +112,117 @@ def compare_heuristics():
                     # Go to next p if max_redos met/exceeded
                     if redos >= max_redos:
                         print("max_redos met")
+                        break_var = True
+                    break
+                # Continues with the timer
+                stop_time = timeit.default_timer()
+                results[heur_num][p_index] += stop_time - start_time
+            # Ran thru each heuristic so incr i and next generate new gridworld
+            i += 1
+
+            # Too many unsolvable gridworlds made - give up on this p value
+            if break_var:
+                break_var = False
+                print("break break: moving on to next p")
+                break
+
+        # Average out times for each p
+        for x in range(3):
+            if i != 0:
+                results[x][p_index] /= i
+        print(str(i) + "gridworlds made for p = " + str(p))
+
+    print(results)
+    # Set back to false
+    checkfullgridworld = False
+
+    # Plot results
+    N = 3
+    ind = np.arange(min(len(results[0]), len(results[1]), len(results[2])))
+    width = 0.25
+
+    xvals = results[0]
+    bar1 = plt.bar(ind, xvals, width, color='r')
+
+    yvals = results[1]
+    bar2 = plt.bar(ind+width, yvals, width, color='g')
+
+    zvals = results[2]
+    bar3 = plt.bar(ind+width*2, zvals, width, color='b')
+
+    plt.title('Density vs. Runtime by Heuristic')
+    plt.xlabel('Density')
+    plt.ylabel('Average Time (s)')
+
+    # Make xticks list
+    xtick_list = []
+    for i, x in enumerate(range(start, end, step)):
+        xtick_list.append(str(x/100))
+    plt.xticks(ind+width, xtick_list)
+    plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
+    plt.show()
+
+
+def compare_heuristics_no_redos():
+    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
+    """
+
+    # As per directions, "you may take each gridworld as known, and thus only search once"
+    solve.checkfullgridworld = True
+
+    # Initialize constants:
+    #   range [start, end), difference, # of gridworlds per p
+    #   cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
+    start = 0  # inclusive
+    end = 46    # exclusive
+    step = 5
+    diff = end - 1 - start
+    cycles = 50
+    max_fails = 50
+
+    # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
+
+    heuristics = [solve.getManhattanDistance,
+                  solve.getEuclideanDistance, solve.getChebyshevDistance]
+
+    # For a range of [0,.45] p values, generate gridworlds
+    for p_index, p in enumerate(range(start, end, step)):
+        print(str(p_index) + "th P: " + str(p))
+
+        # "cycles" # of gridworlds for each p value
+        i = 0
+        fails = 0
+        break_var = False
+
+        # Keep making new gridworlds until desired # of solvable gridworlds are made
+        while i < cycles:
+
+            # Generate gridworld as Manhattan distance but manually set later
+            solve.generategridworld(101, float(
+                p/100), solve.getManhattanDistance)
+
+            # Solve the gridworld with each heuristic
+            for heur_num, heuristic in enumerate(heuristics):
+
+                # Initialize starting cell value for each heuristic
+                solve.gridworld[0][0].h = heuristic(
+                    0, 0, solve.goal.x, solve.goal.y, 1)
+                solve.gridworld[0][0].f = solve.gridworld[0][0].g + \
+                    solve.gridworld[0][0].h
+
+                # Time the solve
+                start_time = timeit.default_timer()
+                # If the gridworld is unsolvable, inc redos, dec i and
+                # break -> moves onto next gridworld
+                if solve.solve(heuristic) is None:
+                    fails += 1
+                    print(fails, i)
+
+                    # Go to next p if max_redos met/exceeded
+                    if fails >= max_fails:
+                        print("max_fails met")
                         break_var = True
                     break
                 # Continues with the timer

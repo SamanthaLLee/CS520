@@ -528,7 +528,8 @@ if __name__ == "__main__":
 
     # Question 4
     # solvability(solve.getManhattanDistance)
+    solvability_range(solve.getManhattanDistance)
     # compareHeuristics()
-    # densityvtrajectorylength(solve.getChebyshevDistance)
+    # densityvtrajectorylength(solve.getManhattanDistance)
     # densityvavg2(solve.getChebyshevDistance)
-    compare_heuristics()
+    # compare_heuristics()

@@ -443,7 +443,7 @@ def densityvavg2(heuristic):
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            solve.generategridworld(10, p, heuristic)
+            solve.generategridworld(70, p, heuristic)
             result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
@@ -524,7 +524,7 @@ def compare_weighted_heuristics():
     weight_list = [1, 2, 3, 4]
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
-    solve.checkfullgridworld = True
+    # solve.checkfulgridworld = True
 
     # Initialize results matrix - eg: results[1][3] --> weight's (avg trajectory, runtime) at p=.3
     results = [[[0, 0] for _ in p_list] for _ in weight_list]
@@ -536,44 +536,42 @@ def compare_weighted_heuristics():
 
         # For a range of [0,.3] p values, generate gridworlds
         for p_index, p in enumerate(p_list):
-            print(w_index, p_index)
+            # print(w_index, p_index)
 
             # For n different gridworlds
             num_solvable = 0
-            for _ in range(3):
+            for _ in range(50):
                 # Generate gridworld with Manhattan heuristic
                 solve.generategridworld(101, p, solve.getManhattanDistance)
 
                 # Time the solve
                 start_time = timeit.default_timer()
-
+                solve.trajectorylen = 0
                 # Solve the gridworld with each weight and
                 if solve.solve(solve.getManhattanDistance) is None:
                     continue
 
                 # Continues with the timer
                 stop_time = timeit.default_timer()
-
+                # print("traj:", solve.trajectorylen)
                 results[w_index][p_index][0] += solve.trajectorylen
                 num_solvable += 1
                 results[w_index][p_index][1] += stop_time - start_time
 
             # Average out data for current cell by num_solvable
-            for x in range(4):
-                for y in range(2):
-                    if num_solvable != 0:
-                        results[w_index][p_index][y] /= num_solvable
-            print(str(num_solvable) + "gridworlds succeeded for p = " + str(p))
+
+            for y in range(2):
+                if num_solvable != 0:
+                    results[w_index][p_index][y] /= num_solvable
+            # print(str(num_solvable) + "gridworlds succeeded for p = " + str(p))
 
     print(results)
     # Set back to false
     checkfullgridworld = False
 
-
-
     # Group avg trajs by weight (arg0) then by density (arg1)
     temp1, temp2, temp3, temp4 = [], [], [], []
-    for i in range(4): 
+    for i in range(4):
         temp1.append(results[0][i][0])
         temp2.append(results[1][i][0])
         temp3.append(results[2][i][0])
@@ -584,7 +582,7 @@ def compare_weighted_heuristics():
     # print(temp4)
 
     # Plot avg traj
-    N=4
+    N = 4
     ind = np.arange(N)
     width = 0.20
     bar1 = plt.bar(ind, temp1, width, color='r')
@@ -600,10 +598,9 @@ def compare_weighted_heuristics():
                'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()
 
-
     # Group avg runtimes by weight (arg0) then by density (arg1)
     temp1, temp2, temp3, temp4 = [], [], [], []
-    for i in range(4): 
+    for i in range(4):
         temp1.append(results[0][i][1])
         temp2.append(results[1][i][1])
         temp3.append(results[2][i][1])
@@ -641,58 +638,58 @@ def isfloat(str):
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
 
-    # # Question 7
-    # v = input("Set field of view to 1? Y/N ")
-    # while v != 'Y' and v != 'y' and v != 'N' and v != 'n':
-    #     v = input("Enter a valid input. ")
-    # fieldofview = True if v != 'Y' or v != 'y' else False
+    # Question 7
+    v = input("Set field of view to 1? Y/N ")
+    while v != 'Y' and v != 'y' and v != 'N' and v != 'n':
+        v = input("Enter a valid input. ")
+    fieldofview = True if v != 'Y' or v != 'y' else False
 
-    # # Question 9
-    # w = input("Assign a weight to the heuristic (enter '1' for default). ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     w = input("Enter a valid weight. ")
-    # heuristicweight = float(w)
+    # Question 9
+    w = input("Assign a weight to the heuristic (enter '1' for default). ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        w = input("Enter a valid weight. ")
+    heuristicweight = float(w)
 
-    # heuristic = solve.getManhattanDistance
+    heuristic = solve.getManhattanDistance
 
-    # solve.generategridworld(int(dim), float(p), heuristic)
-    # # generategridworld2()
-    # solve.printGridworld()
-    # starttime = time.time()
-    # result = solve.solve(heuristic)
-    # solve.printGridworld()
-    # endtime = time.time()
-    # if (result is None):
-    #     print("No solution.")
+    solve.generategridworld(int(dim), float(p), heuristic)
+    # generategridworld2()
+    solve.printGridworld()
+    starttime = time.time()
+    result = solve.solve(heuristic)
+    solve.printGridworld()
+    endtime = time.time()
+    if (result is None):
+        print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
+    solve.trajectorylen = solve.trajectorylen if result is not None else None
+    print("Trajectory length:", solve.trajectorylen)
+    print("Cells processed: ", solve.numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")
 
-    # shortestpathindiscovered, shortestpathindiscoveredlen = solve.astar(
-    #     solve.gridworld[0][0], heuristic)
-    # print("Length of Shortest Path in Final Discovered Gridworld: ",
-    #       shortestpathindiscoveredlen)
+    shortestpathindiscovered, shortestpathindiscoveredlen = solve.astar(
+        solve.gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Final Discovered Gridworld: ",
+          shortestpathindiscoveredlen)
 
-    # solve.checkfullgridworld = True
-    # shortestpath, shortestpathlen = solve.astar(
-    #     solve.gridworld[0][0], heuristic)
-    # print("Length of Shortest Path in Full Gridworld: ",
-    #       shortestpathlen)
+    solve.checkfullgridworld = True
+    shortestpath, shortestpathlen = solve.astar(
+        solve.gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Full Gridworld: ",
+          shortestpathlen)
 
     # Question 4
     # solvability(solve.getManhattanDistance)
     # solvability_range(solve.getManhattanDistance)
-    compare_weighted_heuristics()
+    # compare_weighted_heuristics()
     # compare_heuristics()
     # compare_heuristics_no_redos()
     # solve.haslimitedview = True

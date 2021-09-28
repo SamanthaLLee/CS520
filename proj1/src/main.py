@@ -194,6 +194,7 @@ def densityvtrajectorylength(heuristic):
                 tempsum = tempsum + solve.trajectorylen
         p += interval
         results[1][x] = tempsum/trialsperp
+        trialsperp = 40
         print(x, "probabilities done")
 
     # print(results)
@@ -240,6 +241,7 @@ def densityvavg1(heuristic):
                 tempsum = tempsum + currratio
         p += interval
         results[1][x] = tempsum/trialsperp
+        trialsperp = 40
         print(x, "probabilities done")
 
     # print(results)
@@ -259,7 +261,7 @@ def densityvavg2(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
     global checkfullgridworld
-    trialsperp = 10
+    trialsperp = 20
     interval = .33/10
     p = 0
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
@@ -287,10 +289,13 @@ def densityvavg2(heuristic):
                 tempsum = tempsum + currratio
         print("done with", x)
         results[1][x] = tempsum/trialsperp
+        trialsperp = 20
         p += interval
 
     print(results)
     # Plot results
+    plt.title(
+        'Density vs. Shortest Path in Discovered Gridworld/Shortest Path in Full Gridworld')
     plt.xlabel('Density')
     plt.ylabel(
         'Avg (Shortest Path in Discovered Gridworld / Shortest Path in Full Gridworld)')
@@ -307,27 +312,34 @@ def densityvcellsprocessed(heuristic):
     """
     global numcellsprocessed
 
-    trialsperp = 20
+    trialsperp = 40
+    interval = .33/10
+    p = 0
 
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
 
+    p = 0
     # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            numcellsprocessed = 0
-            solve.generategridworld(10, float(x/100), heuristic)
-            result = solve(heuristic)
+            solve.numcellsprocessed = 0
+            solve.generategridworld(101, p, heuristic)
+            result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp-1
             else:
-                tempsum = tempsum + numcellsprocessed
+                tempsum = tempsum + solve.numcellsprocessed
         results[1][x] = tempsum/trialsperp
+        p += interval
+        trialsperp = 40
+        print("done with", x)
 
-    print(results)
+    plt.title('Density vs. Cells Processed')
     plt.xlabel('Density')
     plt.ylabel('Avg Number of Cells Processed by Repeated A*')
     # Plot results
@@ -399,3 +411,4 @@ if __name__ == "__main__":
     # densityvtrajectorylength(solve.getChebyshevDistance)
     densityvavg2(solve.getChebyshevDistance)
     # compare_heuristics()
+    # densityvcellsprocessed(solve.getChebyshevDistance)

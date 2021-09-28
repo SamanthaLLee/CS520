@@ -1,7 +1,6 @@
 import random
 from array import *
 from queue import PriorityQueue
-
 from heuristics import *
 from cell import Cell
 
@@ -52,6 +51,7 @@ def generategridworld(dim, p, heuristic):
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
+
 def astar(start, heuristic):
     """Performs the A* algorithm on the gridworld
 
@@ -60,6 +60,7 @@ def astar(start, heuristic):
 
     Returns:
         Cell: The head of a Cell linked list containing the shortest path
+        int: Length of returned final path
     """
     global goal, gridworld, directions, numcellsprocessed
     fringe = PriorityQueue()
@@ -132,13 +133,6 @@ def solve(heuristic):
 
     if path is None:
         return None
-    # if path is not None:
-    #     print("shouldnt be here")
-
-    # printer = path
-    # while(printer is not None):
-    #     print(printer.x, printer.y, printer.h, printer.f)
-    #     printer = printer.child
 
     curr = path
     while(True):
@@ -157,7 +151,6 @@ def solve(heuristic):
         # Run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
-            # print("redo astar")
             curr.seen = True
             path, len = astar(curr.parent, heuristic)
             curr = path
@@ -256,7 +249,7 @@ def astar_backtracking(start, heuristic):
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
-        
+
     # Add start to fringe
     curr = start
     fringe.put((curr.f, curr))
@@ -290,7 +283,7 @@ def astar_backtracking(start, heuristic):
                     nextCell.f = nextCell.g + nextCell.h
                     fringe.put((nextCell.f, nextCell))
                     fringeSet.add(nextCell.id)
-                    
+
                     # print("fringe add: ", nextCell)
 
     # Return None if no solution exists - shouldn't happen since should only return None when referencing [0][0]'s parent

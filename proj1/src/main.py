@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import timeit
-import time
 import solve
 import backtrack
 
@@ -40,7 +39,6 @@ def solvability_range(heuristic):
                 results[1][p_index] += 1
         results[1][p_index] = (results[1][p_index]/cycles)*100
 
-    print(results)
     # Plot results
     plt.title('Density vs. Solvability')
     plt.xlabel('Density')
@@ -166,8 +164,7 @@ def compare_heuristics():
 
 
 def compare_heuristics_no_redos():
-    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
-    """
+    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities"""
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
     solve.checkfullgridworld = True
@@ -335,7 +332,7 @@ def densityvtrajectorylength(heuristic):
     """Automates Question 7: plot density vs trajectory 
 
     Args:
-        heuristic (function([int][int])): passes heuristic  into generategridworld
+        heuristic (function([int][int])): passes heuristic into generategridworld
     """
 
     trialsperp = 40
@@ -366,7 +363,6 @@ def densityvtrajectorylength(heuristic):
         trialsperp = 40
         print(x, "probabilities done")
 
-    # print(results)
     # Plot results
     plt.title('Density vs. Trajectory')
     plt.xlabel('Density')
@@ -380,7 +376,7 @@ def densityvavg1(heuristic):
     """Automates Question 7: plot Density vs Average (Length of Trajectory / Length of Shortest Path in Final Discovered Gridworld)
 
     Args:
-        heuristic (function([int][int])): passes heuristic  into generategridworld
+        heuristic (function([int][int])): passes heuristic into generategridworld
     """
 
     trialsperp = 40
@@ -411,9 +407,7 @@ def densityvavg1(heuristic):
         p += interval
         results[1][x] = tempsum/trialsperp
         trialsperp = 40
-        print(x, "probabilities done")
 
-    # print(results)
     # Plot results
     plt.title('Density vs. Trajectory/Shortest Path in Discovered Gridworld')
     plt.xlabel('Density')
@@ -424,7 +418,7 @@ def densityvavg1(heuristic):
 
 
 def densityvavg2(heuristic):
-    """Automates Question 7: plot Density vs Average (Length of Trajectory / Length of Shortest Path in Final Discovered Gridworld)
+    """Automates Question 7: plot Density vs Average (Length of Shortest Path in Final Discovered Gridworld / Length of Shortest Path in Full Gridworld)
 
     Args:
         heuristic (function([int][int])): passes heuristic  into generategridworld
@@ -441,10 +435,10 @@ def densityvavg2(heuristic):
 
     p = 0
     # Solve gridworlds
-    for x in range(10):  # probability
+    for x in range(10):
         tempsum = 0
         for _ in range(trialsperp):
-            solve.generategridworld(10, p, heuristic)
+            solve.generategridworld(70, p, heuristic)
             result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp - 1
@@ -456,12 +450,10 @@ def densityvavg2(heuristic):
                     solve.gridworld[0][0], heuristic)
                 currratio = discoveredpathlen/fullpathlen
                 tempsum = tempsum + currratio
-        print("done with", x)
         results[1][x] = tempsum/trialsperp
         trialsperp = 20
         p += interval
 
-    print(results)
     # Plot results
     plt.title(
         'Density vs. Shortest Path in Discovered Gridworld/Shortest Path in Full Gridworld')
@@ -474,12 +466,11 @@ def densityvavg2(heuristic):
 
 
 def densityvcellsprocessed(heuristic):
-    """Automates Question 7: plot density vs trajectory 
+    """Automates Question 7: plot density vs cells processed 
 
     Args:
-        heuristic (function([int][int])): passes heuristic  into generategridworld
+        heuristic (function([int][int])): passes heuristic into generategridworld
     """
-    global numcellsprocessed
 
     trialsperp = 40
     interval = .33/10
@@ -493,7 +484,7 @@ def densityvcellsprocessed(heuristic):
 
     p = 0
     # Solve gridworlds
-    for x in range(10):  # probability
+    for x in range(10):
         tempsum = 0
         for _ in range(trialsperp):
             solve.numcellsprocessed = 0
@@ -506,12 +497,11 @@ def densityvcellsprocessed(heuristic):
         results[1][x] = tempsum/trialsperp
         p += interval
         trialsperp = 40
-        print("done with", x)
 
+    # Plot results
     plt.title('Density vs. Cells Processed')
     plt.xlabel('Density')
     plt.ylabel('Avg Number of Cells Processed by Repeated A*')
-    # Plot results
     plt.scatter(results[0], results[1])  # plotting the column as histogram
     plt.show()
 
@@ -525,7 +515,7 @@ def compare_weighted_heuristics():
     weight_list = [1, 2, 3, 4]
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
-    solve.checkfullgridworld = True
+    # solve.checkfulgridworld = True
 
     # Initialize results matrix - eg: results[1][3] --> weight's (avg trajectory, runtime) at p=.3
     results = [[[0, 0] for _ in p_list] for _ in weight_list]
@@ -537,7 +527,7 @@ def compare_weighted_heuristics():
 
         # For a range of [0,.3] p values, generate gridworlds
         for p_index, p in enumerate(p_list):
-            print(w_index, p_index)
+            # print(w_index, p_index)
 
             # For n different gridworlds
             num_solvable = 0
@@ -547,14 +537,14 @@ def compare_weighted_heuristics():
 
                 # Time the solve
                 start_time = timeit.default_timer()
-
+                solve.trajectorylen = 0
                 # Solve the gridworld with each weight and
                 if solve.solve(solve.getManhattanDistance) is None:
                     continue
 
                 # Continues with the timer
                 stop_time = timeit.default_timer()
-
+                # print("traj:", solve.trajectorylen)
                 results[w_index][p_index][0] += solve.trajectorylen
                 num_solvable += 1
                 results[w_index][p_index][1] += stop_time - start_time
@@ -569,22 +559,16 @@ def compare_weighted_heuristics():
     # Set back to false
     checkfullgridworld = False
 
-
-
     # Group avg trajs by weight (arg0) then by density (arg1)
     temp1, temp2, temp3, temp4 = [], [], [], []
-    for i in range(4): 
+    for i in range(4):
         temp1.append(results[0][i][0])
         temp2.append(results[1][i][0])
         temp3.append(results[2][i][0])
         temp4.append(results[3][i][0])
-    # print(temp1)
-    # print(temp2)
-    # print(temp3)
-    # print(temp4)
 
     # Plot avg traj
-    N=4
+    N = 4
     ind = np.arange(N)
     width = 0.20
     bar1 = plt.bar(ind, temp1, width, color='r')
@@ -600,18 +584,13 @@ def compare_weighted_heuristics():
                'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()
 
-
     # Group avg runtimes by weight (arg0) then by density (arg1)
     temp1, temp2, temp3, temp4 = [], [], [], []
-    for i in range(4): 
+    for i in range(4):
         temp1.append(results[0][i][1])
         temp2.append(results[1][i][1])
         temp3.append(results[2][i][1])
         temp4.append(results[3][i][1])
-    # print(temp1)
-    # print(temp2)
-    # print(temp3)
-    # print(temp4)
 
     # Plot avg runtime
     N = 4

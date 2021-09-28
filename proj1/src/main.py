@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import timeit
 import solve
 import backtrack
-
+import time
 
 def solvability_range(heuristic):
     """Automates Question 4: plot density vs solvability of range of p values to find a value 
@@ -621,58 +621,50 @@ def isfloat(str):
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
 
-    # # Question 7
-    # v = input("Set field of view to 1? Y/N ")
-    # while v != 'Y' and v != 'y' and v != 'N' and v != 'n':
-    #     v = input("Enter a valid input. ")
-    # fieldofview = True if v != 'Y' or v != 'y' else False
+    # Question 7
+    v = input("Set field of view to 1? Y/N ")
+    while v != 'Y' and v != 'y' and v != 'N' and v != 'n':
+        v = input("Enter a valid input. ")
+    fieldofview = True if v != 'Y' or v != 'y' else False
 
-    # # Question 9
-    # w = input("Assign a weight to the heuristic (enter '1' for default). ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     w = input("Enter a valid weight. ")
-    # heuristicweight = float(w)
+    # Question 9
+    w = input("Assign a weight to the heuristic (enter '1' for default). ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        w = input("Enter a valid weight. ")
+    heuristicweight = float(w)
 
-    # heuristic = solve.getManhattanDistance
+    heuristic = solve.getManhattanDistance
 
-    # solve.generategridworld(int(dim), float(p), heuristic)
-    # solve.generategridworld2()
-    # solve.generategridworld(int(dim), float(p), solve.getManhattanDistance)
-    # solve.printGridworld()
-    # solve.checkfullgridworld = False
-    # solve.solve_back()
-    # solve.printGridworld()
-    # solve.printGridworld()
-    # starttime = time.time()
-    # result = solve.solve(heuristic)
-    # solve.printGridworld()
-    # endtime = time.time()
-    # if (result is None):
-    #     print("No solution.")
+    starttime = time.time()
+    result = solve.solve(heuristic)
+    solve.printGridworld()
+    endtime = time.time()
+    if (result is None):
+        print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
+    solve.trajectorylen = solve.trajectorylen if result is not None else None
+    print("Trajectory length:", solve.trajectorylen)
+    print("Cells processed: ", solve.numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")
 
-    # shortestpathindiscovered, shortestpathindiscoveredlen = solve.astar(
-    #     solve.gridworld[0][0], heuristic)
-    # print("Length of Shortest Path in Final Discovered Gridworld: ",
-    #       shortestpathindiscoveredlen)
+    shortestpathindiscovered, shortestpathindiscoveredlen = solve.astar(
+        solve.gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Final Discovered Gridworld: ",
+          shortestpathindiscoveredlen)
 
-    # solve.checkfullgridworld = True
-    # shortestpath, shortestpathlen = solve.astar(
-    #     solve.gridworld[0][0], heuristic)
-    # print("Length of Shortest Path in Full Gridworld: ",
-    #       shortestpathlen)
+    solve.checkfullgridworld = True
+    shortestpath, shortestpathlen = solve.astar(
+        solve.gridworld[0][0], heuristic)
+    print("Length of Shortest Path in Full Gridworld: ",
+          shortestpathlen)
 
     # Question 4
     # solvability(solve.getManhattanDistance)
@@ -685,4 +677,7 @@ if __name__ == "__main__":
     # densityvavg1(solve.getChebyshevDistance)
     # densityvavg2(solve.getChebyshevDistance)
     # densityvcellsprocessed(solve.getChebyshevDistance)
-    backtracking_runtime()
+
+    # Question 8
+    # backtrack.backtracking_runtime()
+    # backtrack.backtracking_average_traj()

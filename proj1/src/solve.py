@@ -240,49 +240,7 @@ def printGridworld():
 
 
 
-
-
-
-
-
-
-
-def generategridworld2():
-    """Generates a random gridworld based on user inputs"""
-    global goal, gridworld
-
-    # Cells are constructed in the following way:
-    # Cell(g, h, f, blocked, seen, parent)
-    dim = 5
-    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
-    id = 0
-    for i in range(dim):
-        for j in range(dim):
-            gridworld[i][j].id = id
-            id = id + 1
-
-    # Set the goal node
-    goal = gridworld[dim-1][dim-1]
-
-    # Ensure that the start and end positions are unblocked
-    gridworld[0][0].blocked = 0
-    goal.blocked = 0
-
-    # Initialize starting cell values
-    gridworld[0][0].g = 1
-    gridworld[0][0].h = getManhattanDistance(0, 0, goal.x, goal.y, heuristicweight)
-    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
-    gridworld[0][0].seen = True
-
-    gridworld[1][1].blocked = 1
-    gridworld[1][3].blocked = 1
-    gridworld[1][4].blocked = 1
-    gridworld[2][1].blocked = 1
-    gridworld[3][1].blocked = 1
-    gridworld[4][1].blocked = 1
-
-    gridworld[1][2].blocked = 1
-
+# Backtracking stuff
 
 def astar_backtracking(start, heuristic):
     """Performs the A* algorithm on the gridworld
@@ -337,8 +295,6 @@ def astar_backtracking(start, heuristic):
 
     # Return None if no solution exists - shouldn't happen since should only return None when referencing [0][0]'s parent
     if len(fringeSet) == 0:
-        print("A* back: len fringe = 0, unsolvable")
-        print(fringeSet)
         return None, None
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
@@ -356,34 +312,24 @@ def astar_backtracking(start, heuristic):
 
     return start, astarlen
 
-def solve_back():
+def solve_back(heuristic):
     """
     Solves the gridworld using Repeated Forward A*.
     """
     global goal, gridworld, directions, trajectorylen
 
-    path, len = astar_backtracking(gridworld[0][0], getManhattanDistance)
+    # Initial path
+    path, len = astar_backtracking(gridworld[0][0], heuristic)
 
     if path is None:
-        print("solve_back: unsolvable gridworld")
         return None
-    print('AFTER INIT SEARCCHHHHH')
-    # if path is not None:
-    #     print("solvable")
-
-    # printer = path
-    # while(printer is not None):
-    #     print(printer.x, printer.y, printer.h, printer.f)
-    #     printer = printer.child
 
     curr = path
+
+    # Loop until find goal or determine unsolvability
     while(True):
-
         if(curr is None):
-            # print("unsolvable gridworld")
             return None
-
-        # print("curr", curr.x, curr.y)
 
         trajectorylen = trajectorylen + 1
         # Goal found
@@ -396,22 +342,17 @@ def solve_back():
             trajectorylen = trajectorylen - 2
             curr.seen = True
             curr = curr.parent
-            print("redo astar at: ", curr)
 
             # Backtrack if curr is stuck until a parent has a valid, unexplored neighbor cell
             while not has_valid_neighbors(curr):
-                print("BACKTRACKINGGGGGGGGGGGGGGGGGGGGG")
-                # print(f"cell: ({start.x}, {start.y}) doesn't have valid neighbors.")
                 curr = curr.parent
                 trajectorylen += 1
 
                 # Unsolvable if no valid neighbors are found - backtracks to gridworld's starting cell's parent
                 if curr is None:
-                    print("A* ret none")
                     return None, None
-                print("restarting astar at: ", curr)
 
-            path, len = astar_backtracking(curr, getManhattanDistance)
+            path, len = astar_backtracking(curr, heuristic)
             curr = path
 
         # Continue along A* path

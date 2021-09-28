@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import timeit
 import time
 import solve
+import backtrack
 
 
 def solvability_range(heuristic):
@@ -630,6 +631,7 @@ def compare_weighted_heuristics():
     plt.show()
 
 
+
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
     try:
@@ -640,13 +642,13 @@ def isfloat(str):
 
 
 if __name__ == "__main__":
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 2:
-        dim = input("Enter a valid length. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 2:
+    #     dim = input("Enter a valid length. ")
 
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
+    # p = input("With what probability will a cell be blocked? ")
+    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
+    #     p = input("Enter a valid probability. ")
 
     # # Question 7
     # v = input("Set field of view to 1? Y/N ")
@@ -664,11 +666,11 @@ if __name__ == "__main__":
 
     # solve.generategridworld(int(dim), float(p), heuristic)
     # solve.generategridworld2()
-    solve.generategridworld(int(dim), float(p), solve.getManhattanDistance)
-    solve.printGridworld()
-    solve.checkfullgridworld = False
-    solve.solve_back()
-    solve.printGridworld()
+    # solve.generategridworld(int(dim), float(p), solve.getManhattanDistance)
+    # solve.printGridworld()
+    # solve.checkfullgridworld = False
+    # solve.solve_back()
+    # solve.printGridworld()
     # solve.printGridworld()
     # starttime = time.time()
     # result = solve.solve(heuristic)
@@ -704,3 +706,4 @@ if __name__ == "__main__":
     # densityvavg1(solve.getChebyshevDistance)
     # densityvavg2(solve.getChebyshevDistance)
     # densityvcellsprocessed(solve.getChebyshevDistance)
+    backtracking_runtime()

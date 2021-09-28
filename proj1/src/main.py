@@ -28,7 +28,7 @@ def solvability_range(heuristic):
     print(results)
 
     # Solve gridworlds
-    for p in range(start,end):
+    for p in range(start, end):
         p_index = p - start
         print(p, p_index)
         for _ in range(cycles):
@@ -62,7 +62,7 @@ def compare_heuristics():
     end = 46    # exclusive
     step = 5
     diff = end - 1 - start
-    cycles = 50
+    cycles = 10
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
@@ -83,12 +83,13 @@ def compare_heuristics():
         redos = 0
         break_var = False
 
-        # Keep making new gridworlds until desired # of solvable gridworlds are make
+        # Keep making new gridworlds until desired # of solvable gridworlds are made
         while i < cycles:
 
+            print("density:", p/100)
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(
-                101, float(p/100), solve.getManhattanDistance)
+                10, float(p/100), solve.getManhattanDistance)
 
             # Solve the gridworld with each heuristic
             for heur_num, heuristic in enumerate(heuristics):
@@ -181,7 +182,8 @@ def compare_heuristics_no_redos():
     max_fails = 5
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)//step + 1)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
@@ -191,12 +193,13 @@ def compare_heuristics_no_redos():
         print(str(p_index) + "th P: " + str(p))
 
         num_fail = 0
-        
+
         # Keep making new gridworlds until desired # of solvable gridworlds are made
         for _ in range(cycles):
 
             # Generate gridworld as Manhattan distance but manually set later
-            solve.generategridworld(101, float(p/100), solve.getManhattanDistance)
+            solve.generategridworld(101, float(
+                p/100), solve.getManhattanDistance)
 
             # Solve the gridworld with each heuristic
             for heur_num, heuristic in enumerate(heuristics):
@@ -216,7 +219,7 @@ def compare_heuristics_no_redos():
                 # Continues with the timer
                 stop_time = timeit.default_timer()
                 results[heur_num][p_index] += stop_time - start_time
-        
+
         num_solv = cycles - num_fail
 
         # Average out times for each p
@@ -325,7 +328,6 @@ def compareHeuristics_old():
                '.4', '.5', '.6', '.7', '.8', '.9'])
     plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
     plt.show()
-
 
 
 def densityvtrajectorylength(heuristic):
@@ -525,8 +527,8 @@ def compare_weighted_heuristics():
     solve.checkfullgridworld = True
 
     # Initialize results matrix - eg: results[1][3] --> weight's (avg trajectory, runtime) at p=.3
-    results = [[[0,0] for _ in p_list] for _ in weight_list]
-        
+    results = [[[0, 0] for _ in p_list] for _ in weight_list]
+
     # For each weight, set solve.py's heuristicweight
     for w_index, weight in enumerate(weight_list):
         # Set the heuristic weight
@@ -545,7 +547,7 @@ def compare_weighted_heuristics():
                 # Time the solve
                 start_time = timeit.default_timer()
 
-                # Solve the gridworld with each weight and 
+                # Solve the gridworld with each weight and
                 if solve.solve(solve.getManhattanDistance) is None:
                     continue
 
@@ -566,6 +568,7 @@ def compare_weighted_heuristics():
     print(results)
     # Set back to false
     checkfullgridworld = False
+
 
 
     # Group avg trajs by weight (arg0) then by density (arg1)
@@ -593,7 +596,8 @@ def compare_weighted_heuristics():
     plt.xlabel('Density')
     plt.ylabel('Average Trajectory')
     plt.xticks(ind+width, p_list)
-    plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1', 'Weight = 2', 'Weight = 3', 'Weight = 4'))
+    plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1',
+               'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()
 
 
@@ -610,7 +614,7 @@ def compare_weighted_heuristics():
     # print(temp4)
 
     # Plot avg runtime
-    N=4
+    N = 4
     ind = np.arange(N)
     width = 0.20
     bar1 = plt.bar(ind, temp1, width, color='r')
@@ -622,10 +626,9 @@ def compare_weighted_heuristics():
     plt.xlabel('Density')
     plt.ylabel('Average Runtime')
     plt.xticks(ind+width, p_list)
-    plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1', 'Weight = 2', 'Weight = 3', 'Weight = 4'))
+    plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1',
+               'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()
-
-
 
 
 def isfloat(str):
@@ -688,10 +691,12 @@ if __name__ == "__main__":
 
     # Question 4
     # solvability(solve.getManhattanDistance)
-    # compareHeuristics()
-    # densityvtrajectorylength(solve.getChebyshevDistance)
-    # densityvavg2(solve.getChebyshevDistance)
-    # compare_heuristics_no_redos()
-    # compare_heuristics_no_redos()
-    compare_weighted_heuristics()
     # solvability_range(solve.getManhattanDistance)
+    # compareHeuristics()
+    # compare_heuristics()
+    # compare_heuristics_no_redos()
+    solve.haslimitedview = True
+    # densityvtrajectorylength(solve.getChebyshevDistance)
+    # densityvavg1(solve.getChebyshevDistance)
+    # densityvavg2(solve.getChebyshevDistance)
+    densityvcellsprocessed(solve.getChebyshevDistance)

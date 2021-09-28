@@ -15,7 +15,7 @@ goal = None
 directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 heuristicweight = 1
-haslimitedview = False
+haslimitedview = True
 numcellsprocessed = 0
 trajectorylen = 0
 checkfullgridworld = False

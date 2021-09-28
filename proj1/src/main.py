@@ -540,7 +540,7 @@ def compare_weighted_heuristics():
 
             # For n different gridworlds
             num_solvable = 0
-            for _ in range(3):
+            for _ in range(50):
                 # Generate gridworld with Manhattan heuristic
                 solve.generategridworld(101, p, solve.getManhattanDistance)
 
@@ -559,10 +559,9 @@ def compare_weighted_heuristics():
                 results[w_index][p_index][1] += stop_time - start_time
 
             # Average out data for current cell by num_solvable
-            for x in range(4):
-                for y in range(2):
-                    if num_solvable != 0:
-                        results[w_index][p_index][y] /= num_solvable
+            for y in range(2):
+                if num_solvable != 0:
+                    results[w_index][p_index][y] /= num_solvable
             print(str(num_solvable) + "gridworlds succeeded for p = " + str(p))
 
     print(results)
@@ -641,13 +640,13 @@ def isfloat(str):
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
 
     # # Question 7
     # v = input("Set field of view to 1? Y/N ")
@@ -664,7 +663,12 @@ if __name__ == "__main__":
     # heuristic = solve.getManhattanDistance
 
     # solve.generategridworld(int(dim), float(p), heuristic)
-    # # generategridworld2()
+    # solve.generategridworld2()
+    solve.generategridworld(int(dim), float(p), solve.getManhattanDistance)
+    solve.printGridworld()
+    solve.checkfullgridworld = False
+    solve.solve_back()
+    solve.printGridworld()
     # solve.printGridworld()
     # starttime = time.time()
     # result = solve.solve(heuristic)
@@ -692,7 +696,7 @@ if __name__ == "__main__":
     # Question 4
     # solvability(solve.getManhattanDistance)
     # solvability_range(solve.getManhattanDistance)
-    compare_weighted_heuristics()
+    # compare_weighted_heuristics()
     # compare_heuristics()
     # compare_heuristics_no_redos()
     # solve.haslimitedview = True

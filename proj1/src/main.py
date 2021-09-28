@@ -66,7 +66,8 @@ def compare_heuristics():
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)//step + 1)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
@@ -81,7 +82,7 @@ def compare_heuristics():
         i = 0
         redos = 0
         break_var = False
-        
+
         # Keep making new gridworlds until desired # of solvable gridworlds are make
         while i < cycles:
 
@@ -100,8 +101,8 @@ def compare_heuristics():
 
                 # Time the solve
                 start_time = timeit.default_timer()
-                # If the gridworld is unsolvable, inc redos, dec i and 
-                    # break -> moves onto next gridworld
+                # If the gridworld is unsolvable, inc redos, dec i and
+                # break -> moves onto next gridworld
                 if solve.solve(heuristic) is None:
                     redos += 1
                     if i > 0:
@@ -303,6 +304,7 @@ def densityvtrajectorylength(heuristic):
                 tempsum = tempsum + solve.trajectorylen
         p += interval
         results[1][x] = tempsum/trialsperp
+        trialsperp = 40
         print(x, "probabilities done")
 
     # print(results)
@@ -349,6 +351,7 @@ def densityvavg1(heuristic):
                 tempsum = tempsum + currratio
         p += interval
         results[1][x] = tempsum/trialsperp
+        trialsperp = 40
         print(x, "probabilities done")
 
     # print(results)
@@ -368,7 +371,7 @@ def densityvavg2(heuristic):
         heuristic (function([int][int])): passes heuristic  into generategridworld
     """
     global checkfullgridworld
-    trialsperp = 10
+    trialsperp = 20
     interval = .33/10
     p = 0
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
@@ -396,10 +399,13 @@ def densityvavg2(heuristic):
                 tempsum = tempsum + currratio
         print("done with", x)
         results[1][x] = tempsum/trialsperp
+        trialsperp = 20
         p += interval
 
     print(results)
     # Plot results
+    plt.title(
+        'Density vs. Shortest Path in Discovered Gridworld/Shortest Path in Full Gridworld')
     plt.xlabel('Density')
     plt.ylabel(
         'Avg (Shortest Path in Discovered Gridworld / Shortest Path in Full Gridworld)')
@@ -416,27 +422,34 @@ def densityvcellsprocessed(heuristic):
     """
     global numcellsprocessed
 
-    trialsperp = 20
+    trialsperp = 40
+    interval = .33/10
+    p = 0
 
     # Initialize results matrix where arg1 is p value, arg2 is avg trajectory len
     results = [[0 for x in range(10)] for y in range(2)]
     for x in range(10):
-        results[0][x] = x/10
+        results[0][x] = p
+        p += interval
 
+    p = 0
     # Solve gridworlds
     for x in range(10):  # probability
         tempsum = 0
         for _ in range(trialsperp):
-            numcellsprocessed = 0
-            solve.generategridworld(10, float(x/100), heuristic)
-            result = solve(heuristic)
+            solve.numcellsprocessed = 0
+            solve.generategridworld(101, p, heuristic)
+            result = solve.solve(heuristic)
             if result is None:
                 trialsperp = trialsperp-1
             else:
-                tempsum = tempsum + numcellsprocessed
+                tempsum = tempsum + solve.numcellsprocessed
         results[1][x] = tempsum/trialsperp
+        p += interval
+        trialsperp = 40
+        print("done with", x)
 
-    print(results)
+    plt.title('Density vs. Cells Processed')
     plt.xlabel('Density')
     plt.ylabel('Avg Number of Cells Processed by Repeated A*')
     # Plot results
@@ -458,12 +471,12 @@ def compare_weighted_heuristics():
     cycles = 50
     max_redos = 30
 
-    
     # Compare 4 p's per weight vs avg length
     # p = [0, .1, .2, .3]
     # weights = [1, 2, 3, 4]
-    # Initialize results matrix - eg: results[1][3] --> 
-    results = [[0 for _ in range((end - 1 - start)//step + 1)] for _ in range(3)]
+    # Initialize results matrix - eg: results[1][3] -->
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
@@ -535,6 +548,7 @@ def compare_weighted_heuristics():
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
     plt.show()
+
 
 def isfloat(str):
     """Determines whether a given string can be converted to float"""

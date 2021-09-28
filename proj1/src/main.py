@@ -178,7 +178,7 @@ def compare_heuristics_no_redos():
     step = 5
     diff = end - 1 - start
     cycles = 50
-    max_fails = 50
+    max_fails = 20
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
     results = [[0 for _ in range((end - 1 - start)//step + 1)] for _ in range(3)]
@@ -190,13 +190,10 @@ def compare_heuristics_no_redos():
     for p_index, p in enumerate(range(start, end, step)):
         print(str(p_index) + "th P: " + str(p))
 
-        # "cycles" # of gridworlds for each p value
-        i = 0
-        fails = 0
-        break_var = False
+        num_fail = 0
         
         # Keep making new gridworlds until desired # of solvable gridworlds are made
-        while i < cycles:
+        for _ in range(cycles):
 
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(101, float(p/100), solve.getManhattanDistance)
@@ -212,34 +209,21 @@ def compare_heuristics_no_redos():
 
                 # Time the solve
                 start_time = timeit.default_timer()
-                # If the gridworld is unsolvable, inc redos, dec i and 
-                    # break -> moves onto next gridworld
+                # If the gridworld is unsolvable, break -> moves onto next gridworld
                 if solve.solve(heuristic) is None:
-                    fails += 1
-                    print(fails, i)
-
-                    # Go to next p if max_redos met/exceeded
-                    if fails >= max_fails:
-                        print("max_fails met")
-                        break_var = True
+                    num_fail += 1
                     break
                 # Continues with the timer
                 stop_time = timeit.default_timer()
                 results[heur_num][p_index] += stop_time - start_time
-            # Ran thru each heuristic so incr i and next generate new gridworld
-            i += 1
-
-            # Too many unsolvable gridworlds made - give up on this p value
-            if break_var:
-                break_var = False
-                print("break break: moving on to next p")
-                break
+        
+        num_solv = cycles - num_fail
 
         # Average out times for each p
         for x in range(3):
-            if i != 0:
-                results[x][p_index] /= i
-        print(str(i) + "gridworlds made for p = " + str(p))
+            if num_solv != 0:
+                results[x][p_index] /= num_solv
+        print(str(num_solv) + "gridworlds succeeded for p = " + str(p))
 
     print(results)
     # Set back to false
@@ -613,5 +597,5 @@ if __name__ == "__main__":
     # compareHeuristics()
     # densityvtrajectorylength(solve.getChebyshevDistance)
     # densityvavg2(solve.getChebyshevDistance)
-    # compare_heuristics()
-    solvability_range(solve.getManhattanDistance)
+    compare_heuristics_no_redos()
+    # solvability_range(solve.getManhattanDistance)

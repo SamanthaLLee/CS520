@@ -148,7 +148,7 @@ def solve(heuristic):
     path, len = astar(gridworld[0][0], heuristic)
 
     if path is None:
-        print("unsolvable gridworld")
+        # print("unsolvable gridworld")
         return None
     # if path is not None:
     #     print("shouldnt be here")

@@ -514,7 +514,7 @@ def densityvcellsprocessed(heuristic):
 
 
 def compare_weighted_heuristics():
-    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
+    """Automates Question 9: compares heuristic weight and density vs avg traj and avg runtime
     """
 
     # Compare 4 p's per weight vs avg length
@@ -567,69 +567,60 @@ def compare_weighted_heuristics():
     # Set back to false
     checkfullgridworld = False
 
+
+    # Group avg trajs by weight (arg0) then by density (arg1)
+    temp1, temp2, temp3, temp4 = [], [], [], []
+    for i in range(4): 
+        temp1.append(results[0][i][0])
+        temp2.append(results[1][i][0])
+        temp3.append(results[2][i][0])
+        temp4.append(results[3][i][0])
+    # print(temp1)
+    # print(temp2)
+    # print(temp3)
+    # print(temp4)
+
     # Plot avg traj
     N=4
     ind = np.arange(N)
     width = 0.20
-
-    temp1 = []
-    for i in range(4):
-        temp1.append(results[0][i][0])
     bar1 = plt.bar(ind, temp1, width, color='r')
-    print(temp1)
-    temp2 = []
-    for i in range(4):
-        temp2.append(results[1][i][0])
-    bar2 = plt.bar(ind, temp2, width, color='g')
-    print(temp2)
-    temp3 = []
-    for i in range(4):
-        temp3.append(results[2][i][0])
-    bar3 = plt.bar(ind, temp3, width, color='b')
-    print(temp3)
-    temp4 = []
-    for i in range(4):
-        temp4.append(results[3][i][0])
-    bar4 = plt.bar(ind, temp4, width)
-    print(temp4)
+    bar2 = plt.bar(ind+width, temp2, width, color='g')
+    bar3 = plt.bar(ind+width*2, temp3, width, color='b')
+    bar4 = plt.bar(ind+width*3, temp4, width)
+
     plt.title('Density vs. Average Trajectory by Weight')
     plt.xlabel('Density')
     plt.ylabel('Average Trajectory')
-
     plt.xticks(ind+width, p_list)
     plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1', 'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()
 
 
+    # Group avg runtimes by weight (arg0) then by density (arg1)
+    temp1, temp2, temp3, temp4 = [], [], [], []
+    for i in range(4): 
+        temp1.append(results[0][i][1])
+        temp2.append(results[1][i][1])
+        temp3.append(results[2][i][1])
+        temp4.append(results[3][i][1])
+    # print(temp1)
+    # print(temp2)
+    # print(temp3)
+    # print(temp4)
+
     # Plot avg runtime
     N=4
     ind = np.arange(N)
     width = 0.20
-
-    temp1 = []
-    for i in range(4):
-        temp1.append(results[0][i][1])
     bar1 = plt.bar(ind, temp1, width, color='r')
-    print(temp1)
-    temp2 = []
-    for i in range(4):
-        temp2.append(results[1][i][1])
-    bar2 = plt.bar(ind, temp2, width, color='g')
-    print(temp2)
-    temp3 = []
-    for i in range(4):
-        temp3.append(results[2][i][1])
-    bar3 = plt.bar(ind, temp3, width, color='b')
-    print(temp3)
-    temp4 = []
-    for i in range(4):
-        temp4.append(results[3][i][1])
-    bar4 = plt.bar(ind, temp4, width)
-    print(temp4)
+    bar2 = plt.bar(ind+width, temp2, width, color='g')
+    bar3 = plt.bar(ind+width*2, temp3, width, color='b')
+    bar4 = plt.bar(ind+width*3, temp4, width)
+
     plt.title('Density vs. Average Runtime by Weight')
     plt.xlabel('Density')
     plt.ylabel('Average Runtime')
-
     plt.xticks(ind+width, p_list)
     plt.legend((bar1, bar2, bar3, bar4), ('Weight = 1', 'Weight = 2', 'Weight = 3', 'Weight = 4'))
     plt.show()

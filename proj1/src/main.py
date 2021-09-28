@@ -45,19 +45,19 @@ def solvability_range(heuristic):
     Args:
         heuristic (function([int][int][int][int][int])): passes heuristic  into generategridworld
     """
-    # Initialize constants: range [start, end), difference, # of gridworlds per p
+    # Initialize constants: range [start, end], difference, # of gridworlds per p
     start = 15  # inclusive
-    end = 36    # exclusive
-    diff = end - 1 - start
+    end = 35    # inclusive
+    diff = end - start
     cycles = 100
 
     # Initialize results matrix where arg0 is p value, arg1 is number of solvable gridworlds out of 10
     results = [[0 for _ in range(diff)] for _ in range(2)]
-    for x in range(start, end):
+    for x in range(diff):
         results[0][x] = x/100
 
     # Solve gridworlds
-    for p in range(start, end):
+    for p in range(diff):
         for _ in range(cycles):
             path, len = solve.astar(
                 solve.gridworld[0][0], heuristic)
@@ -93,21 +93,31 @@ def compare_heuristics():
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)//5+1)] for _ in range(3)]
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
 
     heuristics = [solve.getManhattanDistance,
                   solve.getEuclideanDistance, solve.getChebyshevDistance]
-    # For a range of [0,9] p values, generate gridworlds
+
+    # For a range of [0,.45] p values, generate gridworlds
     for p in range(start, end, step):
-        # For "cycles" gridworlds for each p value
+        p_index = int(p/step)
+        print("NEXT P")
+        print(p, p_index)
+
+        # "cycles" # of gridworlds for each p value
         i = 0
         redos = 0
+        break_var = False
+
+        # Keep making new gridworlds until desired # of solvable gridworlds are make
         while i < cycles:
+
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(
-                101, float(p/10), solve.getManhattanDistance)
+                101, float(p/100), solve.getManhattanDistance)
 
-            # For each heuristic, solve the gridworld 5 times and average the times
+            # Solve the gridworld with each heuristic
             for heur_num, heuristic in enumerate(heuristics):
 
                 # Initialize starting cell value for each heuristic
@@ -118,20 +128,38 @@ def compare_heuristics():
 
                 # Time the solve
                 start_time = timeit.default_timer()
-                # If the gridworld is unsolvable, inc redos
+                # If the gridworld is unsolvable, inc redos, dec i and
+                # break -> moves onto next gridworld
                 if solve.solve(heuristic) is None:
                     redos += 1
+                    if i > 0:
+                        i -= 1
+                    print(redos, i)
+
                     # Go to next p if max_redos met/exceeded
                     if redos >= max_redos:
-                        break
+                        print("max_redos met")
+                        break_var = True
+                    break
+                # Continues with the timer
                 stop_time = timeit.default_timer()
-                results[heur_num][p//step] += stop_time - start_time
+                results[heur_num][p_index] += stop_time - start_time
+            # Ran thru each heuristic so incr i and next generate new gridworld
             i += 1
 
-        # Average out times
-        for x in range(3):
-            results[x][p//step] /= cycles
+            # Too many unsolvable gridworlds made - give up on this p value
+            if break_var:
+                break_var = False
+                print("break break: moving on to next p")
+                break
 
+        # Average out times for each p
+        for x in range(3):
+            if i != 0:
+                results[x][p_index] /= i
+        print(str(i) + "gridworlds made for p = " + str(p))
+
+    print(results)
     # Set back to false
     checkfullgridworld = False
 
@@ -347,6 +375,99 @@ def densityvcellsprocessed(heuristic):
     plt.show()
 
 
+def compare_weighted_heuristics():
+    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
+    """
+
+    # Initialize constants:
+    #   range [start, end), difference, # of gridworlds per p
+    #   cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
+    start = 1  # inclusive
+    end = 10    # exclusive
+    step = 1
+    diff = end - start
+    cycles = 50
+    max_redos = 30
+
+    # Compare 4 p's per weight vs avg length
+    # p = [0, .1, .2, .3]
+    # weights = [1, 2, 3, 4]
+    # Initialize results matrix - eg: results[1][3] -->
+    results = [[0 for _ in range((end - 1 - start)//step + 1)]
+               for _ in range(3)]
+
+    heuristics = [solve.getManhattanDistance,
+                  solve.getEuclideanDistance, solve.getChebyshevDistance]
+    # For a range of [0,.45] p values, generate gridworlds
+    for p in range(start, end, step):
+        p_index = int(p/step)
+        print(p, p_index)
+
+        # "cycles" # of gridworlds for each p value
+        i = 0
+        redos = 0
+        while i < cycles:
+            # Generate gridworld as Manhattan distance but manually set later
+            solve.generategridworld(
+                101, float(p/100), solve.getManhattanDistance)
+
+            # For each heuristic, solve the gridworld 5 times and average the times
+            for heur_num, heuristic in enumerate(heuristics):
+
+                # Initialize starting cell value for each heuristic
+                solve.gridworld[0][0].h = heuristic(
+                    0, 0, solve.goal.x, solve.goal.y, 1)
+                solve.gridworld[0][0].f = solve.gridworld[0][0].g + \
+                    solve.gridworld[0][0].h
+
+                # Time the solve
+                start_time = timeit.default_timer()
+                # If the gridworld is unsolvable, inc redos
+                if solve.solve(heuristic) is None:
+                    redos += 1
+                    i -= 1
+                    # Go to next p if max_redos met/exceeded
+                    if redos >= max_redos:
+                        break
+                stop_time = timeit.default_timer()
+                results[heur_num][p_index] += stop_time - start_time
+            i += 1
+
+        # Average out times
+        for x in range(3):
+            results[x][p_index] /= cycles
+
+    print(results)
+    # Set back to false
+    checkfullgridworld = False
+
+    # Plot results
+    N = 3
+    ind = np.arange(min(len(results[0]), len(results[1]), len(results[2])))
+    width = 0.25
+
+    xvals = results[0]
+    bar1 = plt.bar(ind, xvals, width, color='r')
+
+    yvals = results[1]
+    bar2 = plt.bar(ind+width, yvals, width, color='g')
+
+    zvals = results[2]
+    bar3 = plt.bar(ind+width*2, zvals, width, color='b')
+
+    plt.title('Density vs. Runtime by Heuristic')
+    plt.xlabel('Density')
+    plt.ylabel('Average Time (s)')
+
+    # Make xticks list
+    xtick_list = []
+    for i, x in enumerate(range(start, end, step)):
+        xtick_list.append(str(x/100))
+    plt.xticks(ind+width, xtick_list)
+    plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
+    plt.show()
+
+
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
     try:
@@ -409,6 +530,5 @@ if __name__ == "__main__":
     # solvability(solve.getManhattanDistance)
     # compareHeuristics()
     # densityvtrajectorylength(solve.getChebyshevDistance)
-    densityvavg2(solve.getChebyshevDistance)
-    # compare_heuristics()
-    # densityvcellsprocessed(solve.getChebyshevDistance)
+    # densityvavg2(solve.getChebyshevDistance)
+    compare_heuristics()

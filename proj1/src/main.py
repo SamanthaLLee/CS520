@@ -62,7 +62,7 @@ def compare_heuristics():
     end = 46    # exclusive
     step = 5
     diff = end - 1 - start
-    cycles = 50
+    cycles = 10
     max_redos = 30
 
     # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
@@ -83,12 +83,13 @@ def compare_heuristics():
         redos = 0
         break_var = False
 
-        # Keep making new gridworlds until desired # of solvable gridworlds are make
+        # Keep making new gridworlds until desired # of solvable gridworlds are made
         while i < cycles:
 
+            print("density:", p/100)
             # Generate gridworld as Manhattan distance but manually set later
             solve.generategridworld(
-                101, float(p/100), solve.getManhattanDistance)
+                10, float(p/100), solve.getManhattanDistance)
 
             # Solve the gridworld with each heuristic
             for heur_num, heuristic in enumerate(heuristics):
@@ -612,8 +613,12 @@ if __name__ == "__main__":
 
     # Question 4
     # solvability(solve.getManhattanDistance)
-    solvability_range(solve.getManhattanDistance)
+    # solvability_range(solve.getManhattanDistance)
     # compareHeuristics()
-    # densityvtrajectorylength(solve.getManhattanDistance)
-    # densityvavg2(solve.getChebyshevDistance)
     # compare_heuristics()
+    # compare_heuristics_no_redos()
+    solve.haslimitedview = True
+    # densityvtrajectorylength(solve.getChebyshevDistance)
+    # densityvavg1(solve.getChebyshevDistance)
+    # densityvavg2(solve.getChebyshevDistance)
+    densityvcellsprocessed(solve.getChebyshevDistance)

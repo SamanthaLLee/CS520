@@ -692,11 +692,11 @@ if __name__ == "__main__":
     # Question 4
     # solvability(solve.getManhattanDistance)
     # solvability_range(solve.getManhattanDistance)
-    # compareHeuristics()
+    compare_weighted_heuristics()
     # compare_heuristics()
     # compare_heuristics_no_redos()
-    solve.haslimitedview = True
+    # solve.haslimitedview = True
     # densityvtrajectorylength(solve.getChebyshevDistance)
     # densityvavg1(solve.getChebyshevDistance)
     # densityvavg2(solve.getChebyshevDistance)
-    densityvcellsprocessed(solve.getChebyshevDistance)
+    # densityvcellsprocessed(solve.getChebyshevDistance)

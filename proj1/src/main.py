@@ -5,6 +5,7 @@ import solve
 import backtrack
 import time
 
+
 def solvability_range(heuristic):
     """Automates Question 4: plot density vs solvability of range of p values to find a value 
         p0 such that p>p0 most mazes are solvable and p<p0 most mazes are unsolvable 
@@ -48,122 +49,6 @@ def solvability_range(heuristic):
 
 
 def compare_heuristics():
-    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
-    """
-
-    # As per directions, "you may take each gridworld as known, and thus only search once"
-    solve.checkfullgridworld = True
-
-    # Initialize constants:
-    #   range [start, end), difference, # of gridworlds per p
-    #   cycles - # of gridworlds per p, max_redos - # of unsolvable gridworlds allowed before breaking
-    start = 0  # inclusive
-    end = 46    # exclusive
-    step = 5
-    diff = end - 1 - start
-    cycles = 10
-    max_redos = 30
-
-    # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range((end - 1 - start)//step + 1)]
-               for _ in range(3)]
-
-    heuristics = [solve.getManhattanDistance,
-                  solve.getEuclideanDistance, solve.getChebyshevDistance]
-
-    # For a range of [0,.45] p values, generate gridworlds
-    for p in range(start, end, step):
-        p_index = int(p/step)
-        print("NEXT P")
-        print(p, p_index)
-
-        # "cycles" # of gridworlds for each p value
-        i = 0
-        redos = 0
-        break_var = False
-
-        # Keep making new gridworlds until desired # of solvable gridworlds are made
-        while i < cycles:
-
-            print("density:", p/100)
-            # Generate gridworld as Manhattan distance but manually set later
-            solve.generategridworld(
-                10, float(p/100), solve.getManhattanDistance)
-
-            # Solve the gridworld with each heuristic
-            for heur_num, heuristic in enumerate(heuristics):
-
-                # Initialize starting cell value for each heuristic
-                solve.gridworld[0][0].h = heuristic(
-                    0, 0, solve.goal.x, solve.goal.y, 1)
-                solve.gridworld[0][0].f = solve.gridworld[0][0].g + \
-                    solve.gridworld[0][0].h
-
-                # Time the solve
-                start_time = timeit.default_timer()
-                # If the gridworld is unsolvable, inc redos, dec i and
-                # break -> moves onto next gridworld
-                if solve.solve(heuristic) is None:
-                    redos += 1
-                    if i > 0:
-                        i -= 1
-                    print(redos, i)
-
-                    # Go to next p if max_redos met/exceeded
-                    if redos >= max_redos:
-                        print("max_redos met")
-                        break_var = True
-                    break
-                # Continues with the timer
-                stop_time = timeit.default_timer()
-                results[heur_num][p_index] += stop_time - start_time
-            # Ran thru each heuristic so incr i and next generate new gridworld
-            i += 1
-
-            # Too many unsolvable gridworlds made - give up on this p value
-            if break_var:
-                break_var = False
-                print("break break: moving on to next p")
-                break
-
-        # Average out times for each p
-        for x in range(3):
-            if i != 0:
-                results[x][p_index] /= i
-        print(str(i) + "gridworlds made for p = " + str(p))
-
-    print(results)
-    # Set back to false
-    checkfullgridworld = False
-
-    # Plot results
-    N = 3
-    ind = np.arange(min(len(results[0]), len(results[1]), len(results[2])))
-    width = 0.25
-
-    xvals = results[0]
-    bar1 = plt.bar(ind, xvals, width, color='r')
-
-    yvals = results[1]
-    bar2 = plt.bar(ind+width, yvals, width, color='g')
-
-    zvals = results[2]
-    bar3 = plt.bar(ind+width*2, zvals, width, color='b')
-
-    plt.title('Density vs. Runtime by Heuristic')
-    plt.xlabel('Density')
-    plt.ylabel('Average Time (s)')
-
-    # Make xticks list
-    xtick_list = []
-    for i, x in enumerate(range(start, end, step)):
-        xtick_list.append(str(x/100))
-    plt.xticks(ind+width, xtick_list)
-    plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
-    plt.show()
-
-
-def compare_heuristics_no_redos():
     """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities"""
 
     # As per directions, "you may take each gridworld as known, and thus only search once"
@@ -253,77 +138,6 @@ def compare_heuristics_no_redos():
     for i, x in enumerate(range(start, end, step)):
         xtick_list.append(str(x/100))
     plt.xticks(ind+width, xtick_list)
-    plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
-    plt.show()
-
-
-def compareHeuristics_old():
-    """Automates Question 5: compares the 3 different heuristics runtimes on graphs of varying densities
-    """
-
-    # As per directions, "you may take each gridworld as known, and thus only search once"
-    solve.checkfullgridworld = True
-
-    # Initialize results matrix - eg: results[1][3] --> Euclidean runtime on graph 4
-    results = [[0 for _ in range(10)] for _ in range(3)]
-
-    heuristics = [solve.getManhattanDistance,
-                  solve.getEuclideanDistance, solve.getChebyshevDistance]
-    # For a range of [0,9] p values, generate gridworlds
-    for p in range(10):
-        print(p)
-        # For 5 gridworlds for each p value
-        fails = 0
-        for _ in range(5):
-            # Generate gridworld as Manhattan distance but manually set later
-            solve.generategridworld(
-                101, float(p/10), solve.getManhattanDistance)
-
-            # For each heuristic, solve the gridworld 5 times and average the times
-            for heur_num, heuristic in enumerate(heuristics):
-
-                # Initialize starting cell value for each heuristic
-                solve.gridworld[0][0].h = heuristic(
-                    0, 0, solve.goal.x, solve.goal.y, 1)
-                solve.gridworld[0][0].f = solve.gridworld[0][0].g + \
-                    solve.gridworld[0][0].h
-
-                # Time the solve
-                start = timeit.default_timer()
-                # If the gridworld is unsolvable, decrement i so 5 solvable gridworlds are tested
-                if solve.solve(heuristic) is None:
-                    break
-                stop = timeit.default_timer()
-                results[heur_num][p] += stop - start
-
-        # Average out times
-        for x in range(3):
-            results[x][p] /= 5
-
-    print(results)
-    # Set back to false
-    solve.checkfullgridworld = False
-
-    # Plot results
-    N = 3
-    ind = np.arange(min(len(results[0]), len(results[1]), len(results[2])))
-    width = 0.25
-
-    xvals = results[0]
-    bar1 = plt.bar(ind, xvals, width, color='r')
-
-    yvals = results[1]
-    bar2 = plt.bar(ind+width, yvals, width, color='g')
-
-    zvals = results[2]
-    bar3 = plt.bar(ind+width*2, zvals, width, color='b')
-
-    plt.title('Density vs. Runtime by Heuristic')
-    plt.xlabel('Density')
-    plt.ylabel('Average Time (s)')
-
-    plt.xticks(ind+width, ['0', '.1', '.2', '.3',
-               '.4', '.5', '.6', '.7', '.8', '.9'])
     plt.legend((bar1, bar2, bar3), ('Manhattan', 'Euclidean', 'Chebyshev'))
     plt.show()
 
@@ -610,7 +424,6 @@ def compare_weighted_heuristics():
     plt.show()
 
 
-
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
     try:
@@ -671,12 +484,14 @@ if __name__ == "__main__":
     # solvability_range(solve.getManhattanDistance)
     # compare_weighted_heuristics()
     # compare_heuristics()
-    # compare_heuristics_no_redos()
+    # compare_heuristics()
+
+    # Questions 6 and 7
     # solve.haslimitedview = True
-    # densityvtrajectorylength(solve.getChebyshevDistance)
-    # densityvavg1(solve.getChebyshevDistance)
-    # densityvavg2(solve.getChebyshevDistance)
-    # densityvcellsprocessed(solve.getChebyshevDistance)
+    # densityvtrajectorylength(solve.getManhattanDistance)
+    # densityvavg1(solve.getManhattanDistance)
+    # densityvavg2(solve.getManhattanDistance)
+    # densityvcellsprocessed(solve.getManhattanDistance)
 
     # Question 8
     # backtrack.backtracking_runtime()

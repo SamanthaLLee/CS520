@@ -230,10 +230,8 @@ def printGridworld():
     string += ('-'*(leng*2+1))
     print(string)
 
-
-
-
 # Backtracking stuff
+
 
 def astar_backtracking(start, heuristic):
     """Performs the A* algorithm on the gridworld
@@ -304,6 +302,7 @@ def astar_backtracking(start, heuristic):
     start.parent = oldParent
 
     return start, astarlen
+
 
 def solve_back(heuristic):
     """

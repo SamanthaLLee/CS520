@@ -244,6 +244,74 @@ def solve3():
         if curr.child is None:
             return path
 
+        # Update knowledge of seen neighbors
+        for x, y in alldirections:
+            xx = curr.x + x
+            yy = curr.y + y
+
+            if isinbounds([xx, yy]) and neighbor.seen and neighbor.H != 0:
+                neighbor = gridworld[xx][yy]
+                if curr.blocked:
+                    neighbor.B += 1
+                else:
+                    neighbor.E += 1
+                neighbor.H -= 1
+                infer3(neighbor)  # include or exclude?
+
+        # Replan if agent has run into blocked cell
+        if curr.blocked:
+            trajectorylen = trajectorylen - 2
+            curr, len = astar(curr.parent)
+            continue
+        else:
+            # Sense number of blocked and confirmed neighbors for curr
+            sense3(curr)
+
+            # Make inferences from this sensing
+            infer3(curr)
+
+            # Replan if agent finds inferred block in path
+            ptr = curr.child
+            replanned = False
+            while ptr.child is not None:
+                if ptr.confirmed and ptr.blocked:
+                    curr, len = astar(curr)
+                    replanned = True
+                    break
+                ptr = ptr.child
+
+            # Otherwise, continue along A* path
+            if not replanned:
+                curr = curr.child
+
+
+def solvex():
+    """
+    Agent 3 - Example Inference Agent
+    """
+    global goal, gridworld, alldirections, trajectorylen
+
+    path, len = astar(gridworld[0][0])
+
+    if path is None:
+        return None
+
+    # Traverse through planned path
+    curr = path
+    while True:
+
+        if(curr is None):
+            return None
+
+        # Pre-process current cell
+        curr.seen = True
+        curr.confirmed = True
+        trajectorylen = trajectorylen + 1
+
+        # Goal found
+        if curr.child is None:
+            return path
+
         # Run inferences on existing KB, given new knowledge from pre-processing
         if curr.parent is not None:
             updateKB(curr.parent)
@@ -289,8 +357,8 @@ def sense3(curr):
         curr (cell): current cell
     """
     curr.C = 0
-    curr.E = 0
-    curr.H = getnumneighbors(curr.x, curr.y)
+    # curr.E = 0
+    # curr.H = getnumneighbors(curr.x, curr.y)
 
     for x, y in alldirections:
         xx = curr.x + x

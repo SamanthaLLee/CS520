@@ -283,6 +283,11 @@ def updateKB(curr):
 
 
 def sense3(curr):
+    """Sets curr's C, E, H, B values based on current KB
+
+    Args:
+        curr (cell): current cell
+    """
     curr.C = 0
     curr.E = 0
     curr.H = getnumneighbors(curr.x, curr.y)
@@ -305,7 +310,13 @@ def sense3(curr):
 
 
 def infer3(curr):
+    """Tests for the 3 given inferences
+
+    Args:
+        curr (cell): current cell to make inferences on
+    """
     if curr.H > 0:
+        # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
@@ -326,8 +337,6 @@ def infer3(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
-    return None
-
 
 def solve4():
     """

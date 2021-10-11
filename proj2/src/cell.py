@@ -38,6 +38,12 @@ class Cell(object):
         self.seen = False
         self.parent = None
         self.child = None
+        self.N = 0
+        self.C = 0
+        self.B = 0
+        self.E = 0
+        self.H = 0
+        self.confirmed = False
 
     def __lt__(self, other):
         return self.id < other.id

@@ -134,6 +134,93 @@ def astar(start):
     return start, astarlen
 
 
+def solve1():
+    """
+    Agent 1 - The Blindfolded Agent: bumps into walls
+    """
+    global gridworld, cardinaldirections, trajectorylen
+
+    path, len = astar(gridworld[0][0])
+
+    # Initial A* failed - unsolvable gridworld
+    if path is None:
+        return None
+
+    # Attempt to move along planned path
+    curr = path
+    while True:
+        # A* failed - unsolvable gridworld
+        if curr is None:
+            return None
+
+        trajectorylen += 1
+        # Goal found
+        if curr.child is None:
+            curr.seen = True
+            return path
+
+        # Run into blocked cell
+        if curr.blocked == True:
+            trajectorylen -= 2
+            curr.seen = True
+            path, len = astar(curr.parent)
+            curr = path
+
+        # Continue along A* path
+        else:
+            # Mark current cell as seen and move onto next cell along A* path
+            curr.seen = True
+            curr = curr.child
+
+
+def solve2():
+    """
+    Agent 2 - 4-Neighbor Agent: Can see all 4 cardinal neighbors at once
+    """
+    global gridworld, cardinaldirections, trajectorylen
+
+    path, len = astar(gridworld[0][0])
+
+    # Initial A* failed - unsolvable gridworld
+    if path is None:
+        return None
+
+    # Attempt to move along planned path
+    curr = path
+    while True:
+        # A* failed - unsolvable gridworld
+        if curr is None:
+            return None
+
+        trajectorylen += 1
+        # Goal found
+        if curr.child is None:
+            curr.seen = True
+            return path
+
+        # Run into blocked cell
+        if curr.blocked == True:
+            trajectorylen -= 2
+            curr.seen = True
+            path, len = astar(curr.parent)
+            curr = path
+
+        # Continue along A* path
+        else:
+            # Take note of environment within viewing distance (adjacent cells)
+            for dx, dy in cardinaldirections:
+                xx, yy = curr.x + dx, curr.y + dy
+
+                # Only mark blocked neighbors as seen
+                if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
+                    neighbor = gridworld[xx][yy]
+                    neighbor.seen = True
+            # Mark current cell as seen and move onto next cell along A* path
+            curr.seen = True
+            curr = curr.child
+
+
+
 def solve_a3():
     """
     Solves the gridworld using Repeated Forward A*.

@@ -17,11 +17,13 @@ alldirections = [(1, 0), (-1, 0), (0, 1), (0, -1),
 numcellsprocessed = 0
 trajectorylen = 0
 
+dim = 0
 
-def generategridworld(dim, p):
+
+def generategridworld(d, p):
     """Generates a random gridworld based on user inputs"""
-    global goal, gridworld
-
+    global goal, gridworld, dim
+    dim = d
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -42,15 +44,8 @@ def generategridworld(dim, p):
             id += 1
 
             # Set N and H
-            if iscorner(i, j, dim):
-                curr.N = 3
-                curr.H = 3
-            elif isborder(i, j, dim):
-                curr.N = 5
-                curr.N = 5
-            else:
-                curr.N = 8
-                curr.N = 8
+            curr.N = getnumneighbors(i, j)
+            curr.H = curr.N
 
     # Set the goal node
     goal = gridworld[dim-1][dim-1]
@@ -240,53 +235,24 @@ def solve3():
         if(curr is None):
             return None
 
+        # Pre-process current cell
         curr.seen = True
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
 
         # Goal found
-        if(curr.child is None):
+        if curr.child is None:
             return path
 
-        # Sense number of blocked and confirmed neighbors
-        for x, y in alldirections:
-            xx = curr.x + x
-            yy = curr.y + y
+        # Run inferences on existing KB, given new knowledge from pre-processing
+        if curr.parent is not None:
+            updateKB(curr.parent)
 
-            if isinbounds([xx, yy]):
-                neighbor = gridworld[xx][yy]
-                if neighbor.blocked:
-                    curr.C += 1
-                if neighbor.confirmed:
-                    if neighbor.blocked:
-                        curr.B += 1
-                        curr.H -= 1
-                    else:
-                        curr.E += 1
-                        curr.H -= 1
+        # Sense number of blocked and confirmed neighbors for curr
+        sense3(curr)
 
         # Make inferences from this sensing
-        if curr.H > 0:
-            if curr.C == curr.B:
-                # All remaining hidden neighbors are empty
-                for x, y in alldirections:
-                    xx = curr.x + x
-                    yy = curr.y + y
-                    if isinbounds([xx, yy]):
-                        if gridworld[xx][yy].confirmed == False:
-                            gridworld[xx][yy].confirmed = True
-                            curr.E += 1
-                            curr.H -= 1
-            elif curr.N - curr.C == curr.E:
-                # All remaining hidden neighbors are blocked
-                for x, y in alldirections:
-                    xx = curr.x + x
-                    yy = curr.y + y
-                    if isinbounds([xx, yy]):
-                        if gridworld[xx][yy].confirmed == False:
-                            gridworld[xx][yy].confirmed = True
-                            curr.B += 1
-                            curr.H -= 1
+        infer3(curr)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -307,6 +273,60 @@ def solve3():
         # Otherwise, continue along A* path
         if not replanned:
             curr = curr.child
+
+
+def updateKB(curr):
+    while curr is not None:
+        sense3(curr)
+        infer3(curr)
+        curr = curr.parent
+
+
+def sense3(curr):
+    curr.C = 0
+    curr.E = 0
+    curr.H = getnumneighbors(curr.x, curr.y)
+
+    for x, y in alldirections:
+        xx = curr.x + x
+        yy = curr.y + y
+
+        if isinbounds([xx, yy]):
+            neighbor = gridworld[xx][yy]
+            if neighbor.blocked:
+                curr.C += 1
+            if neighbor.confirmed:
+                if neighbor.blocked:
+                    curr.B += 1
+                    curr.H -= 1
+                else:
+                    curr.E += 1
+                    curr.H -= 1
+
+
+def infer3(curr):
+    if curr.H > 0:
+        if curr.C == curr.B:
+            # All remaining hidden neighbors are empty
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if isinbounds([xx, yy]):
+                    if gridworld[xx][yy].confirmed == False:
+                        gridworld[xx][yy].confirmed = True
+                        curr.E += 1
+                        curr.H -= 1
+        elif curr.N - curr.C == curr.E:
+            # All remaining hidden neighbors are blocked
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if isinbounds([xx, yy]):
+                    if gridworld[xx][yy].confirmed == False:
+                        gridworld[xx][yy].confirmed = True
+                        curr.B += 1
+                        curr.H -= 1
+    return None
 
 
 def solve4():
@@ -401,35 +421,6 @@ def solve4():
             curr = curr.child
 
 
-def infer(curr):
-    if curr.H == 0:
-        # everything around x is confirmed
-        # find all cells around x
-        print("okie")
-    elif curr.H > 0:
-        if curr.C == curr.B:
-            # All remaining hidden neighbors are empty
-            for x, y in alldirections:
-                xx = curr.x + x
-                yy = curr.y + y
-                if isinbounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
-                        gridworld[xx][yy].confirmed = True
-                        curr.E += 1
-                        curr.H -= 1
-        elif curr.N - curr.C == curr.E:
-            # All remaining hidden neighbors are blocked
-            for x, y in alldirections:
-                xx = curr.x + x
-                yy = curr.y + y
-                if isinbounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
-                        gridworld[xx][yy].confirmed = True
-                        curr.B += 1
-                        curr.H -= 1
-    return None
-
-
 def getManhattanDistance(x1, y1, x2, y2):
     """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
     return (abs(x1-x2) + abs(y1-y2))
@@ -439,6 +430,15 @@ def isinbounds(curr):
     """Determines whether next move is within bounds"""
     global gridworld
     return 0 <= curr[0] < len(gridworld) and 0 <= curr[1] < len(gridworld[0])
+
+
+def getnumneighbors(x, y):
+    if iscorner(x, y, dim):
+        return 3
+    elif isborder(x, y, dim):
+        return 5
+    else:
+        return 8
 
 
 def printGridworld():

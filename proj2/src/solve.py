@@ -93,7 +93,6 @@ def astar(start):
             break
         if curr.id not in fringeSet:
             continue
-        # print("removing", curr)
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
         numcellsprocessed = numcellsprocessed + 1
@@ -250,45 +249,45 @@ def solve_a3():
         if(curr.child is None):
             return path
 
-        # Sense number of blocked neighbors
+        # Sense number of blocked and confirmed neighbors
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
 
             if isinbounds([xx, yy]):
-                neighbor = gridworld[xx, yy]
+                neighbor = gridworld[xx][yy]
                 if neighbor.blocked:
                     curr.C += 1
                 if neighbor.confirmed:
                     if neighbor.blocked:
                         curr.B += 1
+                        curr.H -= 1
                     else:
                         curr.E += 1
+                        curr.H -= 1
 
         # Make inferences from this sensing
-        if curr.C == curr.B:
-            # All remaining hidden neighbors are empty
-            for x, y in alldirections:
-                xx = curr.x + x
-                yy = curr.y + y
-                if isinbounds([xx, yy]):
-                    if gridworld[xx, yy].confirmed == False:
-                        gridworld[xx, yy].confirmed = True
-                        curr.H -= 1
-                        curr.E += 1
-        elif curr.N - curr.C == curr.E:
-            # All remaining hidden neighbors are blocked
-            for x, y in alldirections:
-                xx = curr.x + x
-                yy = curr.y + y
-                if isinbounds([xx, yy]):
-                    if gridworld[xx, yy].confirmed == False:
-                        gridworld[xx, yy].confirmed = True
-                        curr.H -= 1
-                        curr.B += 1
-        elif curr.H == 0:
-            # Nothing left to be inferred
-            print("aight")
+        if curr.H > 0:
+            if curr.C == curr.B:
+                # All remaining hidden neighbors are empty
+                for x, y in alldirections:
+                    xx = curr.x + x
+                    yy = curr.y + y
+                    if isinbounds([xx, yy]):
+                        if gridworld[xx][yy].confirmed == False:
+                            gridworld[xx][yy].confirmed = True
+                            curr.E += 1
+                            curr.H -= 1
+            elif curr.N - curr.C == curr.E:
+                # All remaining hidden neighbors are blocked
+                for x, y in alldirections:
+                    xx = curr.x + x
+                    yy = curr.y + y
+                    if isinbounds([xx, yy]):
+                        if gridworld[xx][yy].confirmed == False:
+                            gridworld[xx][yy].confirmed = True
+                            curr.B += 1
+                            curr.H -= 1
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -327,8 +326,6 @@ def solve_a4():
 
         if(curr is None):
             return None
-
-        # print("curr", curr.x, curr.y)
 
         trajectorylen = trajectorylen + 1
         # Goal found

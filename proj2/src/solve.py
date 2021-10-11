@@ -226,7 +226,7 @@ def solve2():
 
 def solve_a3():
     """
-    Solves the gridworld using Repeated Forward A*.
+    Agent 3 - Example Inference Agent
     """
     global goal, gridworld, alldirections, trajectorylen
 
@@ -313,7 +313,7 @@ def solve_a3():
 
 def solve_a4():
     """
-    Solves the gridworld using Repeated Forward A*.
+    Agent 4 - Own Inference Agent - design down agent that beats Example Agent
     """
     global goal, gridworld, alldirections, trajectorylen
 

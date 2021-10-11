@@ -25,7 +25,7 @@ if __name__ == "__main__":
     solve.generategridworld(int(dim), float(p))
 
     starttime = time.time()
-    result = solve.solve_a3()
+    result = solve.solve3()
     solve.printGridworld()
     endtime = time.time()
     if (result is None):

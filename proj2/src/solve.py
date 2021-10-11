@@ -374,11 +374,16 @@ def solve4():
                             gridworld[xx][yy].confirmed = True
                             curr.B += 1
                             curr.H -= 1
+            if curr.H == 0:
+                print("okie")
+                # everything around x is confirmed
+                # find all empty cells around x
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent)
+            # update surrounding values!!
             continue
 
         # Replan if agent finds inferred block in path
@@ -394,6 +399,35 @@ def solve4():
         # Otherwise, continue along A* path
         if not replanned:
             curr = curr.child
+
+
+def infer(curr):
+    if curr.H == 0:
+        # everything around x is confirmed
+        # find all cells around x
+        print("okie")
+    elif curr.H > 0:
+        if curr.C == curr.B:
+            # All remaining hidden neighbors are empty
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if isinbounds([xx, yy]):
+                    if gridworld[xx][yy].confirmed == False:
+                        gridworld[xx][yy].confirmed = True
+                        curr.E += 1
+                        curr.H -= 1
+        elif curr.N - curr.C == curr.E:
+            # All remaining hidden neighbors are blocked
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if isinbounds([xx, yy]):
+                    if gridworld[xx][yy].confirmed == False:
+                        gridworld[xx][yy].confirmed = True
+                        curr.B += 1
+                        curr.H -= 1
+    return None
 
 
 def getManhattanDistance(x1, y1, x2, y2):

@@ -41,12 +41,15 @@ def generategridworld(dim, p):
             curr.id = id
             id += 1
 
-            # Set N
+            # Set N and H
             if iscorner(i, j, dim):
                 curr.N = 3
-            elif isborder(i, j):
+                curr.H = 3
+            elif isborder(i, j, dim):
+                curr.N = 5
                 curr.N = 5
             else:
+                curr.N = 8
                 curr.N = 8
 
     # Set the goal node
@@ -145,17 +148,19 @@ def solve_a3():
     if path is None:
         return None
 
+    # Traverse through planned path
     curr = path
-    while(True):
+    while True:
 
         if(curr is None):
             return None
 
+        curr.seen = True
+        curr.confirmed = True
         trajectorylen = trajectorylen + 1
 
         # Goal found
         if(curr.child is None):
-            curr.seen = True
             return path
 
         # Sense number of blocked neighbors
@@ -164,11 +169,18 @@ def solve_a3():
             yy = curr.y + y
 
             if isinbounds([xx, yy]):
-                if gridworld[xx, yy].blocked is True:
+                neighbor = gridworld[xx, yy]
+                if neighbor.blocked:
                     curr.C += 1
+                if neighbor.confirmed:
+                    if neighbor.blocked:
+                        curr.B += 1
+                    else:
+                        curr.E += 1
 
         # Make inferences from this sensing
         if curr.C == curr.B:
+            # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
                 yy = curr.y + y
@@ -176,44 +188,39 @@ def solve_a3():
                     if gridworld[xx, yy].confirmed == False:
                         gridworld[xx, yy].confirmed = True
                         curr.H -= 1
-
+                        curr.E += 1
         elif curr.N - curr.C == curr.E:
+            # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x
                 yy = curr.y + y
                 if isinbounds([xx, yy]):
-                    if gridworld[xx, yy].E == False:
-                        gridworld[xx, yy].B = True
+                    if gridworld[xx, yy].confirmed == False:
+                        gridworld[xx, yy].confirmed = True
                         curr.H -= 1
+                        curr.B += 1
+        elif curr.H == 0:
+            # Nothing left to be inferred
+            print("aight")
 
-        if curr.H == 0:
-            # nothing to be inferred
-            print("ok")
-
-        # Run into blocked cell
+        # Replan if agent has run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
-            curr.seen = True
-            path, len = astar(curr.parent)
-            curr = path
+            curr, len = astar(curr.parent)
+            continue
 
-        # Find inferred block in path
-        ptr = curr
+        # Replan if agent finds inferred block in path
+        ptr = curr.child
+        replanned = False
         while ptr.child is not None:
-
+            if ptr.confirmed and ptr.blocked:
+                curr, len = astar(curr)
+                replanned = True
+                break
             ptr = ptr.child
-            # Continue along A* path
-        else:
-            # Take note of environment within viewing distance (adjacent cells)
-            for dx, dy in alldirections:
-                xx, yy = curr.x + dx, curr.y + dy
 
-                # Only mark blocked neighbors as seen
-                if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
-                    neighbor = gridworld[xx][yy]
-                    neighbor.seen = True
-            # Mark current cell as seen and move onto next cell along A* path
-            curr.seen = True
+        # Otherwise, continue along A* path
+        if not replanned:
             curr = curr.child
 
 

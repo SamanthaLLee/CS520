@@ -250,7 +250,7 @@ if __name__ == "__main__":
     if (result is None):
         print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
+    solve.trajectorylen = solve.trajectorylen if result is not None else None
+    print("Trajectory length:", solve.trajectorylen)
+    print("Cells processed: ", solve.numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")

@@ -359,17 +359,17 @@ def solve3():
             return path
 
         # Run inferences on existing KB, given new knowledge from pre-processing
-        # if curr.parent is not None:
-        #     updateKB()
+        if curr.parent is not None:
+            updateKB()
 
         # # Run inferences on all neighbors, given new knowledge from pre-processing
-        # for x, y in alldirections:
-        #     xx = curr.x + x
-        #     yy = curr.y + y
-        #     if isinbounds([xx, yy]):
-        #         neighbor = gridworld[xx][yy]
-            # sense3(neighbor)
-            # infer3(neighbor)
+        for x, y in alldirections:
+            xx = curr.x + x
+            yy = curr.y + y
+            if isinbounds([xx, yy]):
+                neighbor = gridworld[xx][yy]
+                sense3(neighbor)
+                infer3(neighbor)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -408,13 +408,13 @@ def solve3():
 def updateKB():
     global knowledgebase
     for curr in reversed(knowledgebase):
-        print("updateKB", curr.x, curr.y)
+        # print("updateKB", curr.x, curr.y)
         sense3(curr)
         infer3(curr)
 
 
 def sense3(curr):
-    print("sense", curr.x, curr.y)
+    # print("sense", curr.x, curr.y)
     """Sets curr's C, E, H, B values based on current KB
 
     Args:
@@ -448,7 +448,7 @@ def infer3(curr):
     Args:
         curr (cell): current cell to make inferences on
     """
-    print("infer", curr.x, curr.y)
+    # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:

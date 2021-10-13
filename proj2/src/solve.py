@@ -56,7 +56,7 @@ def generategridworld(d, p):
 
     # Initialize starting cell values
     gridworld[0][0].g = 1
-    gridworld[0][0].h = getManhattanDistance(0, 0, goal.x, goal.y)
+    gridworld[0][0].h = getWeightedManhattanDistance(0, 0, goal.x, goal.y)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
@@ -105,7 +105,7 @@ def astar(start):
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
                         nextCell.parent = curr
                         nextCell.g = curr.g + 1
-                        nextCell.h = getManhattanDistance(
+                        nextCell.h = getWeightedManhattanDistance(
                             xx, yy, goal.x, goal.y)
                         nextCell.f = nextCell.g + nextCell.h
                         fringe.put((nextCell.f, nextCell))
@@ -316,17 +316,25 @@ def solvex():
         if curr.parent is not None:
             updateKB(curr.parent)
 
-        # Sense number of blocked and confirmed neighbors for curr
-        sense3(curr)
-
-        # Make inferences from this sensing
-        infer3(curr)
+        # Run inferences on all neighbors, given new knowledge from pre-processing
+        for x, y in alldirections:
+            xx = curr.x + x
+            yy = curr.y + y
+            if isinbounds([xx, yy]):
+                neighbor = gridworld[xx][yy]
+                sense3(neighbor)
+                infer3(neighbor)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent)
             continue
+        else:
+            # Sense number of blocked and confirmed neighbors for curr
+            sense3(curr)
+            # Make inferences from this sensing
+            infer3(curr)
 
         # Replan if agent finds inferred block in path
         ptr = curr.child
@@ -352,8 +360,8 @@ def updateKB(curr):
 
 def sense3(curr):
     curr.C = 0
-    # curr.E = 0
-    # curr.H = getnumneighbors(curr.x, curr.y)
+    curr.E = 0
+    curr.H = getnumneighbors(curr.x, curr.y)
 
     for x, y in alldirections:
         xx = curr.x + x
@@ -394,7 +402,6 @@ def infer3(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
-    return None
 
 
 def solve4():
@@ -489,9 +496,10 @@ def solve4():
             curr = curr.child
 
 
-def getManhattanDistance(x1, y1, x2, y2):
+def getWeightedManhattanDistance(x1, y1, x2, y2):
     """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
-    return (abs(x1-x2) + abs(y1-y2))
+
+    return 2*(abs(x1-x2) + abs(y1-y2))
 
 
 def isinbounds(curr):

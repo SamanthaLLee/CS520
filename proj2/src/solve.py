@@ -435,6 +435,10 @@ def infer3(curr):
                         curr.B += 1
                         curr.H -= 1
 
+
+def solve4test():
+    return None
+    
 def solve4():
     """
     Agent 4 - Own Inference Agent - design down agent that beats Example Agent

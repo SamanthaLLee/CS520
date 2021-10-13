@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import solve
 import time
 
-agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
+# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
+agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4test]
 
 # Have to make bar
 def density_v_trajectory_length():
@@ -79,7 +80,7 @@ def density_v_trajectory_length():
 
 
 def density_v_avg1():
-    """Density vs Average (Length of Trajectory / Length of Shortest Path in Final Discovered Gridworld)\
+    """Density vs Average Length of Shortest Path in Final Discovered Gridworld
     """
 
     global agents
@@ -171,29 +172,33 @@ def density_v_runtime():
     # For a range of [0,.33] p values, generate gridworlds
     for p_index, p in enumerate(range(start, end, step)):
         print(str(p_index) + "th P: " + str(p))
-        num_success = 0
+        num_fail = 0
+
         # Keep making new gridworlds until desired # of solvable gridworlds are made
         for _ in range(trials_per_p):
-
-            # Generate gridworld as Manhattan distance but manually set later
-            solve.generategridworld(101, p)
 
             # Solve the gridworld with each agent
             for agent_num, agent in enumerate(agents):
 
+                # Generate gridworld
+                solve.generategridworld(101, p)
+
                 # Time the solve
                 start_time = time.time()
+
                 # If the gridworld is unsolvable, break -> moves onto next gridworld
                 if agent() is None:
+                    num_fail += 1
                     break
+
                 # Continues with the timer
                 stop_time = time.time()
                 results[agent_num][p_index] += stop_time - start_time
-            num_success += 1
 
         # Average out times for each p
-        for x in range(4):
-            if num_success != 0:
+        num_success = trials_per_p - num_fail
+        if num_success != 0:
+            for x in range(4):
                 results[x][p_index] /= num_success
         print(str(num_success) + "gridworlds succeeded for p = " + str(p))
 
@@ -201,7 +206,7 @@ def density_v_runtime():
 
     # Plot results
     N = 4
-    ind = np.arange(10)
+    ind = np.arange(11)
     width = 0.20
 
     bar1 = plt.bar(ind, results[0], width, color='r')

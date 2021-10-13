@@ -438,7 +438,19 @@ def infer3(curr):
 
 def solve4test():
     return None
-    
+
+
+
+KB = []
+# KB entry ex: ([A,B,C], 2)
+def add_to_KB():
+    return None
+
+def solve4KB():
+    return None
+
+
+
 def solve4():
     """
     Agent 4 - Own Inference Agent - design down agent that beats Example Agent

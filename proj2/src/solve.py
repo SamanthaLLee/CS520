@@ -61,6 +61,36 @@ def generategridworld(d, p):
     gridworld[0][0].seen = True
 
 
+def printGridworld():
+    """Prints out the current state of the gridworld.
+    Key:
+            B: blocked and seen
+            b: blocked and unseen
+            *: current path
+            ' ': free space
+    """
+    global gridworld
+    leng = len(gridworld)
+
+    string = ''
+    for i in range(leng):
+        string += ('-'*(leng*2+1) + '\n')
+        for j in range(leng):
+            string += '|'
+            curr = gridworld[i][j]
+            if curr.blocked and curr.seen:
+                string += 'B'
+            elif curr.blocked and not curr.seen:
+                string += 'b'
+            elif not curr.blocked and curr.seen:
+                string += '*'
+            else:
+                string += ' '
+        string += '|\n'
+    string += ('-'*(leng*2+1))
+    print(string)
+
+
 def astar(start):
     """Performs the A* algorithm on the gridworld
 
@@ -248,9 +278,9 @@ def solve3():
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
+            neighbor = gridworld[xx][yy]
 
             if isinbounds([xx, yy]) and neighbor.seen and neighbor.H != 0:
-                neighbor = gridworld[xx][yy]
                 if curr.blocked:
                     neighbor.B += 1
                 else:
@@ -359,6 +389,11 @@ def updateKB(curr):
 
 
 def sense3(curr):
+    """Sets curr's C, E, H, B values based on current KB
+
+    Args:
+        curr (cell): current cell
+    """
     curr.C = 0
     curr.E = 0
     curr.H = getnumneighbors(curr.x, curr.y)
@@ -381,7 +416,13 @@ def sense3(curr):
 
 
 def infer3(curr):
+    """Tests for the 3 given inferences
+
+    Args:
+        curr (cell): current cell to make inferences on
+    """
     if curr.H > 0:
+        # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
@@ -509,47 +550,9 @@ def isinbounds(curr):
 
 
 def getnumneighbors(x, y):
-    if iscorner(x, y, dim):
+    if (x == 0 and y == 0) or (x == 0 and y == dim-1) or (x == dim-1 and y == 0) or (x == dim-1 and y == dim-1):
         return 3
-    elif isborder(x, y, dim):
+    elif (x == 0) or (y == 0) or (y == dim-1) or (x == dim-1):
         return 5
     else:
         return 8
-
-
-def printGridworld():
-    """Prints out the current state of the gridworld.
-    Key:
-            B: blocked and seen
-            b: blocked and unseen
-            *: current path
-            ' ': free space
-    """
-    global gridworld
-    leng = len(gridworld)
-
-    string = ''
-    for i in range(leng):
-        string += ('-'*(leng*2+1) + '\n')
-        for j in range(leng):
-            string += '|'
-            curr = gridworld[i][j]
-            if curr.blocked and curr.seen:
-                string += 'B'
-            elif curr.blocked and not curr.seen:
-                string += 'b'
-            elif not curr.blocked and curr.seen:
-                string += '*'
-            else:
-                string += ' '
-        string += '|\n'
-    string += ('-'*(leng*2+1))
-    print(string)
-
-
-def iscorner(x, y, dim):
-    return (x == 0 and y == 0) or (x == 0 and y == dim-1) or (x == dim-1 and y == 0) or (x == dim-1 and y == dim-1)
-
-
-def isborder(x, y, dim):
-    return (x == 0) or (y == 0) or (y == dim-1) or (x == dim-1)

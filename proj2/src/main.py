@@ -5,8 +5,9 @@ import time
 
 agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
 
-# Have to make bar
+
 def density_v_trajectory_length():
+    # Have to make bar
     """Density vs Total Trajectory Length for each agent
     """
 
@@ -28,7 +29,7 @@ def density_v_trajectory_length():
 
         # Create trials_per_p # of gridworlds
         for _ in range(trials_per_p):
-            
+
             # Solve the gridworld with each agent
             for agent_num, agent in enumerate(agents):
 
@@ -73,9 +74,9 @@ def density_v_trajectory_length():
         xtick_list.append(str(curr_p))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
-    plt.legend((bar1, bar2, bar3, bar4), ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+    plt.legend((bar1, bar2, bar3, bar4),
+               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
     plt.show()
-
 
 
 def density_v_avg1():
@@ -100,7 +101,7 @@ def density_v_avg1():
 
         # Create trials_per_p # of gridworlds
         for _ in range(trials_per_p):
-            
+
             # Solve the gridworld with each agent
             for agent_num, agent in enumerate(agents):
 
@@ -135,7 +136,8 @@ def density_v_avg1():
     bar3 = plt.bar(ind+width*2, results[2], width, color='b')
     bar4 = plt.bar(ind+width*3, results[3], width)
 
-    plt.title('Density vs. Average Path Length Through Discovered Gridworld by Agent')
+    plt.title(
+        'Density vs. Average Path Length Through Discovered Gridworld by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Path Length')
 
@@ -146,10 +148,9 @@ def density_v_avg1():
         xtick_list.append(str(curr_p))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
-    plt.legend((bar1, bar2, bar3, bar4), ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+    plt.legend((bar1, bar2, bar3, bar4),
+               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
     plt.show()
-
-
 
 
 def density_v_runtime():
@@ -166,7 +167,6 @@ def density_v_runtime():
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     results = [[0 for _ in range(10)] for _ in range(4)]
-
 
     # For a range of [0,.33] p values, generate gridworlds
     for p_index, p in enumerate(range(start, end, step)):
@@ -218,9 +218,9 @@ def density_v_runtime():
     for p in range(start, end, step):
         xtick_list.append(str(p))
     plt.xticks(ind+width, xtick_list)
-    plt.legend((bar1, bar2, bar3, bar4), ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+    plt.legend((bar1, bar2, bar3, bar4),
+               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
     plt.show()
-
 
 
 def isfloat(str):
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     if (result is None):
         print("No solution.")
 
-    solve.trajectorylen = solve.trajectorylen if result is not None else None
-    print("Trajectory length:", solve.trajectorylen)
-    print("Cells processed: ", solve.numcellsprocessed)
-    print("Runtime: ", endtime - starttime, "s")
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
+    # print("Cells processed: ", solve.numcellsprocessed)
+    # print("Runtime: ", endtime - starttime, "s")

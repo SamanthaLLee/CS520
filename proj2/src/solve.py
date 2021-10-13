@@ -19,6 +19,8 @@ trajectorylen = 0
 
 dim = 0
 
+knowledgebase = []
+
 
 def generategridworld(d, p):
     """Generates a random gridworld based on user inputs"""
@@ -52,6 +54,18 @@ def generategridworld(d, p):
 
     # Ensure that the start and end positions are unblocked
     gridworld[0][0].blocked = 0
+
+    # gridworld[0][1].blocked = 1
+    # gridworld[0][2].blocked = 1
+    # gridworld[0][3].blocked = 1
+
+    # gridworld[1][0].blocked = 1
+    # gridworld[1][1].blocked = 1
+    # gridworld[1][4].blocked = 1
+
+    # gridworld[2][0].blocked = 1
+    # gridworld[2][1].blocked = 1
+    # gridworld[2][2].blocked = 1
     goal.blocked = 0
 
     # Initialize starting cell values
@@ -129,7 +143,7 @@ def astar(start):
                 nextCell = gridworld[xx][yy]
                 # Add children to fringe if inbounds AND unblocked and unseen
 
-                if not (nextCell.blocked and nextCell.seen):
+                if not (nextCell.blocked and nextCell.confirmed):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
@@ -247,7 +261,7 @@ def solve2():
             curr = curr.child
 
 
-def solve3():
+def solve3_old():
     """
     Agent 3 - Example Inference Agent
     """
@@ -315,11 +329,13 @@ def solve3():
                 curr = curr.child
 
 
-def solvex():
+def solve3():
     """
     Agent 3 - Example Inference Agent
     """
-    global goal, gridworld, alldirections, trajectorylen
+    global goal, gridworld, knowledgebase, alldirections, trajectorylen
+
+    printGridworld()
 
     path, len = astar(gridworld[0][0])
 
@@ -343,20 +359,21 @@ def solvex():
             return path
 
         # Run inferences on existing KB, given new knowledge from pre-processing
-        if curr.parent is not None:
-            updateKB(curr.parent)
+        # if curr.parent is not None:
+        #     updateKB()
 
-        # Run inferences on all neighbors, given new knowledge from pre-processing
-        for x, y in alldirections:
-            xx = curr.x + x
-            yy = curr.y + y
-            if isinbounds([xx, yy]):
-                neighbor = gridworld[xx][yy]
-                sense3(neighbor)
-                infer3(neighbor)
+        # # Run inferences on all neighbors, given new knowledge from pre-processing
+        # for x, y in alldirections:
+        #     xx = curr.x + x
+        #     yy = curr.y + y
+        #     if isinbounds([xx, yy]):
+        #         neighbor = gridworld[xx][yy]
+            # sense3(neighbor)
+            # infer3(neighbor)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
+            print("replan cause run into block")
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent)
             continue
@@ -366,29 +383,38 @@ def solvex():
             # Make inferences from this sensing
             infer3(curr)
 
-        # Replan if agent finds inferred block in path
-        ptr = curr.child
-        replanned = False
-        while ptr.child is not None:
-            if ptr.confirmed and ptr.blocked:
-                curr, len = astar(curr)
-                replanned = True
-                break
-            ptr = ptr.child
+            if curr.N == curr.B:
+                return None
 
-        # Otherwise, continue along A* path
-        if not replanned:
-            curr = curr.child
+            # Replan if agent finds inferred block in path
+            ptr = curr.child
+            replanned = False
+            while ptr.child is not None:
+                if ptr.confirmed and ptr.blocked:
+                    print("replan cause inferred block")
+                    curr, len = astar(curr)
+                    replanned = True
+                    break
+                ptr = ptr.child
+
+            # Otherwise, continue along A* path
+            if not replanned:
+                if curr in knowledgebase:
+                    knowledgebase.remove(curr)
+                knowledgebase.append(curr)
+                curr = curr.child
 
 
-def updateKB(curr):
-    while curr is not None:
+def updateKB():
+    global knowledgebase
+    for curr in reversed(knowledgebase):
+        print("updateKB", curr.x, curr.y)
         sense3(curr)
         infer3(curr)
-        curr = curr.parent
 
 
 def sense3(curr):
+    print("sense", curr.x, curr.y)
     """Sets curr's C, E, H, B values based on current KB
 
     Args:
@@ -396,6 +422,7 @@ def sense3(curr):
     """
     curr.C = 0
     curr.E = 0
+    curr.B = 0
     curr.H = getnumneighbors(curr.x, curr.y)
 
     for x, y in alldirections:
@@ -421,6 +448,7 @@ def infer3(curr):
     Args:
         curr (cell): current cell to make inferences on
     """
+    print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:

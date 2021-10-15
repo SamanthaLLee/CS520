@@ -344,7 +344,7 @@ def sense3(curr):
 
         if isinbounds([xx, yy]):
             neighbor = gridworld[xx][yy]
-            if neighbor.blocked:
+            if neighbor.blocked and curr.seen:
                 curr.C += 1
             if neighbor.confirmed:
                 if neighbor.blocked:

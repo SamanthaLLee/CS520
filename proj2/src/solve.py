@@ -179,6 +179,7 @@ def solve1():
     while True:
         # A* failed - unsolvable gridworld
         if curr is None:
+            print("2")
             return None
 
         trajectorylen += 1

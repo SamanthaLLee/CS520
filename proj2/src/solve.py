@@ -283,7 +283,7 @@ def solve3():
         if curr.parent is not None:
             updatekb3()
 
-        # # Run inferences on all neighbors, given new knowledge from pre-processing
+        # Run inferences on all neighbors, given new knowledge from pre-processing
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
@@ -294,7 +294,7 @@ def solve3():
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
-            print("replan cause run into block")
+            # print("replan cause run into block")
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent, agent)
             continue
@@ -304,15 +304,15 @@ def solve3():
             # Make inferences from this sensing
             infer3(curr, True)
 
-            # if curr.N == curr.B:
-            #     return None
+            if curr.N == curr.B:
+                return None
 
             # Replan if agent finds inferred block in path
             ptr = curr.child
             replanned = False
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
-                    print("replan cause inferred block")
+                    # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
                     replanned = True
                     break
@@ -324,6 +324,7 @@ def solve3():
                     knowledgebase.remove(curr)
                 knowledgebase.append(curr)
                 curr = curr.child
+                # print("continue along path")
 
 
 def sense3(curr):
@@ -332,6 +333,10 @@ def sense3(curr):
     Args:
         curr (cell): current cell
     """
+
+    if curr.blocked:
+        return
+
     curr.C = 0
     curr.E = 0
     curr.B = 0
@@ -359,10 +364,13 @@ def infer3(curr, recurse):
     Args:
         curr (cell): current cell to make inferences on
     """
+    if curr.blocked:
+        return
     # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
+            print("curr.C == curr.B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
@@ -373,6 +381,7 @@ def infer3(curr, recurse):
                         curr.E += 1
                         curr.H -= 1
         elif curr.N - curr.C == curr.E:
+            print("curr.N - curr.C == curr.E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x
@@ -383,20 +392,23 @@ def infer3(curr, recurse):
                         curr.B += 1
                         curr.H -= 1
     if curr.H == 0 and recurse:
+        print("curr.H == 0")
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
             if isinbounds([xx, yy]):
                 if gridworld[xx][yy].H == 0:
-                    infer3(gridworld[xx][yy], False)
+                    # infer3(gridworld[xx][yy], False)
+                    print("move outwards")
 
 
 def updatekb3():
     global knowledgebase
     for curr in reversed(knowledgebase):
-        # print("updateKB", curr.x, curr.y)
-        sense3(curr)
-        infer3(curr, False)
+        if curr.H > 0:
+            # print("updateKB", curr.x, curr.y)
+            sense3(curr)
+            infer3(curr, False)
 
 
 def solve4test():

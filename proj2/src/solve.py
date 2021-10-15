@@ -282,7 +282,7 @@ def solve3():
         if curr.parent is not None:
             updatekb3()
 
-        # # Run inferences on all neighbors, given new knowledge from pre-processing
+        # Run inferences on all neighbors, given new knowledge from pre-processing
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
@@ -323,6 +323,7 @@ def solve3():
                     knowledgebase.remove(curr)
                 knowledgebase.append(curr)
                 curr = curr.child
+                print("continue along path")
 
 
 def sense3(curr):

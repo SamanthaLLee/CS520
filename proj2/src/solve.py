@@ -273,89 +273,29 @@ def solve3():
         if curr.child is None:
             return path
 
-        # Update knowledge of seen neighbors
+        # Run inferences on existing KB, given new knowledge from pre-processing
+        if curr.parent is not None:
+            updatekb3()
+
+        # Run inferences on all neighbors, given new knowledge from pre-processing
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
-            neighbor = gridworld[xx][yy]
-
-            if isinbounds([xx, yy]) and neighbor.seen and neighbor.H != 0:
-                if curr.blocked:
-                    neighbor.B += 1
-                else:
-                    neighbor.E += 1
-                neighbor.H -= 1
-                infer3(neighbor)  # include or exclude?
-
-        # Replan if agent has run into blocked cell
-        if curr.blocked:
-            trajectorylen = trajectorylen - 2
-            curr, len = astar(curr.parent)
-            continue
-        else:
-            # Sense number of blocked and confirmed neighbors for curr
-            sense3(curr)
-
-            # Make inferences from this sensing
-            infer3(curr)
-
-            # Replan if agent finds inferred block in path
-            ptr = curr.child
-            replanned = False
-            while ptr.child is not None:
-                if ptr.confirmed and ptr.blocked:
-                    curr, len = astar(curr)
-                    replanned = True
-                    break
-                ptr = ptr.child
-
-            # Otherwise, continue along A* path
-            if not replanned:
-                curr = curr.child
-
-
-def solvex():
-    """
-    Agent 3 - Example Inference Agent
-    """
-    global goal, gridworld, alldirections, trajectorylen
-
-    path, len = astar(gridworld[0][0])
-
-    if path is None:
-        return None
-
-    # Traverse through planned path
-    curr = path
-    while True:
-
-        if(curr is None):
-            return None
-
-        # Pre-process current cell
-        curr.seen = True
-        curr.confirmed = True
-        trajectorylen = trajectorylen + 1
-
-        # Goal found
-        if curr.child is None:
-            return path
-
-        # Run inferences on existing KB, given new knowledge from pre-processing
-        if curr.parent is not None:
-            updateKB(curr.parent)
-
-        # Sense number of blocked and confirmed neighbors for curr
-        sense3(curr)
-
-        # Make inferences from this sensing
-        infer3(curr)
+            if isinbounds([xx, yy]):
+                neighbor = gridworld[xx][yy]
+                sense3(neighbor)
+                infer3(neighbor, False)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent)
             continue
+        else:
+            # Sense number of blocked and confirmed neighbors for curr
+            sense3(curr)
+            # Make inferences from this sensing
+            infer3(curr, True)
 
         # Replan if agent finds inferred block in path
         ptr = curr.child
@@ -367,16 +307,13 @@ def solvex():
                 break
             ptr = ptr.child
 
-        # Otherwise, continue along A* path
-        if not replanned:
-            curr = curr.child
-
-
-def updateKB(curr):
-    while curr is not None:
-        sense3(curr)
-        infer3(curr)
-        curr = curr.parent
+            # Otherwise, continue along A* path
+            if not replanned:
+                if curr in knowledgebase:
+                    knowledgebase.remove(curr)
+                knowledgebase.append(curr)
+                curr = curr.child
+                print("continue along path")
 
 
 def sense3(curr):
@@ -406,7 +343,7 @@ def sense3(curr):
                     curr.H -= 1
 
 
-def infer3(curr):
+def infer3(curr, recurse):
     """Tests for the 3 given inferences
 
     Args:
@@ -434,6 +371,21 @@ def infer3(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
+    if curr.H == 0 and recurse:
+        for x, y in alldirections:
+            xx = curr.x + x
+            yy = curr.y + y
+            if isinbounds([xx, yy]):
+                if gridworld[xx][yy].H == 0:
+                    infer3(gridworld[xx][yy], False)
+
+
+def updatekb3():
+    global knowledgebase
+    for curr in reversed(knowledgebase):
+        # print("updateKB", curr.x, curr.y)
+        sense3(curr)
+        infer3(curr, False)
 
 
 def solve4test():

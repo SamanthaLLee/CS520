@@ -58,7 +58,7 @@ def generategridworld(d, p):
 
     # Initialize starting cell values
     gridworld[0][0].g = 1
-    gridworld[0][0].h = getManhattanDistance(0, 0, goal.x, goal.y)
+    gridworld[0][0].h = getWeightedManhattanDistance(0, 0, goal.x, goal.y)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
@@ -95,10 +95,8 @@ def printGridworld():
 
 def astar(start):
     """Performs the A* algorithm on the gridworld
-
     Args:
         start (Cell): The cell from which A* will find a path to the goal
-
     Returns:
         Cell: The head of a Cell linked list containing the shortest path
         int: Length of returned final path
@@ -131,13 +129,13 @@ def astar(start):
                 nextCell = gridworld[xx][yy]
                 # Add children to fringe if inbounds AND unblocked and unseen
 
-                if not (nextCell.blocked and nextCell.seen):
+                if not (nextCell.blocked and nextCell.confirmed):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
                         nextCell.parent = curr
                         nextCell.g = curr.g + 1
-                        nextCell.h = getManhattanDistance(
+                        nextCell.h = getWeightedManhattanDistance(
                             xx, yy, goal.x, goal.y)
                         nextCell.f = nextCell.g + nextCell.h
                         fringe.put((nextCell.f, nextCell))
@@ -253,7 +251,9 @@ def solve3():
     """
     Agent 3 - Example Inference Agent
     """
-    global goal, gridworld, alldirections, trajectorylen
+    global goal, gridworld, knowledgebase, alldirections, trajectorylen
+
+    printGridworld()
 
     path, len = astar(gridworld[0][0])
 
@@ -280,7 +280,7 @@ def solve3():
         if curr.parent is not None:
             updatekb3()
 
-        # Run inferences on all neighbors, given new knowledge from pre-processing
+        # # Run inferences on all neighbors, given new knowledge from pre-processing
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
@@ -291,6 +291,7 @@ def solve3():
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
+            print("replan cause run into block")
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent)
             continue
@@ -300,15 +301,19 @@ def solve3():
             # Make inferences from this sensing
             infer3(curr, True)
 
-        # Replan if agent finds inferred block in path
-        ptr = curr.child
-        replanned = False
-        while ptr.child is not None:
-            if ptr.confirmed and ptr.blocked:
-                curr, len = astar(curr)
-                replanned = True
-                break
-            ptr = ptr.child
+            # if curr.N == curr.B:
+            #     return None
+
+            # Replan if agent finds inferred block in path
+            ptr = curr.child
+            replanned = False
+            while ptr.child is not None:
+                if ptr.confirmed and ptr.blocked:
+                    print("replan cause inferred block")
+                    curr, len = astar(curr)
+                    replanned = True
+                    break
+                ptr = ptr.child
 
             # Otherwise, continue along A* path
             if not replanned:
@@ -316,18 +321,18 @@ def solve3():
                     knowledgebase.remove(curr)
                 knowledgebase.append(curr)
                 curr = curr.child
-                print("continue along path")
 
 
 def sense3(curr):
+    # print("sense", curr.x, curr.y)
     """Sets curr's C, E, H, B values based on current KB
-
     Args:
         curr (cell): current cell
     """
     curr.C = 0
-    # curr.E = 0
-    # curr.H = getnumneighbors(curr.x, curr.y)
+    curr.E = 0
+    curr.B = 0
+    curr.H = getnumneighbors(curr.x, curr.y)
 
     for x, y in alldirections:
         xx = curr.x + x
@@ -348,10 +353,10 @@ def sense3(curr):
 
 def infer3(curr, recurse):
     """Tests for the 3 given inferences
-
     Args:
         curr (cell): current cell to make inferences on
     """
+    # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
@@ -389,22 +394,6 @@ def updatekb3():
         # print("updateKB", curr.x, curr.y)
         sense3(curr)
         infer3(curr, False)
-
-
-def solve4test():
-    return None
-
-
-KB = []
-# KB entry ex: ([A,B,C], 2)
-
-
-def add_to_KB():
-    return None
-
-
-def solve4KB():
-    return None
 
 
 def solve4():
@@ -499,9 +488,10 @@ def solve4():
             curr = curr.child
 
 
-def getManhattanDistance(x1, y1, x2, y2):
+def getWeightedManhattanDistance(x1, y1, x2, y2):
     """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
-    return (abs(x1-x2) + abs(y1-y2))
+
+    return 2*(abs(x1-x2) + abs(y1-y2))
 
 
 def isinbounds(curr):

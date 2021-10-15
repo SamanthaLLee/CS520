@@ -4,7 +4,7 @@ import solve
 import time
 
 # agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
-agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4test]
+agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
 
 
 def density_v_trajectory_length():

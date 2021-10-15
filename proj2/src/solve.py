@@ -179,7 +179,6 @@ def solve1():
     while True:
         # A* failed - unsolvable gridworld
         if curr is None:
-            print("2")
             return None
 
         trajectorylen += 1
@@ -291,7 +290,7 @@ def solve3():
             if isinbounds([xx, yy]):
                 neighbor = gridworld[xx][yy]
                 sense3(neighbor)
-                infer3(neighbor, False)
+                # infer3(neighbor, False)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -392,15 +391,15 @@ def infer3(curr, recurse):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
-    if curr.H == 0 and recurse:
-        print("curr.H == 0")
-        for x, y in alldirections:
-            xx = curr.x + x
-            yy = curr.y + y
-            if isinbounds([xx, yy]):
-                if gridworld[xx][yy].H == 0:
-                    # infer3(gridworld[xx][yy], False)
-                    print("move outwards")
+    # if curr.H == 0 and recurse:
+    #     print("curr.H == 0")
+    #     for x, y in alldirections:
+    #         xx = curr.x + x
+    #         yy = curr.y + y
+    #         if isinbounds([xx, yy]):
+    #             if gridworld[xx][yy].H == 0:
+    #                 # infer3(gridworld[xx][yy], False)
+    #                 print("move outwards")
 
 
 def updatekb3():

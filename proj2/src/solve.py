@@ -93,7 +93,7 @@ def printGridworld():
     print(string)
 
 
-def astar(start):
+def astar(start, agent):
     """Performs the A* algorithm on the gridworld
     Args:
         start (Cell): The cell from which A* will find a path to the goal
@@ -128,8 +128,7 @@ def astar(start):
             if isinbounds([xx, yy]):
                 nextCell = gridworld[xx][yy]
                 # Add children to fringe if inbounds AND unblocked and unseen
-
-                if not (nextCell.blocked and nextCell.confirmed):
+                if ((agent == 1 or agent == 2) and not (nextCell.blocked and nextCell.seen)) or ((agent == 3 or agent == 4) and not (nextCell.blocked and nextCell.confirmed)):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
@@ -167,7 +166,9 @@ def solve1():
     """
     global gridworld, cardinaldirections, trajectorylen
 
-    path, len = astar(gridworld[0][0])
+    agent = 1
+
+    path, len = astar(gridworld[0][0], agent)
 
     # Initial A* failed - unsolvable gridworld
     if path is None:
@@ -190,7 +191,7 @@ def solve1():
         if curr.blocked == True:
             trajectorylen -= 2
             curr.seen = True
-            path, len = astar(curr.parent)
+            path, len = astar(curr.parent, agent)
             curr = path
 
         # Continue along A* path
@@ -206,7 +207,9 @@ def solve2():
     """
     global gridworld, cardinaldirections, trajectorylen
 
-    path, len = astar(gridworld[0][0])
+    agent = 2
+
+    path, len = astar(gridworld[0][0], agent)
 
     # Initial A* failed - unsolvable gridworld
     if path is None:
@@ -229,7 +232,7 @@ def solve2():
         if curr.blocked == True:
             trajectorylen -= 2
             curr.seen = True
-            path, len = astar(curr.parent)
+            path, len = astar(curr.parent, agent)
             curr = path
 
         # Continue along A* path
@@ -253,9 +256,9 @@ def solve3():
     """
     global goal, gridworld, knowledgebase, alldirections, trajectorylen
 
-    printGridworld()
+    agent = 3
 
-    path, len = astar(gridworld[0][0])
+    path, len = astar(gridworld[0][0], agent)
 
     if path is None:
         return None
@@ -293,7 +296,7 @@ def solve3():
         if curr.blocked == True:
             print("replan cause run into block")
             trajectorylen = trajectorylen - 2
-            curr, len = astar(curr.parent)
+            curr, len = astar(curr.parent, agent)
             continue
         else:
             # Sense number of blocked and confirmed neighbors for curr
@@ -310,7 +313,7 @@ def solve3():
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
                     print("replan cause inferred block")
-                    curr, len = astar(curr)
+                    curr, len = astar(curr, agent)
                     replanned = True
                     break
                 ptr = ptr.child
@@ -396,96 +399,8 @@ def updatekb3():
         infer3(curr, False)
 
 
-def solve4():
-    """
-    Agent 4 - Own Inference Agent - design down agent that beats Example Agent
-    """
-    global goal, gridworld, alldirections, trajectorylen
-
-    path, len = astar(gridworld[0][0])
-
-    if path is None:
-        return None
-
-    # Traverse through planned path
-    curr = path
-    while True:
-
-        if(curr is None):
-            return None
-
-        curr.seen = True
-        curr.confirmed = True
-        trajectorylen = trajectorylen + 1
-
-        # Goal found
-        if(curr.child is None):
-            return path
-
-        # Sense number of blocked and confirmed neighbors
-        for x, y in alldirections:
-            xx = curr.x + x
-            yy = curr.y + y
-
-            if isinbounds([xx, yy]):
-                neighbor = gridworld[xx][yy]
-                if neighbor.blocked:
-                    curr.C += 1
-                if neighbor.confirmed:
-                    if neighbor.blocked:
-                        curr.B += 1
-                        curr.H -= 1
-                    else:
-                        curr.E += 1
-                        curr.H -= 1
-
-        # Make inferences from this sensing
-        if curr.H > 0:
-            if curr.C == curr.B:
-                # All remaining hidden neighbors are empty
-                for x, y in alldirections:
-                    xx = curr.x + x
-                    yy = curr.y + y
-                    if isinbounds([xx, yy]):
-                        if gridworld[xx][yy].confirmed == False:
-                            gridworld[xx][yy].confirmed = True
-                            curr.E += 1
-                            curr.H -= 1
-            elif curr.N - curr.C == curr.E:
-                # All remaining hidden neighbors are blocked
-                for x, y in alldirections:
-                    xx = curr.x + x
-                    yy = curr.y + y
-                    if isinbounds([xx, yy]):
-                        if gridworld[xx][yy].confirmed == False:
-                            gridworld[xx][yy].confirmed = True
-                            curr.B += 1
-                            curr.H -= 1
-            if curr.H == 0:
-                print("okie")
-                # everything around x is confirmed
-                # find all empty cells around x
-
-        # Replan if agent has run into blocked cell
-        if curr.blocked == True:
-            trajectorylen = trajectorylen - 2
-            curr, len = astar(curr.parent)
-            # update surrounding values!!
-            continue
-
-        # Replan if agent finds inferred block in path
-        ptr = curr.child
-        replanned = False
-        while ptr.child is not None:
-            if ptr.confirmed and ptr.blocked:
-                curr, len = astar(curr)
-                replanned = True
-                break
-            ptr = ptr.child
-
-        # Otherwise, continue along A* path
-        if not replanned:
-            curr = curr.child
+def solve4test():
+    return gridworld[0][0]
 
 
 def getWeightedManhattanDistance(x1, y1, x2, y2):

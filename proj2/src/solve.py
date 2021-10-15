@@ -411,6 +411,35 @@ def updatekb3():
             infer3(curr, False)
 
 
+def solve4():
+    return None
+    # KB = equation KB
+    # Agent 4 Pseudo:
+
+    # ret = Initial A*
+    # if ret is None:
+    #     return None
+
+    # while True:
+    #     preprocess curr cell - set confirmed, seen to T
+
+    #     if curr seen is blocked:
+    #     	update KB - decr count and remove curr cell in equations that contain curr cell
+    #         infer from equation KB
+    #         replan
+    #     else: curr is free
+    #     	sense/basic infer curr
+    #         add curr to KB:
+    #         	remove curr cell in equations that contain curr cell
+    #             add (curr cell's count (unconfirmed blocks), [unconfirmed neighbors]) to equation KB
+    #             	Ex: when adding (0,0) to KB when it's count = 2: ([(0,1),(1,0),(1,1)], 2)
+    #         infer from equation KB
+    #         if any cell in path is blocked:
+    #             replan
+    #         else:
+    #         	continue
+
+
 def solve4test():
     return gridworld[0][0]
 

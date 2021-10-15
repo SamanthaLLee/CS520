@@ -19,6 +19,8 @@ trajectorylen = 0
 
 dim = 0
 
+knowledgebase = []
+
 
 def generategridworld(d, p):
     """Generates a random gridworld based on user inputs"""
@@ -59,6 +61,7 @@ def generategridworld(d, p):
     gridworld[0][0].h = getManhattanDistance(0, 0, goal.x, goal.y)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
+
 
 def printGridworld():
     """Prints out the current state of the gridworld.
@@ -392,15 +395,16 @@ def solve4test():
     return None
 
 
-
 KB = []
 # KB entry ex: ([A,B,C], 2)
+
+
 def add_to_KB():
     return None
 
+
 def solve4KB():
     return None
-
 
 
 def solve4():

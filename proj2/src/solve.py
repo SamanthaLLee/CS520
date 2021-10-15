@@ -179,6 +179,7 @@ def solve1():
     while True:
         # A* failed - unsolvable gridworld
         if curr is None:
+            print("2")
             return None
 
         trajectorylen += 1
@@ -294,7 +295,7 @@ def solve3():
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
-            print("replan cause run into block")
+            # print("replan cause run into block")
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent, agent)
             continue
@@ -312,7 +313,7 @@ def solve3():
             replanned = False
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
-                    print("replan cause inferred block")
+                    # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
                     replanned = True
                     break

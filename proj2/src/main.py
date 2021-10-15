@@ -18,7 +18,7 @@ def density_v_trajectory_length():
 
     # Initialize constants:
     curr_p = 0
-    interval = 33/10
+    interval = .033
     trials_per_p = 40
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
@@ -27,7 +27,8 @@ def density_v_trajectory_length():
     # For a range of [0,.33] p values, generate gridworlds
     # Total # of gridworlds = (# p values) * trials_per_p * num_agents = 11 * 40 * 4 = 1760
     for p_index in range(11):
-        print(str(p_index) + "th P: " + str(curr_p))
+        curr_p = p_index * interval
+        print("P=" + str(curr_p))
 
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
@@ -41,7 +42,6 @@ def density_v_trajectory_length():
 
                 if agent() is None:
                     num_fail += 1
-                    break
                 else:
                     results[agent_num][p_index] += solve.trajectorylen
 
@@ -49,7 +49,8 @@ def density_v_trajectory_length():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            print(str(num_success) + "gridworlds succeeded for p = " + str(curr_p) + ", agent = " + str(agent_num))
+            print("\t" + str(num_success) + " gridworlds succeeded for p = " + str(curr_p) + ", agent = " + str(agent_num))
+            print("\tAvg trajlen = " + str(results[agent_num][p_index]))
 
     print(results)
 
@@ -89,7 +90,7 @@ def density_v_avg1():
 
     # Initialize constants:
     curr_p = 0
-    interval = 33/10
+    interval = .033
     trials_per_p = 40
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
@@ -98,7 +99,8 @@ def density_v_avg1():
     # For a range of [0,.33] p values, generate gridworlds
     # Total # of gridworlds = (# p values) * trials_per_p * num_agents = 11 * 40 * 4 = 1760
     for p_index in range(11):
-        print(str(p_index) + "th P: " + str(curr_p))
+        curr_p = p_index * interval
+        print("P=" + str(curr_p))
 
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
@@ -121,10 +123,7 @@ def density_v_avg1():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            print(str(num_success) + "gridworlds succeeded for p = " + str(curr_p) + ", agent = " + str(agent_num))
-        
-        # Incr curr_p
-        curr_p += interval
+            print(str(num_success) + " gridworlds succeeded for p = " + str(curr_p) + ", agent = " + str(agent_num))
 
     print(results)
 
@@ -161,7 +160,7 @@ def density_v_runtime():
     global agents
     # Initialize constants:
     curr_p = 0
-    interval = 33/10
+    interval = .033
     trials_per_p = 40
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
@@ -169,7 +168,8 @@ def density_v_runtime():
 
     # For a range of [0,.33] p values, generate gridworlds
     for p_index in range(11):
-        print(str(p_index) + "th P: " + str(curr_p))
+        curr_p = p_index * interval
+        print("P=" + str(curr_p))
 
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
@@ -177,20 +177,16 @@ def density_v_runtime():
 
             for _ in range(trials_per_p):
 
-                # Generate gridworld
+                # Generate gridworld and start timer
                 solve.generategridworld(101, curr_p)
-
-                # Time the solve
                 start_time = time.time()
 
-                # If the gridworld is unsolvable, break -> moves onto next gridworld
                 if agent() is None:
                     num_fail += 1
-                    break
-
-                # Continues with the timer
-                stop_time = time.time()
-                results[agent_num][p_index] += stop_time - start_time
+                else:
+                    # Continues with the timer
+                    stop_time = time.time()
+                    results[agent_num][p_index] += stop_time - start_time
 
             # Calculate average pathlen for each agent
             num_success = trials_per_p - num_fail
@@ -243,7 +239,6 @@ if __name__ == "__main__":
     #     p = input("Enter a valid probability. ")
 
     # solve.generategridworld(int(dim), float(p))
-
     # starttime = time.time()
     # result = solve.solve3()
     # solve.printGridworld()
@@ -257,5 +252,5 @@ if __name__ == "__main__":
     # print("Runtime: ", endtime - starttime, "s")
 
     density_v_trajectory_length()
-    density_v_avg1()
-    density_v_runtime()
+    # density_v_avg1()
+    # density_v_runtime()

@@ -166,7 +166,7 @@ def density_v_runtime():
     trials_per_p = 40
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
-    results = [[0 for _ in range(10)] for _ in range(4)]
+    results = [[0 for _ in range(11)] for _ in range(4)]
 
     # For a range of [0,.33] p values, generate gridworlds
     for p_index in range(11):
@@ -194,7 +194,7 @@ def density_v_runtime():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            print(str(num_success) + "gridworlds succeeded for p = " +
+            print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
     print(results)
@@ -215,8 +215,10 @@ def density_v_runtime():
 
     # Make xticks list
     xtick_list = []
-    for p in range(start, end, step):
-        xtick_list.append(str(p))
+    curr_p = 0
+    for _ in range(11):
+        xtick_list.append(str(curr_p))
+        curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
                ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
@@ -233,27 +235,27 @@ def isfloat(str):
 
 
 if __name__ == "__main__":
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 2:
-        dim = input("Enter a valid length. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 2:
+    #     dim = input("Enter a valid length. ")
 
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
+    # p = input("With what probability will a cell be blocked? ")
+    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
+    #     p = input("Enter a valid probability. ")
 
-    solve.generategridworld(int(dim), float(p))
-    starttime = time.time()
-    result = solve.solve3()
-    solve.printGridworld()
-    endtime = time.time()
-    if (result is None):
-        print("No solution.")
+    # solve.generategridworld(int(dim), float(p))
+    # starttime = time.time()
+    # result = solve.solve3()
+    # solve.printGridworld()
+    # endtime = time.time()
+    # if (result is None):
+    #     print("No solution.")
 
-    solve.trajectorylen = solve.trajectorylen if result is not None else None
-    print("Trajectory length:", solve.trajectorylen)
-    print("Cells processed: ", solve.numcellsprocessed)
-    print("Runtime: ", endtime - starttime, "s")
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
+    # print("Cells processed: ", solve.numcellsprocessed)
+    # print("Runtime: ", endtime - starttime, "s")
 
     # density_v_trajectory_length()
     # density_v_avg1()
-    # density_v_runtime()
+    density_v_runtime()

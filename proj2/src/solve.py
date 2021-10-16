@@ -60,10 +60,6 @@ def generategridworld(d, p):
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
 
-    gridworld[1][0].blocked = 1
-    gridworld[1][1].blocked = 1
-    gridworld[2][1].blocked = 1
-
 
 def printGridworld():
     """Prints out the current state of the gridworld.
@@ -144,7 +140,7 @@ def astar(start, agent):
 
     # Return None if no solution exists
     if len(fringeSet) == 0:
-        return None, None
+        return None, 0
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
     parentPtr = goal
@@ -240,7 +236,7 @@ def solve2():
         # Continue along A* path
         else:
             # Take note of environment within viewing distance (adjacent cells)
-            for dx, dy in cardinaldirections:
+            for dx, dy in alldirections:
                 xx, yy = curr.x + dx, curr.y + dy
 
                 # Only mark blocked neighbors as seen
@@ -256,7 +252,7 @@ def solve3():
     """
     Agent 3 - Example Inference Agent
     """
-    global goal, gridworld, knowledgebase, alldirections, trajectorylen
+    global goal, gridworld, alldirections, trajectorylen
 
     agent = 3
 
@@ -309,9 +305,6 @@ def solve3():
 
             # Otherwise, continue along A* path
             if not replanned:
-                if curr in knowledgebase:
-                    knowledgebase.remove(curr)
-                knowledgebase.append(curr)
                 curr = curr.child
                 # print("continue along path")
 
@@ -398,7 +391,11 @@ def updatekb3(curr):
             senseorcount3(neighbor, False)
             if neighbor.seen and neighbor.blocked == 0 and neighbor.H > 0:
                 if infer3(neighbor):
-                    updatekb(gridworld[xx][yy])
+                    for x, y in alldirections:
+                        xx2 = neighbor.x + x
+                        yy2 = neighbor.y + y
+                        if isinbounds([xx2, yy2]):
+                            updatekb3(gridworld[xx2][yy2])
 
 
 # KB = equation KB
@@ -425,7 +422,7 @@ def solve4():
         curr.seen = True
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
-    
+
         # Goal found
         if curr.child is None:
             return path

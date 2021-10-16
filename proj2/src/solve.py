@@ -304,9 +304,6 @@ def solve3():
             # Make inferences from this sensing
             infer3(curr, True)
 
-            if curr.N == curr.B:
-                return None
-
             # Replan if agent finds inferred block in path
             ptr = curr.child
             replanned = False
@@ -411,33 +408,64 @@ def updatekb3():
             infer3(curr, False)
 
 
+# KB = equation KB
 def solve4():
     return None
-    # KB = equation KB
-    # Agent 4 Pseudo:
 
-    # ret = Initial A*
-    # if ret is None:
-    #     return None
+    global goal, gridworld, knowledgebase, alldirections, trajectorylen
 
-    # while True:
-    #     preprocess curr cell - set confirmed, seen to T
+    agent = 3
 
-    #     if curr seen is blocked:
-    #     	update KB - decr count and remove curr cell in equations that contain curr cell
-    #         infer from equation KB
-    #         replan
-    #     else: curr is free
-    #     	sense/basic infer curr
-    #         add curr to KB:
-    #         	remove curr cell in equations that contain curr cell
-    #             add (curr cell's count (unconfirmed blocks), [unconfirmed neighbors]) to equation KB
-    #             	Ex: when adding (0,0) to KB when it's count = 2: ([(0,1),(1,0),(1,1)], 2)
-    #         infer from equation KB
-    #         if any cell in path is blocked:
-    #             replan
-    #         else:
-    #         	continue
+    path, len = astar(gridworld[0][0], agent)
+
+    if path is None:
+        return None
+
+    # Traverse through planned path
+    curr = path
+    while True:
+
+        if(curr is None):
+            return None
+
+        # Pre-process current cell
+        curr.seen = True
+        curr.confirmed = True
+        trajectorylen = trajectorylen + 1
+    
+        # Goal found
+        if curr.child is None:
+            return path
+
+        if curr.blocked == True:
+            update_KB(curr)
+            infer_KB()
+            trajectorylen = trajectorylen - 2
+            curr, len = astar(curr.parent, agent)
+            continue
+        else:
+            sense4(curr)
+            infer4(curr, True)
+            add_to_KB(curr)
+            infer_KB()
+
+            # Replan if agent finds inferred block in path
+            ptr = curr.child
+            replanned = False
+            while ptr.child is not None:
+                if ptr.confirmed and ptr.blocked:
+                    # print("replan cause inferred block")
+                    curr, len = astar(curr, agent)
+                    replanned = True
+                    break
+                ptr = ptr.child
+
+            # Otherwise, continue along A* path
+            if not replanned:
+                if curr in knowledgebase:
+                    knowledgebase.remove(curr)
+                knowledgebase.append(curr)
+                curr = curr.child
 
 
 def solve4test():

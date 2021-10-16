@@ -283,14 +283,13 @@ def solve3():
         if curr.parent is not None:
             updatekb3()
 
-        # Run inferences on all neighbors, given new knowledge from pre-processing
+        # Update neighbors, given new knowledge from pre-processing
         for x, y in alldirections:
             xx = curr.x + x
             yy = curr.y + y
             if isinbounds([xx, yy]):
                 neighbor = gridworld[xx][yy]
-                sense3(neighbor)
-                # infer3(neighbor, False)
+                senseorcount3(neighbor, False)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -300,9 +299,9 @@ def solve3():
             continue
         else:
             # Sense number of blocked and confirmed neighbors for curr
-            sense3(curr)
+            senseorcount3(curr, True)
             # Make inferences from this sensing
-            infer3(curr, True)
+            infer3(curr)
 
             if curr.N == curr.B:
                 return None
@@ -327,7 +326,7 @@ def solve3():
                 # print("continue along path")
 
 
-def sense3(curr):
+def senseorcount3(curr, sense):
     # print("sense", curr.x, curr.y)
     """Sets curr's C, E, H, B values based on current KB
     Args:
@@ -337,7 +336,8 @@ def sense3(curr):
     if curr.blocked:
         return
 
-    curr.C = 0
+    if sense:
+        curr.C = 0
     curr.E = 0
     curr.B = 0
     curr.H = getnumneighbors(curr.x, curr.y)
@@ -348,8 +348,10 @@ def sense3(curr):
 
         if isinbounds([xx, yy]):
             neighbor = gridworld[xx][yy]
-            if neighbor.blocked and curr.seen:
+            # Only sense if agent is in curr
+            if neighbor.blocked and sense:
                 curr.C += 1
+            # Count up all confirmed neighbors
             if neighbor.confirmed:
                 if neighbor.blocked:
                     curr.B += 1
@@ -359,13 +361,11 @@ def sense3(curr):
                     curr.H -= 1
 
 
-def infer3(curr, recurse):
+def infer3(curr):
     """Tests for the 3 given inferences
     Args:
         curr (cell): current cell to make inferences on
     """
-    if curr.blocked:
-        return
     # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
@@ -391,15 +391,6 @@ def infer3(curr, recurse):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
-    # if curr.H == 0 and recurse:
-    #     print("curr.H == 0")
-    #     for x, y in alldirections:
-    #         xx = curr.x + x
-    #         yy = curr.y + y
-    #         if isinbounds([xx, yy]):
-    #             if gridworld[xx][yy].H == 0:
-    #                 # infer3(gridworld[xx][yy], False)
-    #                 print("move outwards")
 
 
 def updatekb3():
@@ -407,8 +398,8 @@ def updatekb3():
     for curr in reversed(knowledgebase):
         if curr.H > 0:
             # print("updateKB", curr.x, curr.y)
-            sense3(curr)
-            infer3(curr, False)
+            senseorcount3(curr, False)
+            infer3(curr)
 
 
 def solve4():

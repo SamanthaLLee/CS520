@@ -299,6 +299,7 @@ def solve3():
                 if ptr.confirmed and ptr.blocked:
                     # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
+                    trajectorylen = trajectorylen - 1
                     replanned = True
                     break
                 ptr = ptr.child
@@ -362,7 +363,7 @@ def infer3(curr):
                 xx = curr.x + x
                 yy = curr.y + y
                 if isinbounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
+                    if not gridworld[xx][yy].confirmed:
                         gridworld[xx][yy].confirmed = True
                         curr.E += 1
                         curr.H -= 1
@@ -374,7 +375,7 @@ def infer3(curr):
                 xx = curr.x + x
                 yy = curr.y + y
                 if isinbounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
+                    if not gridworld[xx][yy].confirmed:
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1

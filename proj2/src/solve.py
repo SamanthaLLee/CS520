@@ -19,8 +19,6 @@ trajectorylen = 0
 
 dim = 0
 
-knowledgebase = []
-
 
 def generategridworld(d, p):
     """Generates a random gridworld based on user inputs"""
@@ -61,6 +59,10 @@ def generategridworld(d, p):
     gridworld[0][0].h = getWeightedManhattanDistance(0, 0, goal.x, goal.y)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
+
+    gridworld[1][0].blocked = 1
+    gridworld[1][1].blocked = 1
+    gridworld[2][1].blocked = 1
 
 
 def printGridworld():
@@ -279,17 +281,8 @@ def solve3():
         if curr.child is None:
             return path
 
-        # Run inferences on existing KB, given new knowledge from pre-processing
-        if curr.parent is not None:
-            updatekb3()
-
-        # Update neighbors, given new knowledge from pre-processing
-        for x, y in alldirections:
-            xx = curr.x + x
-            yy = curr.y + y
-            if isinbounds([xx, yy]):
-                neighbor = gridworld[xx][yy]
-                senseorcount3(neighbor, False)
+        # Update neighbors and cascade inferences
+        updatekb3(curr)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
@@ -366,10 +359,13 @@ def infer3(curr):
     Args:
         curr (cell): current cell to make inferences on
     """
+
+    inferencemade = False
     # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
+            inferencemade = True
             # print("curr.C == curr.B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
@@ -381,6 +377,7 @@ def infer3(curr):
                         curr.E += 1
                         curr.H -= 1
         elif curr.N - curr.C == curr.E:
+            inferencemade = True
             # print("curr.N - curr.C == curr.E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
@@ -391,15 +388,20 @@ def infer3(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
+        return inferencemade
 
 
-def updatekb3():
-    global knowledgebase
-    for curr in reversed(knowledgebase):
-        if curr.H > 0:
-            # print("updateKB", curr.x, curr.y)
-            senseorcount3(curr, False)
-            infer3(curr)
+def updatekb3(curr):
+    for x, y in alldirections:
+        xx = curr.x + x
+        yy = curr.y + y
+        if isinbounds([xx, yy]):
+            # Find all inbounds neighbors of curr
+            neighbor = gridworld[xx][yy]
+            senseorcount3(neighbor, False)
+            if neighbor.seen and neighbor.blocked == 0 and neighbor.H > 0:
+                if infer3(neighbor):
+                    updatekb(gridworld[xx][yy])
 
 
 def solve4():

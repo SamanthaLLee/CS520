@@ -370,7 +370,7 @@ def infer3(curr, recurse):
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
-            print("curr.C == curr.B")
+            # print("curr.C == curr.B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
@@ -381,7 +381,7 @@ def infer3(curr, recurse):
                         curr.E += 1
                         curr.H -= 1
         elif curr.N - curr.C == curr.E:
-            print("curr.N - curr.C == curr.E")
+            # print("curr.N - curr.C == curr.E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x

@@ -4,6 +4,7 @@ from queue import PriorityQueue
 from cell import Cell
 from equation import Equation
 import itertools
+import time
 
 # Global gridworld of Cell objects
 gridworld = []
@@ -21,6 +22,8 @@ trajectorylen = 0
 dim = 0
 finaldiscovered = False
 fullgridworld = False
+
+totalplanningtime = 0
 
 equation_KB = [Equation]
 
@@ -104,7 +107,8 @@ def astar(start, agent):
         Cell: The head of a Cell linked list containing the shortest path
         int: Length of returned final path
     """
-    global goal, gridworld, finaldiscovered, fullgridworld, cardinaldirections, numcellsprocessed
+    global goal, gridworld, finaldiscovered, fullgridworld, cardinaldirections, numcellsprocessed, totalplanningtime
+    starttime = time.time()
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
@@ -155,6 +159,8 @@ def astar(start, agent):
 
     # Return None if no solution exists
     if len(fringeSet) == 0:
+        endtime = time.time()
+        totalplanningtime += endtime - starttime
         return None, 0
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
@@ -169,9 +175,13 @@ def astar(start, agent):
             childPtr = parentPtr
             parentPtr = parentPtr.parent
         start.parent = oldParent
+        endtime = time.time()
+        totalplanningtime += endtime - starttime
 
         return start, astarlen
     else:
+        endtime = time.time()
+        totalplanningtime += endtime - starttime
         return None, 0
 
 
@@ -356,10 +366,9 @@ def senseorcount3(curr, sense):
             if neighbor.confirmed:
                 if neighbor.blocked:
                     curr.B += 1
-                    curr.H -= 1
                 else:
                     curr.E += 1
-                    curr.H -= 1
+                curr.H -= 1
 
 
 def infer3(curr):
@@ -470,9 +479,6 @@ def solve4():
 
             # Otherwise, continue along A* path
             if not replanned:
-                if curr in knowledgebase:
-                    knowledgebase.remove(curr)
-                knowledgebase.append(curr)
                 curr = curr.child
 
 

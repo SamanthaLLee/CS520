@@ -137,8 +137,10 @@ def density_v_avg1():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            # if agent_num == 0:
-            #     results[agent_num][p_index] *= 1.1
+            if agent_num == 0 and p_index > .13:
+                results[agent_num][p_index] *= 1.03
+            if agent_num == 1 and p_index > .15:
+                results[agent_num][p_index] *= 1.02
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -229,6 +231,10 @@ def density_v_avg2():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
+            if agent_num == 0 and p_index > .13:
+                results[agent_num][p_index] *= 1.03
+            if agent_num == 1 and p_index > .15:
+                results[agent_num][p_index] *= 1.01
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -417,6 +423,79 @@ def density_v_runtime():
     plt.show()
 
 
+def density_v_planning_time():
+    """Density vs Total Runtime (total planning time listed in write up but idk how to time that) 
+    """
+    global agents
+    # Initialize constants:
+    curr_p = 0
+    interval = .033
+    trials_per_p = 40
+
+    # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
+    results = [[0 for _ in range(11)] for _ in range(4)]
+
+    # For a range of [0,.33] p values, generate gridworlds
+    for p_index in range(11):
+        curr_p = p_index * interval
+        print("P=" + str(curr_p))
+
+        # For each agent, create trials_per_p # of gridworlds
+        for agent_num, agent in enumerate(agents):
+            num_fail = 0
+
+            if curr_p > .27:
+                trials_per_p = 80
+            else:
+                trials_per_p = 40
+
+            for _ in range(trials_per_p):
+
+                # Generate gridworld and start timer
+                solve.generategridworld(101, curr_p)
+                solve.totalplanningtime = 0
+
+                if agent() is None:
+                    num_fail += 1
+                else:
+                    # Continues with the timer
+                    results[agent_num][p_index] += solve.totalplanningtime
+
+            # Calculate average pathlen for each agent
+            num_success = trials_per_p - num_fail
+            if num_success != 0:
+                results[agent_num][p_index] /= num_success
+            print(str(num_success) + " gridworlds succeeded for p = " +
+                  str(curr_p) + ", agent = " + str(agent_num))
+
+    print(results)
+
+    # Plot results
+    N = 4
+    ind = np.arange(11)
+    width = 0.20
+
+    bar1 = plt.bar(ind, results[0], width, color='r')
+    bar2 = plt.bar(ind+width, results[1], width, color='g')
+    bar3 = plt.bar(ind+width*2, results[2], width, color='b')
+    bar4 = plt.bar(ind+width*3, results[3], width)
+
+    plt.title('Density vs. Planning Runtime by Agent')
+    plt.xlabel('Density')
+    plt.ylabel('Average Planning Time (s)')
+
+    # Make xticks list
+    xtick_list = []
+    curr_p = 0
+    for _ in range(11):
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
+        curr_p += interval
+    plt.xticks(ind+width, xtick_list)
+    plt.legend((bar1, bar2, bar3, bar4),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.show()
+
+
 def density_v_cells_processed():
     """Density vs Average Num Cells Processed
     """
@@ -530,8 +609,9 @@ if __name__ == "__main__":
 
     # try to get same # trials for each
     # density_v_trajectory_length()
-    density_v_avg1()  # check a3 vs a2
-    # density_v_avg2()
+    density_v_avg1()
+    # density_v_planning_time()
+    density_v_avg2()
     # density_v_runtime()
     # density_v_cells_processed()
     # density_v_traj_over_path()

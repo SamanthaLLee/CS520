@@ -254,6 +254,6 @@ if __name__ == "__main__":
     # print("Cells processed: ", solve.numcellsprocessed)
     # print("Runtime: ", endtime - starttime, "s")
 
-    density_v_trajectory_length()
+    # density_v_trajectory_length()
     # density_v_avg1()
     # density_v_runtime()

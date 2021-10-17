@@ -137,6 +137,8 @@ def density_v_avg1():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
+            # if agent_num == 0:
+            #     results[agent_num][p_index] *= 1.1
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -156,6 +158,96 @@ def density_v_avg1():
         'Density vs. Average Path Length Through Discovered Gridworld by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Path Length')
+
+    # Make xticks list
+    xtick_list = []
+    curr_p = 0
+    for _ in range(11):
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
+        curr_p += interval
+    plt.xticks(ind+width, xtick_list)
+    plt.legend((bar1, bar2, bar3, bar4),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.show()
+
+
+def density_v_avg2():
+    """Density vs Average Path in Discovered Gridworld/Path in Full Gridworld
+    """
+
+    global agents
+
+    print("density_v_avg2")
+
+    # Initialize constants:
+    curr_p = 0
+    interval = .033
+    trials_per_p = 50
+
+    # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
+    results = [[0 for _ in range(11)] for _ in range(4)]
+
+    # For a range of [0,.33] p values, generate gridworlds
+    # Total # of gridworlds = (# p values) * trials_per_p * num_agents = 11 * 40 * 4 = 1760
+    for p_index in range(11):
+        curr_p = p_index * interval
+        print("P=" + str(curr_p))
+
+        # For each agent, create trials_per_p # of gridworlds
+        for agent_num, agent in enumerate(agents):
+            num_fail = 0
+
+            if curr_p > .27:
+                trials_per_p = 100
+            else:
+                trials_per_p = 50
+
+            for _ in range(trials_per_p):
+
+                # Generate and solve new gridworld with current agent
+                solve.trajectorylen = 0
+                solve.generategridworld(101, curr_p)
+
+                if agent() is None:
+                    num_fail += 1
+                else:
+                    solve.finaldiscovered = True
+                    path, pathlen = solve.astar(
+                        solve.gridworld[0][0], agent_num+1)
+                    solve.finaldiscovered = False
+
+                    solve.fullgridworld = True
+                    path, fullpathlen = solve.astar(
+                        solve.gridworld[0][0], agent_num+1)
+                    solve.fullgridworld = False
+
+                    results[agent_num][p_index] += pathlen/fullpathlen
+
+                    # results[agent_num][p_index] += solve.trajectorylen
+
+            # Calculate average pathlen for each agent
+            num_success = trials_per_p - num_fail
+            if num_success != 0:
+                results[agent_num][p_index] /= num_success
+            print(str(num_success) + " gridworlds succeeded for p = " +
+                  str(curr_p) + ", agent = " + str(agent_num))
+
+    print(results)
+
+    # Plot results
+    N = 4
+    ind = np.arange(11)
+    width = 0.20
+
+    bar1 = plt.bar(ind, results[0], width, color='r')
+    bar2 = plt.bar(ind+width, results[1], width, color='g')
+    bar3 = plt.bar(ind+width*2, results[2], width, color='b')
+    bar4 = plt.bar(ind+width*3, results[3], width)
+
+    plt.title(
+        'Density vs. Average Path in Discovered Gridworld/Path in Full Gridworld')
+    plt.xlabel('Density')
+    plt.ylabel('Path in Discovered Gridworld/Path in Full Gridworld')
 
     # Make xticks list
     xtick_list = []
@@ -209,8 +301,10 @@ def density_v_traj_over_path():
                 if agent() is None:
                     num_fail += 1
                 else:
+                    finaldiscovered = True
                     path, pathlen = solve.astar(
                         solve.gridworld[0][0], agent_num+1)
+                    finaldiscovered = False
                     results[agent_num][p_index] += solve.trajectorylen/pathlen
 
             # Calculate average trajectorylen/pathlen for each agent
@@ -435,8 +529,25 @@ if __name__ == "__main__":
     # print("Runtime: ", endtime - starttime, "s")
 
     # try to get same # trials for each
-    density_v_trajectory_length()  # check a3 vs a2
+    # density_v_trajectory_length()
     density_v_avg1()  # check a3 vs a2
+    # density_v_avg2()
     # density_v_runtime()
     # density_v_cells_processed()
     # density_v_traj_over_path()
+
+    # solve.generategridworld(10, .2)
+    # solve.solve3()
+
+    # solve.finaldiscovered = True
+    # path, pathlen = solve.astar(solve.gridworld[0][0], 3)
+    # solve.finaldiscovered = False
+
+    # solve.fullgridworld = True
+    # path, fullpathlen = solve.astar(solve.gridworld[0][0], 3)
+    # solve.fullgridworld = False
+
+    # solve.printGridworld()
+
+    # print("discovered path: ", pathlen)
+    # print("full path (smaller): ", fullpathlen)

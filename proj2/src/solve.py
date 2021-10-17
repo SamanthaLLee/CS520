@@ -404,9 +404,9 @@ def updatekb3():
 
 
 
-# KB = equation KB
 def solve4():
-    return None
+    """Agent 3 - Example Inference Agent
+    """
 
     global goal, gridworld, equation_KB, alldirections, trajectorylen
 
@@ -432,8 +432,9 @@ def solve4():
         if curr.child is None:
             return path
 
+        # Curr cell revealed to be blocked - make inferences and replan
         if curr.blocked == True:
-            mark_blocked_in_KB(curr)
+            remove_from_KB(curr)
             infer_KB()
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent, agent)
@@ -482,16 +483,15 @@ def basic_sense(curr):
 
         if is_in_bounds([xx, yy]):
             neighbor = gridworld[xx][yy]
-            if neighbor.blocked:
+            if neighbor.blocked: # Counts number of adjacent blocked cells (minesweeper number)
                 curr.C += 1
-            # Count up all confirmed neighbors
-            if neighbor.confirmed:
+            if neighbor.confirmed: # Counts confirmed neighbors and if blocked/free
                 curr.H -= 1
                 if neighbor.blocked:
                     curr.B += 1
                 else:
                     curr.E += 1
-            else:        
+            else: # Counts unconfirmed neighbors
                 curr.H += 1
 
 
@@ -546,6 +546,22 @@ def add_to_KB(cell: Cell):
 
     # Add new equation to KB
     equation_KB.append(Equation(unconfirmed_neighbors_set, cell.N))
+
+
+def remove_from_KB(cell: Cell):
+    """Removes the given blocked cells from the equation knowledge base.
+    DOES NOT UPDATE KB ITSELF
+
+    Args:
+        cell (cell): given blocked cell
+    """
+    global equation_KB, alldirections
+
+    # Removes cell from equation's cell list and decrements equation count
+    for equation in equation_KB:
+        if cell in equation.cells:
+            equation.remove(cell)
+            equation.count -= 1
 
 
 def KB_infer(cell:Cell):

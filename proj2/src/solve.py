@@ -18,6 +18,7 @@ numcellsprocessed = 0
 trajectorylen = 0
 dim = 0
 finaldiscovered = False
+fullgridworld = False
 
 
 def generategridworld(d, p):
@@ -99,11 +100,12 @@ def astar(start, agent):
         Cell: The head of a Cell linked list containing the shortest path
         int: Length of returned final path
     """
-    global goal, gridworld, cardinaldirections, numcellsprocessed
+    global goal, gridworld, finaldiscovered, fullgridworld, cardinaldirections, numcellsprocessed
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
     astarlen = 0
+    goalfound = False
 
     curr = start
     fringe.put((curr.f, curr))
@@ -114,13 +116,17 @@ def astar(start, agent):
     while len(fringeSet) != 0:
         f, curr = fringe.get()
         if curr is goal:
+            goalfound = True
             break
         if curr.id not in fringeSet:
             continue
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
         numcellsprocessed += 1
-        astarlen += 1
+        # if fullgridworld:
+        #     print("fullgridworld", curr.x, curr.y)
+        # if finaldiscovered:
+        #     print("finaldiscovered", curr.x, curr.y)
         for x, y in cardinaldirections:
             xx = curr.x + x
             yy = curr.y + y
@@ -130,36 +136,39 @@ def astar(start, agent):
                 validchild = ((agent == 1 or agent == 2) and not (nextCell.blocked and nextCell.seen)) or (
                     (agent == 3 or agent == 4) and not (nextCell.blocked and nextCell.confirmed))
                 # Add children to fringe if inbounds AND unblocked and unseen
-                if validchild and not (finaldiscovered and not nextCell.seen):
-                    # Add child if not already in fringe
-                    # If in fringe, update child in fringe if old g value > new g value
-                    if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
-                        nextCell.parent = curr
-                        nextCell.g = curr.g + 1
-                        nextCell.h = getWeightedManhattanDistance(
-                            xx, yy, goal.x, goal.y)
-                        nextCell.f = nextCell.g + nextCell.h
-                        fringe.put((nextCell.f, nextCell))
-                        fringeSet.add(nextCell.id)
+                if (finaldiscovered and nextCell.seen) or not finaldiscovered:
+                    if validchild or (fullgridworld and not nextCell.blocked):
+                        # Add child if not already in fringe
+                        # If in fringe, update child in fringe if old g value > new g value
+                        if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
+                            nextCell.parent = curr
+                            nextCell.g = curr.g + 1
+                            nextCell.h = getWeightedManhattanDistance(
+                                xx, yy, goal.x, goal.y)
+                            nextCell.f = nextCell.g + nextCell.h
+                            fringe.put((nextCell.f, nextCell))
+                            fringeSet.add(nextCell.id)
 
     # Return None if no solution exists
     if len(fringeSet) == 0:
         return None, 0
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
-    parentPtr = goal
-    childPtr = None
-    oldParent = start.parent
-    start.parent = None
-    # astarlen = 0
-    while(parentPtr is not None):
-        # astarlen = astarlen + 1
-        parentPtr.child = childPtr
-        childPtr = parentPtr
-        parentPtr = parentPtr.parent
-    start.parent = oldParent
+    if goalfound:
+        parentPtr = goal
+        childPtr = None
+        oldParent = start.parent
+        start.parent = None
+        while(parentPtr is not None):
+            astarlen += 1
+            parentPtr.child = childPtr
+            childPtr = parentPtr
+            parentPtr = parentPtr.parent
+        start.parent = oldParent
 
-    return start, astarlen
+        return start, astarlen
+    else:
+        return None, 0
 
 
 def solve1():
@@ -193,7 +202,7 @@ def solve1():
 
         # Run into blocked cell
         if curr.blocked == True:
-            # trajectorylen -= 1
+            trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
 
@@ -234,7 +243,7 @@ def solve2():
 
         # Run into blocked cell
         if curr.blocked == True:
-            # trajectorylen -= 1
+            trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
 
@@ -287,7 +296,7 @@ def solve3():
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             # print("replan cause run into block")
-            # trajectorylen -= 1
+            trajectorylen -= 1
             curr, len = astar(curr.parent, agent)
             continue
         else:

@@ -631,3 +631,7 @@ if __name__ == "__main__":
 
     # print("discovered path: ", pathlen)
     # print("full path (smaller): ", fullpathlen)
+
+    solve.generategridworld2()
+    solve.solve4()
+    print(solve.gridworld[1][0].confirmed)

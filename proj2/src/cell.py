@@ -44,6 +44,7 @@ class Cell(object):
         self.E = 0
         self.H = 0
         self.confirmed = False
+        self.sensed = False
 
     def __lt__(self, other):
         return self.id < other.id
@@ -52,7 +53,11 @@ class Cell(object):
         return self.id == other.id
 
     def __str__(self):
-        return "("+str(self.x) + "," + str(self.y) + ") | id: " + str(self.id)
+        return f"({self.x},{self.y})"
+        # return f"({self.x},{self.y}) | id: {self.id}"
 
     def __repr__(self):
         return self.__str__()
+
+    def __hash__(self):
+        return hash(self.id)

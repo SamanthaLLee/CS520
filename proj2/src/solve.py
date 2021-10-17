@@ -484,7 +484,7 @@ def solve4():
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
         # print(f"At: {curr.x}, {curr.y}")
-        printGridworld()
+        # printGridworld()
 
         # Goal found
         if curr.child is None:

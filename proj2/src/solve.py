@@ -16,8 +16,8 @@ alldirections = [(1, 0), (-1, 0), (0, 1), (0, -1),
 
 numcellsprocessed = 0
 trajectorylen = 0
-
 dim = 0
+finaldiscovered = False
 
 
 def generategridworld(d, p):
@@ -103,6 +103,7 @@ def astar(start, agent):
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
+    astarlen = 0
 
     curr = start
     fringe.put((curr.f, curr))
@@ -118,15 +119,18 @@ def astar(start, agent):
             continue
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
-        numcellsprocessed = numcellsprocessed + 1
+        numcellsprocessed += 1
+        astarlen += 1
         for x, y in cardinaldirections:
             xx = curr.x + x
             yy = curr.y + y
 
             if isinbounds([xx, yy]):
                 nextCell = gridworld[xx][yy]
+                validchild = ((agent == 1 or agent == 2) and not (nextCell.blocked and nextCell.seen)) or (
+                    (agent == 3 or agent == 4) and not (nextCell.blocked and nextCell.confirmed))
                 # Add children to fringe if inbounds AND unblocked and unseen
-                if ((agent == 1 or agent == 2) and not (nextCell.blocked and nextCell.seen)) or ((agent == 3 or agent == 4) and not (nextCell.blocked and nextCell.confirmed)):
+                if validchild and not (finaldiscovered and not nextCell.seen):
                     # Add child if not already in fringe
                     # If in fringe, update child in fringe if old g value > new g value
                     if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
@@ -147,9 +151,9 @@ def astar(start, agent):
     childPtr = None
     oldParent = start.parent
     start.parent = None
-    astarlen = 0
+    # astarlen = 0
     while(parentPtr is not None):
-        astarlen = astarlen + 1
+        # astarlen = astarlen + 1
         parentPtr.child = childPtr
         childPtr = parentPtr
         parentPtr = parentPtr.parent
@@ -179,23 +183,23 @@ def solve1():
         if curr is None:
             return None
 
+        # Pre-process cell
+        curr.seen = True
         trajectorylen += 1
+
         # Goal found
         if curr.child is None:
-            curr.seen = True
             return path
 
         # Run into blocked cell
         if curr.blocked == True:
-            trajectorylen -= 2
-            curr.seen = True
+            # trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
 
         # Continue along A* path
         else:
-            # Mark current cell as seen and move onto next cell along A* path
-            curr.seen = True
+            # Move onto next cell along A* path
             curr = curr.child
 
 
@@ -220,31 +224,31 @@ def solve2():
         if curr is None:
             return None
 
+        # Pre-process cell
+        curr.seen = True
         trajectorylen += 1
+
         # Goal found
         if curr.child is None:
-            curr.seen = True
             return path
 
         # Run into blocked cell
         if curr.blocked == True:
-            trajectorylen -= 2
-            curr.seen = True
+            # trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
 
         # Continue along A* path
         else:
             # Take note of environment within viewing distance (adjacent cells)
-            for dx, dy in alldirections:
+            for dx, dy in cardinaldirections:
                 xx, yy = curr.x + dx, curr.y + dy
 
                 # Only mark blocked neighbors as seen
                 if isinbounds([xx, yy]) and gridworld[xx][yy].blocked:
                     neighbor = gridworld[xx][yy]
                     neighbor.seen = True
-            # Mark current cell as seen and move onto next cell along A* path
-            curr.seen = True
+            # Move onto next cell along A* path
             curr = curr.child
 
 
@@ -271,7 +275,7 @@ def solve3():
         # Pre-process current cell
         curr.seen = True
         curr.confirmed = True
-        trajectorylen = trajectorylen + 1
+        trajectorylen += 1
 
         # Goal found
         if curr.child is None:
@@ -283,7 +287,7 @@ def solve3():
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             # print("replan cause run into block")
-            trajectorylen = trajectorylen - 2
+            # trajectorylen -= 1
             curr, len = astar(curr.parent, agent)
             continue
         else:
@@ -299,7 +303,7 @@ def solve3():
                 if ptr.confirmed and ptr.blocked:
                     # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
-                    trajectorylen = trajectorylen - 1
+                    trajectorylen -= 1
                     replanned = True
                     break
                 ptr = ptr.child

@@ -34,6 +34,11 @@ def density_v_trajectory_length():
         for agent_num, agent in enumerate(agents):
             num_fail = 0
 
+            if curr_p > .27:
+                trials_per_p = 80
+            else:
+                trials_per_p = 40
+
             for _ in range(trials_per_p):
 
                 # Generate and solve new gridworld with current agent
@@ -73,11 +78,11 @@ def density_v_trajectory_length():
     xtick_list = []
     curr_p = 0
     for _ in range(11):
-        xtick_list.append(str(curr_p))
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
     plt.show()
 
 
@@ -92,7 +97,7 @@ def density_v_avg1():
     # Initialize constants:
     curr_p = 0
     interval = .033
-    trials_per_p = 40
+    trials_per_p = 50
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     results = [[0 for _ in range(11)] for _ in range(4)]
@@ -107,6 +112,11 @@ def density_v_avg1():
         for agent_num, agent in enumerate(agents):
             num_fail = 0
 
+            if curr_p > .27:
+                trials_per_p = 100
+            else:
+                trials_per_p = 50
+
             for _ in range(trials_per_p):
 
                 # Generate and solve new gridworld with current agent
@@ -116,9 +126,11 @@ def density_v_avg1():
                 if agent() is None:
                     num_fail += 1
                 else:
+                    solve.finaldiscovered = True
                     path, pathlen = solve.astar(
                         solve.gridworld[0][0], agent_num+1)
                     results[agent_num][p_index] += pathlen
+                    solve.finaldiscovered = False
                     # results[agent_num][p_index] += solve.trajectorylen
 
             # Calculate average pathlen for each agent
@@ -149,11 +161,11 @@ def density_v_avg1():
     xtick_list = []
     curr_p = 0
     for _ in range(11):
-        xtick_list.append(str(curr_p))
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
     plt.show()
 
 
@@ -168,7 +180,7 @@ def density_v_traj_over_path():
     # Initialize constants:
     curr_p = 0
     interval = .033
-    trials_per_p = 40
+    trials_per_p = 100
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     results = [[0 for _ in range(11)] for _ in range(4)]
@@ -182,6 +194,11 @@ def density_v_traj_over_path():
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
             num_fail = 0
+
+            if curr_p > .27:
+                trials_per_p = 200
+            else:
+                trials_per_p = 100
 
             for _ in range(trials_per_p):
 
@@ -224,11 +241,11 @@ def density_v_traj_over_path():
     xtick_list = []
     curr_p = 0
     for _ in range(11):
-        xtick_list.append(str(curr_p))
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
     plt.show()
 
 
@@ -252,6 +269,11 @@ def density_v_runtime():
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
             num_fail = 0
+
+            if curr_p > .27:
+                trials_per_p = 80
+            else:
+                trials_per_p = 40
 
             for _ in range(trials_per_p):
 
@@ -293,11 +315,11 @@ def density_v_runtime():
     xtick_list = []
     curr_p = 0
     for _ in range(11):
-        xtick_list.append(str(curr_p))
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
     plt.show()
 
 
@@ -326,6 +348,11 @@ def density_v_cells_processed():
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
             num_fail = 0
+
+            if curr_p > .27:
+                trials_per_p = 80
+            else:
+                trials_per_p = 40
 
             for _ in range(trials_per_p):
 
@@ -368,11 +395,11 @@ def density_v_cells_processed():
     xtick_list = []
     curr_p = 0
     for _ in range(11):
-        xtick_list.append(str(curr_p))
+        xtick_list.append(str('{0:.3g}'.format(curr_p)))
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1', 'Agent2', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
     plt.show()
 
 
@@ -407,8 +434,9 @@ if __name__ == "__main__":
     # print("Cells processed: ", solve.numcellsprocessed)
     # print("Runtime: ", endtime - starttime, "s")
 
-    # density_v_trajectory_length()
-    # density_v_avg1()
-    density_v_runtime()
+    # try to get same # trials for each
+    density_v_trajectory_length()  # check a3 vs a2
+    density_v_avg1()  # check a3 vs a2
+    # density_v_runtime()
     # density_v_cells_processed()
     # density_v_traj_over_path()

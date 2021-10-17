@@ -444,18 +444,22 @@ def solve4():
         if curr.child is None:
             return path
 
-        # Curr cell revealed to be blocked - make inferences and replan
+        # Make basic inferences, remove cell from all eq's in KB, infer, and replan
         if curr.blocked == True:
+            basic_infer(curr)
             remove_from_KB(curr)
-            infer_KB()
+            KB_infer(curr)
+
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent, agent)
-            continue
+        # Sense new cell, basic infer, add new equation to KB, 
+        # remove cell from eq's in KB, infer, and replan/continue
         else:
             basic_sense(curr)
             basic_infer(curr)
-            add_to_KB(curr)
-            update_KB()
+            add_eq_to_KB(curr)
+            remove_from_KB(curr)
+            KB_infer(curr)
 
             # Replan if agent finds inferred block in path
             ptr = curr.child
@@ -511,6 +515,11 @@ def basic_sense(curr):
 
 def basic_infer(curr):
     """Tests for the 3 given inferences
+    If inference found:
+        remove from cell from eq's in KB
+        CANNOT add new equation to KB for newly free inferred cells without sensing
+        infer on inferred cells' unconfirmed neighbors
+    
     Args:
         curr (cell): current cell to make inferences on
     """
@@ -523,10 +532,13 @@ def basic_infer(curr):
                 xx = curr.x + x
                 yy = curr.y + y
                 if is_in_bounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
-                        gridworld[xx][yy].confirmed = True
+                    neighbor = gridworld[xx][yy]
+                    if neighbor.confirmed == False:
+                        neighbor.confirmed = True
+                        remove_from_KB(neighbor)
                         curr.E += 1
                         curr.H -= 1
+                        basic_infer_recurse_on_neighbors(neighbor)
         elif curr.N - curr.C == curr.E:
             # print("curr.N - curr.C == curr.E")
             # All remaining hidden neighbors are blocked
@@ -534,13 +546,25 @@ def basic_infer(curr):
                 xx = curr.x + x
                 yy = curr.y + y
                 if is_in_bounds([xx, yy]):
-                    if gridworld[xx][yy].confirmed == False:
-                        gridworld[xx][yy].confirmed = True
+                    neighbor = gridworld[xx][yy]
+                    if neighbor.confirmed == False:
+                        neighbor.confirmed = True
+                        remove_from_KB(neighbor)
                         curr.B += 1
                         curr.H -= 1
+                        basic_infer_recurse_on_neighbors(neighbor)
 
+def basic_infer_recurse_on_neighbors(curr):
+    global alldirections
 
-def add_to_KB(cell: Cell):
+    for x, y in alldirections:
+        xx = curr.x + x
+        yy = curr.y + y
+        if is_in_bounds([xx, yy]):
+            if gridworld[xx][yy].confirmed == False:
+                basic_infer(gridworld[xx][yy])
+
+def add_eq_to_KB(cell: Cell):
     """Adds the given free cell to the equation knowledge base.
     DOES NOT UPDATE KB ITSELF
 
@@ -563,19 +587,21 @@ def add_to_KB(cell: Cell):
 
 
 def remove_from_KB(cell: Cell):
-    """Removes the given blocked cells from the equation knowledge base.
+    """Removes the given cell from the equation knowledge base.
     DOES NOT UPDATE KB ITSELF
 
     Args:
-        cell (cell): given blocked cell
+        cell (cell): given cell
     """
     global equation_KB, alldirections
 
-    # Removes cell from equation's cell list and decrements equation count
+    # Removes cell from equation's cell list 
+    # and decrements equation count if cell is blocked
     for equation in equation_KB:
         if cell in equation.cells:
             equation.remove(cell)
-            equation.count -= 1
+            if cell.blocked:
+                equation.count -= 1
 
 
 def KB_infer(cell: Cell):

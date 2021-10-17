@@ -530,7 +530,7 @@ if __name__ == "__main__":
 
     # try to get same # trials for each
     # density_v_trajectory_length()
-    density_v_avg1()  # check a3 vs a2
+    # density_v_avg1()  # check a3 vs a2
     # density_v_avg2()
     # density_v_runtime()
     # density_v_cells_processed()
@@ -551,3 +551,6 @@ if __name__ == "__main__":
 
     # print("discovered path: ", pathlen)
     # print("full path (smaller): ", fullpathlen)
+
+    solve.generategridworld2()
+    solve.solve4()

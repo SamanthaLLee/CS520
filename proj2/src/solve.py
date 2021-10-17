@@ -22,7 +22,7 @@ dim = 0
 finaldiscovered = False
 fullgridworld = False
 
-equation_KB = [Equation]
+equation_KB = []
 
 
 def generategridworld(d, p):
@@ -64,6 +64,50 @@ def generategridworld(d, p):
     gridworld[0][0].h = get_weighted_manhattan_distance(0, 0, goal.x, goal.y)
     gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
     gridworld[0][0].seen = True
+
+
+
+def generategridworld2():
+    """Generates a random gridworld based on user inputs"""
+    global goal, gridworld, dim
+    dim = 4
+    # Cells are constructed in the following way:
+    # Cell(g, h, f, blocked, seen, parent)
+    gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
+    id = 0
+
+    # Let each cell independently be blocked with probability p, and empty with probability 1−p.
+    for i in range(dim):
+        for j in range(dim):
+            curr = gridworld[i][j]
+
+            # Assign ID
+            curr.id = id
+            id += 1
+
+            # Set N and H
+            curr.N = get_num_neighbors(i, j)
+            curr.H = curr.N
+
+    gridworld[0][3].blocked = True
+    gridworld[1][0].blocked = True
+    gridworld[1][2].blocked = True
+    
+
+    # Set the goal node
+    goal = gridworld[dim-1][dim-1]
+
+    # Ensure that the start and end positions are unblocked
+    gridworld[0][0].blocked = 0
+    goal.blocked = 0
+
+    # Initialize starting cell values
+    gridworld[0][0].g = 1
+    gridworld[0][0].h = get_weighted_manhattan_distance(0, 0, goal.x, goal.y)
+    gridworld[0][0].f = gridworld[0][0].g + gridworld[0][0].h
+    gridworld[0][0].seen = True
+
+
 
 
 def printGridworld():
@@ -439,27 +483,78 @@ def solve4():
         curr.seen = True
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
-
+        print(f"At: {curr.x}, {curr.y}")
+        printGridworld()
         # Goal found
         if curr.child is None:
             return path
 
         # Make basic inferences, remove cell from all eq's in KB, infer, and replan
         if curr.blocked == True:
-            basic_infer(curr)
-            remove_from_KB(curr)
-            KB_infer(curr)
+            # Update counts of neighbors that have been confirmed and sensed
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    gridworld[xx][yy].H -= 1
+                    gridworld[xx][yy].B += 1
 
+            # Attempt to make basic inferences on blocked cell's neighbors
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    basic_infer(gridworld[xx][yy])
+            
+
+            # Remove blocked cell from KB
+            # Attempt to make KB inferences on blocked cell's neighbors
+            remove_from_KB(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and not gridworld[xx][yy].confirmed:
+                    KB_infer(gridworld[xx][yy])
+
+            # Backstep and replan
             trajectorylen = trajectorylen - 2
             curr, len = astar(curr.parent, agent)
+            
         # Sense new cell, basic infer, add new equation to KB, 
         # remove cell from eq's in KB, infer, and replan/continue
         else:
+            # Agent senses and sets curr cell's values
+            # Update counts of neighbors that have been confirmed and sensed
             basic_sense(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    gridworld[xx][yy].H -= 1
+                    gridworld[xx][yy].E += 1
+
+            # Attempt to make basic inferences on free cell and cell's neighbors
             basic_infer(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    basic_infer(gridworld[xx][yy])
+
+            # Add new equation to KB
+            # Remove free cell from KB
+            # Attempt to make KB inferences on blocked cell's neighbors
             add_eq_to_KB(curr)
             remove_from_KB(curr)
-            KB_infer(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and not gridworld[xx][yy].confirmed:
+                    KB_infer(gridworld[xx][yy])
 
             # Replan if agent finds inferred block in path
             ptr = curr.child
@@ -474,14 +569,11 @@ def solve4():
 
             # Otherwise, continue along A* path
             if not replanned:
-                if curr in knowledgebase:
-                    knowledgebase.remove(curr)
-                knowledgebase.append(curr)
                 curr = curr.child
 
 
-def basic_sense(curr):
-    """Sets curr's C, E, H, B values
+def basic_sense(curr:Cell):
+    """Sets curr's C, E, H, B, sensed values
     Args:
         curr (cell): current cell
     """
@@ -493,7 +585,8 @@ def basic_sense(curr):
     curr.E = 0
     curr.B = 0
     curr.H = 0
-
+    curr.sensed = True
+    
     for x, y in alldirections:
         xx = curr.x + x
         yy = curr.y + y
@@ -656,8 +749,9 @@ def KB_infer(cell: Cell):
                 unknown_cells.add(cell)
             else:
                 new_inferences[cell] = is_blocked
-
-    for cell, is_blocked in new_inferences.items:
+    print(f"New inferences: ")
+    print(new_inferences.items())    
+    for cell, is_blocked in new_inferences.items():
         # Use new inferences to confirm free/blocked cells
         cell.confirmed = True
         cell.blocked = is_blocked
@@ -666,10 +760,9 @@ def KB_infer(cell: Cell):
         for x, y in alldirections:
             xx = cell.x + x
             yy = cell.y + y
-            neighbor = gridworld[xx][yy]
-            if is_in_bounds([xx, yy]) and neighbor.confirmed == True \
-                    and neighbor.H != 0:
-                KB_infer(neighbor)
+            if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed == True \
+                    and gridworld[xx][yy].H != 0:
+                KB_infer(gridworld[xx][yy])
 
 
 def generate_all_combos(total_cells):

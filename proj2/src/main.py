@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import solve
 import time
 
-# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
-agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4test]
+agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
+# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4test]
 
 
 def density_v_trajectory_length():
@@ -529,7 +529,7 @@ if __name__ == "__main__":
     # print("Runtime: ", endtime - starttime, "s")
 
     # try to get same # trials for each
-    # density_v_trajectory_length()
+    density_v_trajectory_length()
     # density_v_avg1()  # check a3 vs a2
     # density_v_avg2()
     # density_v_runtime()
@@ -552,7 +552,7 @@ if __name__ == "__main__":
     # print("discovered path: ", pathlen)
     # print("full path (smaller): ", fullpathlen)
 
-    solve.generategridworld2()
+    # solve.generategridworld2()
     # solve.generategridworld(30, .2)
-    solve.solve4()
-    print(solve.gridworld[1][0].confirmed)
+    # solve.solve4()
+    # print(solve.gridworld[1][0].confirmed)

@@ -483,12 +483,12 @@ def solve4():
         curr.seen = True
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
-        print(f"At: {curr.x}, {curr.y}")
+        # print(f"At: {curr.x}, {curr.y}")
         printGridworld()
 
         # Goal found
         if curr.child is None:
-            print(equation_KB)
+            # print(equation_KB)
             return path
 
         # Make basic inferences, remove cell from all eq's in KB, infer, and replan
@@ -624,7 +624,7 @@ def basic_infer(curr:Cell):
     if curr.H > 0 and curr.sensed:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
-            print(f"{curr}: C==B")
+            # print(f"{curr}: C==B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
@@ -632,14 +632,14 @@ def basic_infer(curr:Cell):
                 if is_in_bounds([xx, yy]):
                     neighbor = gridworld[xx][yy]
                     if neighbor.confirmed == False:
-                        print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
+                        # print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
                         neighbor.confirmed = True
                         remove_from_KB(neighbor)
                         curr.E += 1
                         curr.H -= 1
                         basic_infer_recurse_on_neighbors(neighbor)
         elif curr.N - curr.C == curr.E:
-            print(f"{curr}: N-C==E")
+            # print(f"{curr}: N-C==E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x
@@ -647,7 +647,7 @@ def basic_infer(curr:Cell):
                 if is_in_bounds([xx, yy]):
                     neighbor = gridworld[xx][yy]
                     if neighbor.confirmed == False:
-                        print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
+                        # print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
                         neighbor.confirmed = True
                         remove_from_KB(neighbor)
                         curr.B += 1
@@ -684,10 +684,10 @@ def add_eq_to_KB(cell: Cell):
         # Add new equation to KB
         new_eq = Equation(unconfirmed_neighbors_set, cell.C - cell.B)
         
-        print(f"Adding eq to KB: {new_eq}")
+        # print(f"Adding eq to KB: {new_eq}")
         equation_KB.add(new_eq)
         
-        print(f"New KB: {equation_KB}")
+        # print(f"New KB: {equation_KB}")
 
 def remove_from_KB(cell: Cell):
     """Removes the given cell from the equation knowledge base.
@@ -704,7 +704,7 @@ def remove_from_KB(cell: Cell):
     for equation in equation_KB.copy():
         if cell in equation.cells:
             print_toggle = True
-            print(f"Removing {cell} from {equation}")
+            # print(f"Removing {cell} from {equation}")
             equation.cells.remove(cell)
             if cell.blocked:
                 equation.count -= 1
@@ -713,16 +713,16 @@ def remove_from_KB(cell: Cell):
             # 1 length equations - set cell = count
             if len(equation.cells) == 1 and (equation.count==0 or equation.count==1):
                 last_cell = equation.cells.pop()
-                if last_cell.blocked == equation.count:
-                    print("good")
-                else:
-                    print("SOMETHING'S WRONG I CAN FEEL IT")
+                # if last_cell.blocked == equation.count:
+                #     print("good")
+                # else:
+                #     print("SOMETHING'S WRONG I CAN FEEL IT")
                 equation_KB.remove(equation)
             # 0 length - remove from KB
             elif len(equation.cells) == 0:
                 equation_KB.remove(equation)
-    if print_toggle:
-        print(f"New KB: {equation_KB}")
+    # if print_toggle:
+    #     print(f"New KB: {equation_KB}")
 
 
 def KB_infer(cell: Cell):
@@ -783,7 +783,7 @@ def KB_infer(cell: Cell):
         # Use new inferences to confirm free/blocked cells
         cell.confirmed = True
         cell.blocked = is_blocked
-        print(f"New inference: ({cell.x},{cell.y})={cell.blocked}")
+        # print(f"New inference: ({cell.x},{cell.y})={cell.blocked}")
 
         # Update sensed neighbors' B, E, H counters 
         # Attempt to basic infer on the sensed neighbors

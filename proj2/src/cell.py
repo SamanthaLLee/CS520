@@ -53,7 +53,8 @@ class Cell(object):
         return self.id == other.id
 
     def __str__(self):
-        return "("+str(self.x) + "," + str(self.y) + ") | id: " + str(self.id)
+        return f"({self.x},{self.y})"
+        # return f"({self.x},{self.y}) | id: {self.id}"
 
     def __repr__(self):
         return self.__str__()

@@ -554,3 +554,4 @@ if __name__ == "__main__":
 
     solve.generategridworld2()
     solve.solve4()
+    print(solve.gridworld[1][0].confirmed)

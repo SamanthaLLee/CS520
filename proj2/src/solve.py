@@ -591,8 +591,8 @@ def KB_infer(cell: Cell):
     if cell.H == 0:
         return
 
-    # Add sentences from that contain cell to eqs_with_cell
-    # Collect all unknown cells from sentences containing cell in symbols
+    # Add equations from that contain cell to eqs_with_cell
+    # Collect all unknown cells from equations containing cell in symbols
     total_cells = set()
     eqs_with_cell = []
     for equation in equation_KB:

@@ -25,7 +25,7 @@ fullgridworld = False
 
 totalplanningtime = 0
 
-equation_KB = []
+equation_KB = set()
 
 
 def generategridworld(d, p):
@@ -625,6 +625,7 @@ def basic_infer(curr: Cell):
                 if is_in_bounds([xx, yy]):
                     neighbor = gridworld[xx][yy]
                     if neighbor.confirmed == False:
+                        # print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
                         neighbor.confirmed = True
                         remove_from_KB(neighbor)
                         curr.E += 1
@@ -639,6 +640,7 @@ def basic_infer(curr: Cell):
                 if is_in_bounds([xx, yy]):
                     neighbor = gridworld[xx][yy]
                     if neighbor.confirmed == False:
+                        # print(f"New inference: ({neighbor.x},{neighbor.y})={neighbor.blocked}")
                         neighbor.confirmed = True
                         remove_from_KB(neighbor)
                         curr.B += 1
@@ -677,10 +679,10 @@ def add_eq_to_KB(cell: Cell):
         # Add new equation to KB
         new_eq = Equation(unconfirmed_neighbors_set, cell.C - cell.B)
 
-        # print(f"Adding eq to KB: {new_eq}")
-        equation_KB.append(new_eq)
+    # print(f"Adding eq to KB: {new_eq}")
+    equation_KB.add(new_eq)
 
-        # print(f"New KB: {equation_KB}")
+    # print(f"New KB: {equation_KB}")
 
 
 def remove_from_KB(cell: Cell):
@@ -695,18 +697,28 @@ def remove_from_KB(cell: Cell):
     # Removes cell from equation's cell list
     # and decrements equation count if cell is blocked
     print_toggle = False
-    for equation in equation_KB:
+    for equation in equation_KB.copy():
         if cell in equation.cells:
-            print_toggle = False
-            # print(f"Removing {cell} from {equation}")
-            equation.cells.remove(cell)
-            if cell.blocked:
-                equation.count -= 1
-            # Cleaning up the KB
-            if len(equation.cells) == 0:
-                equation_KB.remove(equation)
-    if print_toggle:
-        print(f"New KB: {equation_KB}")
+            print_toggle = True
+    # print(f"Removing {cell} from {equation}")
+    equation.cells.remove(cell)
+    if cell.blocked:
+        equation.count -= 1
+
+    # Cleaning up the KB - remove extra equations from KB
+    # 1 length equations - set cell = count
+    if len(equation.cells) == 1 and (equation.count == 0 or equation.count == 1):
+        last_cell = equation.cells.pop()
+        # if last_cell.blocked == equation.count:
+        #     print("good")
+        # else:
+        #     print("SOMETHING'S WRONG I CAN FEEL IT")
+        equation_KB.remove(equation)
+    # 0 length - remove from KB
+    elif len(equation.cells) == 0:
+        equation_KB.remove(equation)
+    # if print_toggle:
+    #     print(f"New KB: {equation_KB}")
 
 
 def KB_infer(cell: Cell):

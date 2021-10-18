@@ -171,10 +171,6 @@ def astar(start, agent):
         fringeSet.remove(curr.id)
         seenSet.add(curr.id)
         numcellsprocessed += 1
-        # if fullgridworld:
-        #     print("fullgridworld", curr.x, curr.y)
-        # if finaldiscovered:
-        #     print("finaldiscovered", curr.x, curr.y)
         for x, y in cardinaldirections:
             xx = curr.x + x
             yy = curr.y + y
@@ -349,7 +345,6 @@ def solve3():
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
-            # print("replan cause run into block")
             trajectorylen -= 1
             curr, len = astar(curr.parent, agent)
             continue
@@ -364,7 +359,6 @@ def solve3():
             replanned = False
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
-                    # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
                     trajectorylen -= 1
                     replanned = True
@@ -374,11 +368,9 @@ def solve3():
             # Otherwise, continue along A* path
             if not replanned:
                 curr = curr.child
-                # print("continue along path")
 
 
 def senseorcount3(curr, sense):
-    # print("sense", curr.x, curr.y)
     """Sets curr's C, E, H, B values based on current KB
     Args:
         curr (cell): current cell
@@ -418,12 +410,10 @@ def infer3(curr):
     """
 
     inferencemade = False
-    # print("infer", curr.x, curr.y)
     if curr.H > 0:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
             inferencemade = True
-            # print("curr.C == curr.B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
@@ -435,7 +425,6 @@ def infer3(curr):
                         curr.H -= 1
         elif curr.N - curr.C == curr.E:
             inferencemade = True
-            # print("curr.N - curr.C == curr.E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x
@@ -466,12 +455,12 @@ def updatekb3(curr):
 
 
 def solve4():
-    """Agent 3 - Example Inference Agent
+    """Agent 4 - New Agent
     """
 
     global goal, gridworld, equation_KB, alldirections, trajectorylen
 
-    agent = 3
+    agent = 4
 
     path, len = astar(gridworld[0][0], agent)
 
@@ -488,12 +477,12 @@ def solve4():
         curr.seen = True
         curr.confirmed = True
         trajectorylen = trajectorylen + 1
-        print(f"At: {curr.x}, {curr.y}")
-        printGridworld()
+        # print(f"At: {curr.x}, {curr.y}")
+        # printGridworld()
 
         # Goal found
         if curr.child is None:
-            print(equation_KB)
+            # print(equation_KB)
             return path
 
         # Make basic inferences, remove cell from all eq's in KB, infer, and replan
@@ -568,8 +557,8 @@ def solve4():
             replanned = False
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
-                    # print("replan cause inferred block")
                     curr, len = astar(curr, agent)
+                    trajectorylen -= 1
                     replanned = True
                     break
                 ptr = ptr.child
@@ -628,7 +617,7 @@ def basic_infer(curr: Cell):
     if curr.H > 0 and curr.sensed:
         # More inferences possible on unconfirmed neighboring cells
         if curr.C == curr.B:
-            print(f"{curr}: C==B")
+            # print(f"{curr}: C==B")
             # All remaining hidden neighbors are empty
             for x, y in alldirections:
                 xx = curr.x + x
@@ -642,7 +631,7 @@ def basic_infer(curr: Cell):
                         curr.H -= 1
                         basic_infer_recurse_on_neighbors(neighbor)
         elif curr.N - curr.C == curr.E:
-            print(f"{curr}: N-C==E")
+            # print(f"{curr}: N-C==E")
             # All remaining hidden neighbors are blocked
             for x, y in alldirections:
                 xx = curr.x + x
@@ -688,10 +677,10 @@ def add_eq_to_KB(cell: Cell):
         # Add new equation to KB
         new_eq = Equation(unconfirmed_neighbors_set, cell.C - cell.B)
 
-        print(f"Adding eq to KB: {new_eq}")
+        # print(f"Adding eq to KB: {new_eq}")
         equation_KB.append(new_eq)
 
-        print(f"New KB: {equation_KB}")
+        # print(f"New KB: {equation_KB}")
 
 
 def remove_from_KB(cell: Cell):
@@ -708,8 +697,8 @@ def remove_from_KB(cell: Cell):
     print_toggle = False
     for equation in equation_KB:
         if cell in equation.cells:
-            print_toggle = True
-            print(f"Removing {cell} from {equation}")
+            print_toggle = False
+            # print(f"Removing {cell} from {equation}")
             equation.cells.remove(cell)
             if cell.blocked:
                 equation.count -= 1
@@ -778,7 +767,7 @@ def KB_infer(cell: Cell):
         # Use new inferences to confirm free/blocked cells
         cell.confirmed = True
         cell.blocked = is_blocked
-        print(f"New inference: ({cell.x},{cell.y})={cell.blocked}")
+        # print(f"New inference: ({cell.x},{cell.y})={cell.blocked}")
 
         # Update sensed neighbors' B, E, H counters
         # Attempt to basic infer on the sensed neighbors

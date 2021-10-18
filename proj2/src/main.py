@@ -599,7 +599,7 @@ def generate_all_graphs():
     # Initialize constants:
     curr_p = 0
     interval = .033
-    trials_per_p = 2
+    trials_per_p = 200
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     traj_results = [[0 for _ in range(11)] for _ in range(4)]
@@ -619,11 +619,6 @@ def generate_all_graphs():
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
             num_fail = 0
-
-            # if curr_p > .27:
-            #     trials_per_p = 80
-            # else:
-            #     trials_per_p = 40
 
             for _ in range(trials_per_p):
 
@@ -653,8 +648,10 @@ def generate_all_graphs():
                     solve.fullgridworld = False
 
                     avg1_results[agent_num][p_index] += pathlen
-                    avg2_results[agent_num][p_index] += pathlen/fullpathlen
-                    traj_path_results[agent_num][p_index] += solve.trajectorylen/pathlen
+                    if fullpathlen > 0:
+                        avg2_results[agent_num][p_index] += pathlen/fullpathlen
+                    if pathlen > 0:
+                        traj_path_results[agent_num][p_index] += solve.trajectorylen/pathlen
 
                     planning_results[agent_num][p_index] += solve.totalplanningtime
                     processed_results[agent_num][p_index] += solve.numcellsprocessed
@@ -672,110 +669,6 @@ def generate_all_graphs():
 
             print("\t" + str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
-            # print("\tAvg trajlen = " + str(traj_results[agent_num][p_index]))
-
-    # print(results)
-
-    # Plot results
-    # N = 4
-    # ind = np.arange(11)
-    # width = 0.20
-
-    # bar11 = plt.bar(ind, traj_results[0], width, color='r')
-    # bar12 = plt.bar(ind+width, traj_results[1], width, color='g')
-    # bar13 = plt.bar(ind+width*2, traj_results[2], width, color='b')
-    # bar14 = plt.bar(ind+width*3, traj_results[3], width)
-
-    # bar21 = plt.bar(ind, avg1_results[0], width, color='r')
-    # bar22 = plt.bar(ind+width, avg1_results[1], width, color='g')
-    # bar23 = plt.bar(ind+width*2, avg1_results[2], width, color='b')
-    # bar24 = plt.bar(ind+width*3, avg1_results[3], width)
-
-    # bar31 = plt.bar(ind, avg2_results[0], width, color='r')
-    # bar32 = plt.bar(ind+width, avg2_results[1], width, color='g')
-    # bar33 = plt.bar(ind+width*2, avg2_results[2], width, color='b')
-    # bar34 = plt.bar(ind+width*3, avg2_results[3], width)
-
-    # bar41 = plt.bar(ind, planning_results[0], width, color='r')
-    # bar42 = plt.bar(ind+width, planning_results[1], width, color='g')
-    # bar43 = plt.bar(ind+width*2, planning_results[2], width, color='b')
-    # bar44 = plt.bar(ind+width*3, planning_results[3], width)
-
-    # bar51 = plt.bar(ind, runtime_results[0], width, color='r')
-    # bar52 = plt.bar(ind+width, runtime_results[1], width, color='g')
-    # bar53 = plt.bar(ind+width*2, runtime_results[2], width, color='b')
-    # bar54 = plt.bar(ind+width*3, runtime_results[3], width)
-
-    # bar61 = plt.bar(ind, processed_results[0], width, color='r')
-    # bar62 = plt.bar(ind+width, processed_results[1], width, color='g')
-    # bar63 = plt.bar(ind+width*2, processed_results[2], width, color='b')
-    # bar64 = plt.bar(ind+width*3, processed_results[3], width)
-
-    # bar71 = plt.bar(ind, traj_path_results[0], width, color='r')
-    # bar72 = plt.bar(ind+width, traj_path_results[1], width, color='g')
-    # bar73 = plt.bar(ind+width*2, traj_path_results[2], width, color='b')
-    # bar74 = plt.bar(ind+width*3, traj_path_results[3], width)
-
-    # # Make xticks list
-    # xtick_list = []
-    # curr_p = 0
-    # for _ in range(11):
-    #     xtick_list.append(str('{0:.3g}'.format(curr_p)))
-    #     curr_p += interval
-    # plt.xticks(ind+width, xtick_list)
-
-    # plt.title('Density vs. Average Trajectory Length by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Trajectory Length')
-    # plt.legend((bar11, bar12, bar13, bar14),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title(
-    #     'Density vs. Average Path Length Through Discovered Gridworld by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Path Length')
-    # plt.legend((bar21, bar22, bar23, bar24),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title(
-    #     'Density vs. Average Path in Discovered Gridworld/Path in Full Gridworld')
-    # plt.xlabel('Density')
-    # plt.ylabel('Path in Discovered Gridworld/Path in Full Gridworld')
-    # plt.legend((bar31, bar32, bar33, bar34),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title('Density vs. Planning Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Planning Time (s)')
-    # plt.legend((bar41, bar42, bar43, bar44),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title('Density vs. Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Time (s)')
-    # plt.legend((bar51, bar52, bar53, bar54),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title(
-    #     'Density vs. Average Number of Cells Processed')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Number of Cells Processed')
-    # plt.legend((bar61, bar62, bar63, bar64),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
-
-    # plt.title(
-    #     'Density vs. Average Trajectory / Path Length Through Discovered Gridworld by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Trajectory / Path Length')
-    # plt.legend((bar71, bar72, bar73, bar74),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
-    # plt.show()
 
 
 def plot1():
@@ -1001,61 +894,34 @@ def plot7():
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
 
-    # solve.generategridworld(int(dim), float(p))
-    # starttime = time.time()
-    # result = solve.solve3()
-    # solve.printGridworld()
-    # endtime = time.time()
-    # if (result is None):
-    #     print("No solution.")
+    solve.generategridworld(int(dim), float(p))
+    starttime = time.time()
+    result = solve.solve3()
+    solve.printGridworld()
+    endtime = time.time()
+    if (result is None):
+        print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
+    solve.trajectorylen = solve.trajectorylen if result is not None else None
+    print("Trajectory length:", solve.trajectorylen)
+    print("Cells processed: ", solve.numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")
 
-    # try to get same # trials for each
-    # density_v_trajectory_length()
-    # density_v_avg1()
-    # density_v_planning_time()
-    # density_v_avg2()
-    # density_v_runtime()
-    # density_v_cells_processed()
-    # density_v_traj_over_path()
+    solve.printGridworld()
 
-    # solve.generategridworld(10, .2)
-    # solve.solve3()
-
-    # solve.finaldiscovered = True
-    # path, pathlen = solve.astar(solve.gridworld[0][0], 3)
-    # solve.finaldiscovered = False
-
-    # solve.fullgridworld = True
-    # path, fullpathlen = solve.astar(solve.gridworld[0][0], 3)
-    # solve.fullgridworld = False
-
-    # solve.printGridworld()
-
-    # print("discovered path: ", pathlen)
-    # print("full path (smaller): ", fullpathlen)
-
-    # solve.generategridworld2()
-    # solve.solve4()
-    # print(solve.gridworld[1][0].confirmed)
-
-    generate_all_graphs()
-    plot1()
-    plot2()
-    plot3()
-    plot4()
-    plot5()
-    plot6()
-    plot7()
+    # generate_all_graphs()
+    # plot1()
+    # plot2()
+    # plot3()
+    # plot4()
+    # plot5()
+    # plot6()
+    # plot7()

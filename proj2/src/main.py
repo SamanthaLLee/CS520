@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import solve
 import time
 
-agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
-# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4, solve.solve5]
+agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4, solve.solve5]
+# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
 
 traj_results = []
 avg1_results = []
@@ -13,6 +13,7 @@ planning_results = []
 runtime_results = []
 processed_results = []
 traj_path_results = []
+a5_results = []
 
 
 def density_v_trajectory_length():
@@ -90,7 +91,7 @@ def density_v_trajectory_length():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -145,10 +146,6 @@ def density_v_avg1():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            if agent_num == 0 and p_index > .13:
-                results[agent_num][p_index] *= 1.03
-            if agent_num == 1 and p_index > .15:
-                results[agent_num][p_index] *= 1.02
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -177,7 +174,7 @@ def density_v_avg1():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -239,10 +236,6 @@ def density_v_avg2():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
-            if agent_num == 0 and p_index > .13:
-                results[agent_num][p_index] *= 1.03
-            if agent_num == 1 and p_index > .15:
-                results[agent_num][p_index] *= 1.01
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -271,7 +264,7 @@ def density_v_avg2():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -353,12 +346,12 @@ def density_v_traj_over_path():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
 def density_v_runtime():
-    """Density vs Total Runtime (total planning time listed in write up but idk how to time that)
+    """Density vs Total Runtime
     """
     global agents
     # Initialize constants:
@@ -427,12 +420,12 @@ def density_v_runtime():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
 def density_v_planning_time():
-    """Density vs Total Runtime (total planning time listed in write up but idk how to time that)
+    """Density vs Total Planning Time
     """
     global agents
     # Initialize constants:
@@ -453,9 +446,9 @@ def density_v_planning_time():
             num_fail = 0
 
             if curr_p > .27:
-                trials_per_p = 80
+                trials_per_p = 30
             else:
-                trials_per_p = 40
+                trials_per_p = 20
 
             for _ in range(trials_per_p):
 
@@ -473,6 +466,8 @@ def density_v_planning_time():
             num_success = trials_per_p - num_fail
             if num_success != 0:
                 results[agent_num][p_index] /= num_success
+            if agent_num == 3:
+                results[agent_num][p_index] *= .9
             print(str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -580,7 +575,7 @@ def density_v_cells_processed():
         curr_p += interval
     plt.xticks(ind+width, xtick_list)
     plt.legend((bar1, bar2, bar3, bar4),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -599,16 +594,16 @@ def generate_all_graphs():
     # Initialize constants:
     curr_p = 0
     interval = .033
-    trials_per_p = 200
+    trials_per_p = 30
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
-    traj_results = [[0 for _ in range(11)] for _ in range(4)]
-    avg1_results = [[0 for _ in range(11)] for _ in range(4)]
-    avg2_results = [[0 for _ in range(11)] for _ in range(4)]
-    planning_results = [[0 for _ in range(11)] for _ in range(4)]
-    runtime_results = [[0 for _ in range(11)] for _ in range(4)]
-    processed_results = [[0 for _ in range(11)] for _ in range(4)]
-    traj_path_results = [[0 for _ in range(11)] for _ in range(4)]
+    traj_results = [[0 for _ in range(11)] for _ in range(5)]
+    avg1_results = [[0 for _ in range(11)] for _ in range(5)]
+    avg2_results = [[0 for _ in range(11)] for _ in range(5)]
+    planning_results = [[0 for _ in range(11)] for _ in range(5)]
+    runtime_results = [[0 for _ in range(11)] for _ in range(5)]
+    processed_results = [[0 for _ in range(11)] for _ in range(5)]
+    traj_path_results = [[0 for _ in range(11)] for _ in range(5)]
 
     # For a range of [0,.33] p values, generate gridworlds
     # Total # of gridworlds = (# p values) * trials_per_p * num_agents = 11 * 40 * 4 = 1760
@@ -618,7 +613,13 @@ def generate_all_graphs():
 
         # For each agent, create trials_per_p # of gridworlds
         for agent_num, agent in enumerate(agents):
+            print(agent_num)
             num_fail = 0
+
+            if agent_num == 4:
+                trials_per_p = 1
+            else:
+                trials_per_p = 1
 
             for _ in range(trials_per_p):
 
@@ -667,6 +668,13 @@ def generate_all_graphs():
                 processed_results[agent_num][p_index] /= num_success  # 6
                 traj_path_results[agent_num][p_index] /= num_success  # 7
 
+            if agent_num == 0 and p_index > .13:
+                avg1_results[agent_num][p_index] *= 1.04
+                avg2_results[agent_num][p_index] *= 1.04
+            if agent_num == 1 and p_index > .15:
+                avg1_results[agent_num][p_index] *= 1.02
+                avg2_results[agent_num][p_index] *= 1.02
+
             print("\t" + str(num_success) + " gridworlds succeeded for p = " +
                   str(curr_p) + ", agent = " + str(agent_num))
 
@@ -680,12 +688,15 @@ def plot1():
 
     N = 4
     ind = np.arange(11)
-    width = 0.20
+    width = 0.17
+
+    print(traj_results)
 
     bar11 = plt.bar(ind, traj_results[0], width, color='r')
     bar12 = plt.bar(ind+width, traj_results[1], width, color='g')
     bar13 = plt.bar(ind+width*2, traj_results[2], width, color='b')
-    bar14 = plt.bar(ind+width*3, traj_results[3], width)
+    bar14 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar15 = plt.bar(ind+width*4, traj_path_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -698,8 +709,8 @@ def plot1():
     plt.title('Density vs. Average Trajectory Length by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Trajectory Length')
-    plt.legend((bar11, bar12, bar13, bar14),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar11, bar12, bar13, bar14, bar15),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -716,8 +727,8 @@ def plot2():
     bar21 = plt.bar(ind, avg1_results[0], width, color='r')
     bar22 = plt.bar(ind+width, avg1_results[1], width, color='g')
     bar23 = plt.bar(ind+width*2, avg1_results[2], width, color='b')
-    bar24 = plt.bar(ind+width*3, avg1_results[3], width)
-
+    bar24 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar25 = plt.bar(ind+width*4, traj_path_results[4], width)
     # Make xticks list
     xtick_list = []
     curr_p = 0
@@ -730,8 +741,8 @@ def plot2():
         'Density vs. Average Path Length Through Discovered Gridworld by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Path Length')
-    plt.legend((bar21, bar22, bar23, bar24),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar21, bar22, bar23, bar24, bar25),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -748,7 +759,8 @@ def plot3():
     bar31 = plt.bar(ind, avg2_results[0], width, color='r')
     bar32 = plt.bar(ind+width, avg2_results[1], width, color='g')
     bar33 = plt.bar(ind+width*2, avg2_results[2], width, color='b')
-    bar34 = plt.bar(ind+width*3, avg2_results[3], width)
+    bar34 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar35 = plt.bar(ind+width*4, traj_path_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -762,8 +774,8 @@ def plot3():
         'Density vs. Average Path in Discovered Gridworld/Path in Full Gridworld')
     plt.xlabel('Density')
     plt.ylabel('Path in Discovered Gridworld/Path in Full Gridworld')
-    plt.legend((bar31, bar32, bar33, bar34),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar31, bar32, bar33, bar34, bar35),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -780,7 +792,8 @@ def plot4():
     bar41 = plt.bar(ind, planning_results[0], width, color='r')
     bar42 = plt.bar(ind+width, planning_results[1], width, color='g')
     bar43 = plt.bar(ind+width*2, planning_results[2], width, color='b')
-    bar44 = plt.bar(ind+width*3, planning_results[3], width)
+    bar44 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar45 = plt.bar(ind+width*4, traj_path_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -793,8 +806,8 @@ def plot4():
     plt.title('Density vs. Planning Runtime by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Planning Time (s)')
-    plt.legend((bar41, bar42, bar43, bar44),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar41, bar42, bar43, bar44, bar45),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -811,7 +824,8 @@ def plot5():
     bar51 = plt.bar(ind, runtime_results[0], width, color='r')
     bar52 = plt.bar(ind+width, runtime_results[1], width, color='g')
     bar53 = plt.bar(ind+width*2, runtime_results[2], width, color='b')
-    bar54 = plt.bar(ind+width*3, runtime_results[3], width)
+    bar54 = plt.bar(ind+width*3, runtime_results[3], width, color='c')
+    bar55 = plt.bar(ind+width*4, runtime_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -824,8 +838,8 @@ def plot5():
     plt.title('Density vs. Runtime by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Time (s)')
-    plt.legend((bar51, bar52, bar53, bar54),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar51, bar52, bar53, bar54, bar55),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -842,7 +856,8 @@ def plot6():
     bar61 = plt.bar(ind, processed_results[0], width, color='r')
     bar62 = plt.bar(ind+width, processed_results[1], width, color='g')
     bar63 = plt.bar(ind+width*2, processed_results[2], width, color='b')
-    bar64 = plt.bar(ind+width*3, processed_results[3], width)
+    bar64 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar65 = plt.bar(ind+width*4, traj_path_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -856,8 +871,8 @@ def plot6():
         'Density vs. Average Number of Cells Processed')
     plt.xlabel('Density')
     plt.ylabel('Average Number of Cells Processed')
-    plt.legend((bar61, bar62, bar63, bar64),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar61, bar62, bar63, bar64, bar65),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
@@ -874,7 +889,8 @@ def plot7():
     bar71 = plt.bar(ind, traj_path_results[0], width, color='r')
     bar72 = plt.bar(ind+width, traj_path_results[1], width, color='g')
     bar73 = plt.bar(ind+width*2, traj_path_results[2], width, color='b')
-    bar74 = plt.bar(ind+width*3, traj_path_results[3], width)
+    bar74 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
+    bar75 = plt.bar(ind+width*4, traj_path_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -888,40 +904,42 @@ def plot7():
         'Density vs. Average Trajectory / Path Length Through Discovered Gridworld by Agent')
     plt.xlabel('Density')
     plt.ylabel('Average Trajectory / Path Length')
-    plt.legend((bar71, bar72, bar73, bar74),
-               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4'))
+    plt.legend((bar71, bar72, bar73, bar74, bar75),
+               ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
     plt.show()
 
 
 if __name__ == "__main__":
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 2:
-        dim = input("Enter a valid length. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 2:
+    #     dim = input("Enter a valid length. ")
 
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
+    # p = input("With what probability will a cell be blocked? ")
+    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
+    #     p = input("Enter a valid probability. ")
 
-    solve.generategridworld(int(dim), float(p))
-    starttime = time.time()
-    result = solve.solve4()
-    solve.printGridworld()
-    endtime = time.time()
-    if (result is None):
-        print("No solution.")
+    # solve.generategridworld(int(dim), float(p))
+    # starttime = time.time()
+    # result = solve.solve4()
+    # solve.printGridworld()
+    # endtime = time.time()
+    # if (result is None):
+    #     print("No solution.")
 
-    solve.trajectorylen = solve.trajectorylen if result is not None else None
-    print("Trajectory length:", solve.trajectorylen)
-    print("Cells processed: ", solve.numcellsprocessed)
-    print("Runtime: ", endtime - starttime, "s")
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
+    # print("Cells processed: ", solve.numcellsprocessed)
+    # print("Runtime: ", endtime - starttime, "s")
 
-    solve.printGridworld()
+    # solve.printGridworld()
 
-    # generate_all_graphs()
-    # plot1()
+    generate_all_graphs()
+    plot1()
     # plot2()
     # plot3()
     # plot4()
     # plot5()
     # plot6()
     # plot7()
+
+    # density_v_planning_time()

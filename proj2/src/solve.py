@@ -461,7 +461,7 @@ def updatekb3(curr):
 
 
 def solve4():
-    """Agent 3 - Example Inference Agent
+    """Agent 4 - Custom Inference Agent
     """
 
     global goal, gridworld, equation_KB, alldirections, trajectorylen
@@ -853,8 +853,6 @@ def verify_combo(combo, equation: Equation):
     return num_blocked_in_eq == equation.count
 
 
-def solve4test():
-    return gridworld[0][0]
 
 
 def get_weighted_manhattan_distance(x1, y1, x2, y2):
@@ -876,3 +874,222 @@ def get_num_neighbors(x, y):
         return 5
     else:
         return 8
+
+
+
+def solve5():
+    """Agent 5 - Custom Inference Agent with planning step changes
+    """
+
+    global goal, gridworld, equation_KB, alldirections, trajectorylen
+
+    path, len = astar5(gridworld[0][0])
+
+    if path is None:
+        return None
+
+    # Traverse through planned path
+    curr = path
+    while True:
+        if(curr is None):
+            return None
+
+        # Pre-process current cell
+        curr.seen = True
+        curr.confirmed = True
+        trajectorylen = trajectorylen + 1
+        # print(f"At: {curr.x}, {curr.y}")
+        # printGridworld()
+
+        # Goal found
+        if curr.child is None:
+            # print(equation_KB)
+            return path
+
+        # Make basic inferences, remove cell from all eq's in KB, infer, and replan
+        if curr.blocked == True:
+            
+            # Update counts of neighbors that have been confirmed and sensed
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    gridworld[xx][yy].H -= 1
+                    gridworld[xx][yy].B += 1
+
+            # Attempt to make basic inferences on blocked cell's neighbors
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    basic_infer(gridworld[xx][yy])
+            
+
+            # Remove blocked cell from KB
+            # Attempt to make KB inferences on blocked cell's neighbors
+            remove_from_KB(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and not gridworld[xx][yy].confirmed:
+                    KB_infer(gridworld[xx][yy])
+
+            # Backstep and replan
+            trajectorylen = trajectorylen - 2
+            curr, len = astar5(curr.parent)
+            
+        # Sense new cell, basic infer, add new equation to KB, 
+        # remove cell from eq's in KB, infer, and replan/continue
+        else:
+            # Agent senses and sets curr cell's values
+            # Update counts of neighbors that have been confirmed and sensed
+            basic_sense(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    gridworld[xx][yy].H -= 1
+                    gridworld[xx][yy].E += 1
+
+            # Attempt to make basic inferences on free cell and cell's neighbors
+            basic_infer(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and gridworld[xx][yy].confirmed \
+                    and gridworld[xx][yy].sensed:
+                    basic_infer(gridworld[xx][yy])
+
+            # Add new equation to KB
+            # Remove free cell from KB
+            # Attempt to make KB inferences on blocked cell's neighbors
+            add_eq_to_KB(curr)
+            remove_from_KB(curr)
+            for x, y in alldirections:
+                xx = curr.x + x
+                yy = curr.y + y
+                if is_in_bounds([xx, yy]) and not gridworld[xx][yy].confirmed:
+                    KB_infer(gridworld[xx][yy])
+
+            # Replan if agent finds inferred block in path
+            ptr = curr.child
+            replanned = False
+            while ptr.child is not None:
+                if ptr.confirmed and ptr.blocked:
+                    # print("replan cause inferred block")
+                    curr, len = astar5(curr)
+                    replanned = True
+                    break
+                ptr = ptr.child
+
+            # Otherwise, continue along A* path
+            if not replanned:
+                curr = curr.child
+
+
+def astar5(start):
+    """Performs the A* algorithm on the gridworld
+    Args:
+        start (Cell): The cell from which A* will find a path to the goal
+    Returns:
+        Cell: The head of a Cell linked list containing the shortest path
+        int: Length of returned final path
+    """
+    global goal, gridworld, finaldiscovered, fullgridworld, cardinaldirections, numcellsprocessed
+    fringe = PriorityQueue()
+    fringeSet = set()
+    seenSet = set()
+    astarlen = 0
+    goalfound = False
+
+    curr = start
+    fringe.put((curr.f, curr))
+    fringeSet.add(curr.id)
+
+    # Generate all valid children and add to fringe
+    # Terminate loop if fringe is empty or if path has reached goal
+    while len(fringeSet) != 0:
+        f, curr = fringe.get()
+        if curr is goal:
+            goalfound = True
+            break
+        if curr.id not in fringeSet:
+            continue
+        fringeSet.remove(curr.id)
+        seenSet.add(curr.id)
+        numcellsprocessed += 1
+        for x, y in cardinaldirections:
+            xx = curr.x + x
+            yy = curr.y + y
+
+            if is_in_bounds([xx, yy]):
+                nextCell = gridworld[xx][yy]
+                validchild = not (nextCell.blocked and nextCell.confirmed)
+                
+                # ----------------------
+                # --- Agent 5 Change ---
+                # ----------------------
+                # Flips validchild to false if its block chance is higher than threshold 
+                chance = chance_blocked(nextCell)
+                threshold = .5
+                if validchild and chance > threshold:
+                    validchild = False
+                
+                # Add children to fringe if inbounds AND unblocked and unseen
+                if (finaldiscovered and nextCell.seen) or not finaldiscovered:
+                    if validchild or (fullgridworld and not nextCell.blocked):
+                        # Add child if not already in fringe
+                        # If in fringe, update child in fringe if old g value > new g value
+                        if(((not nextCell.id in fringeSet) or (nextCell.g > curr.g + 1)) and nextCell.id not in seenSet):
+                            nextCell.parent = curr
+                            nextCell.g = curr.g + 1
+                            nextCell.h = get_weighted_manhattan_distance(
+                                xx, yy, goal.x, goal.y)
+                            nextCell.f = nextCell.g + nextCell.h
+                            fringe.put((nextCell.f, nextCell))
+                            fringeSet.add(nextCell.id)
+
+    # Return None if no solution exists
+    if len(fringeSet) == 0:
+        return None, 0
+
+    # Starting from goal cell, work backwards and reassign child attributes correctly
+    if goalfound:
+        parentPtr = goal
+        childPtr = None
+        oldParent = start.parent
+        start.parent = None
+        while(parentPtr is not None):
+            astarlen += 1
+            parentPtr.child = childPtr
+            childPtr = parentPtr
+            parentPtr = parentPtr.parent
+        start.parent = oldParent
+
+        return start, astarlen
+    else:
+        return None, 0
+
+def chance_blocked(cell:Cell):
+    """Given a cell, returns the percent chance it is blocked using the information from the knowledge base.
+    Checks the KB for equations in which cell is present, counts the number of cells and compares to the count
+    EX: ({A,B,C,D}, 3) - cells A,B,C,D are the unconfirmed neighbors of cell X, cell X has 3 unconfirmed blocks
+        chance_blocked(A) = 3/4 = .75
+
+    Args:
+        cell (Cell): given unconfirmed cell
+    """
+    global equation_KB
+
+    max_chance = 0
+    # Iterates over all equations in KB, checks if cell is in each equation
+    for equation in equation_KB:
+        if cell in equation.cells:
+            # Calculates the cell's chance of being blocked, assigns new max if chance>max
+            chance = equation.count / len(equation.cells)
+            if chance > max_chance:
+                max_chance = chance
+    return max_chance

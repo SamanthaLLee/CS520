@@ -880,7 +880,9 @@ def solve5():
     path, len = astar5(gridworld[0][0])
 
     if path is None:
-        return None
+        path, len = astar(gridworld[0][0])
+        if path is None:
+            return None
 
     # Traverse through planned path
     curr = path
@@ -932,8 +934,10 @@ def solve5():
             # Backstep and replan
             trajectorylen = trajectorylen - 2
             curr, len = astar5(curr.parent)
-
-        # Sense new cell, basic infer, add new equation to KB,
+            if curr is None:
+                curr, len = astar(curr.parent)
+            
+        # Sense new cell, basic infer, add new equation to KB, 
         # remove cell from eq's in KB, infer, and replan/continue
         else:
             # Agent senses and sets curr cell's values
@@ -972,8 +976,9 @@ def solve5():
             replanned = False
             while ptr.child is not None:
                 if ptr.confirmed and ptr.blocked:
-                    # print("replan cause inferred block")
                     curr, len = astar5(curr)
+                    if curr is None:
+                        curr, len = astar(curr)
                     replanned = True
                     break
                 ptr = ptr.child
@@ -1029,6 +1034,7 @@ def astar5(start):
                 chance = chance_blocked(nextCell)
                 threshold = .5
                 if validchild and chance > threshold:
+                    # print("flipped")
                     validchild = False
 
                 # Add children to fringe if inbounds AND unblocked and unseen

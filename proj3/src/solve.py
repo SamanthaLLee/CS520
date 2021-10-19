@@ -2,7 +2,7 @@ import random
 from array import *
 from queue import PriorityQueue
 from cell import Cell
-import itertools
+from terrain import Terrain
 import time
 
 # Global gridworld of Cell objects
@@ -33,23 +33,23 @@ def generategridworld(d, p):
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
     id = 0
 
+    terrains = [Terrain.FLAT, Terrain.HILLY, Terrain.FOREST]
+
     # Let each cell independently be blocked with probability p, and empty with probability 1−p.
     for i in range(dim):
         for j in range(dim):
             curr = gridworld[i][j]
 
-            # Determined block status
+            # Determine block status, randomly decide terrain
             rand = random.random()
             if rand < p:
                 curr.blocked = 1
+            else:
+                curr.terrain = random.choice(terrains)
 
             # Assign ID
             curr.id = id
             id += 1
-
-            # Set N and H
-            curr.N = get_num_neighbors(i, j)
-            curr.H = curr.N
 
     # Set the goal node
     goal = gridworld[dim-1][dim-1]
@@ -177,6 +177,17 @@ def astar(start, agent):
         return None, 0
 
 
+def istarget(curr):
+    rand = random.random()
+    if curr.terrain == Terrain.FLAT and rand < repr(Terrain.FLAT):
+        return False
+    elif curr.terrain == Terrain.HILLY and rand < repr(Terrain.HILLY):
+        return False
+    elif curr.terrain == Terrain.FOREST and rand < repr(Terrain.FOREST):
+        return False
+    return True
+
+
 def solve6():
     """
     Agent 6
@@ -184,6 +195,13 @@ def solve6():
     global gridworld, cardinaldirections, trajectorylen
 
     agent = 6
+
+    # check if cell is blocked
+
+    # check if cell is target
+    istarget()
+
+    # update cell prob
 
 
 def solve7():

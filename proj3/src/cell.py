@@ -1,3 +1,6 @@
+from terrain import Terrain
+
+
 class Cell(object):
     """
     A class used to represent a Cell in the gridworld
@@ -38,6 +41,8 @@ class Cell(object):
         self.seen = False
         self.parent = None
         self.child = None
+        self.probability = 0
+        self.terrain = Terrain
 
     def __lt__(self, other):
         return self.id < other.id

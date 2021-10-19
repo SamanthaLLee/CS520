@@ -617,9 +617,9 @@ def generate_all_graphs():
             num_fail = 0
 
             if agent_num == 4:
-                trials_per_p = 1
+                trials_per_p = 5
             else:
-                trials_per_p = 1
+                trials_per_p = 10
 
             for _ in range(trials_per_p):
 
@@ -720,6 +720,8 @@ def plot2():
     curr_p = 0
     interval = .033
 
+    print(avg1_results)
+
     N = 4
     ind = np.arange(11)
     width = 0.20
@@ -727,8 +729,8 @@ def plot2():
     bar21 = plt.bar(ind, avg1_results[0], width, color='r')
     bar22 = plt.bar(ind+width, avg1_results[1], width, color='g')
     bar23 = plt.bar(ind+width*2, avg1_results[2], width, color='b')
-    bar24 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
-    bar25 = plt.bar(ind+width*4, traj_path_results[4], width)
+    bar24 = plt.bar(ind+width*3, avg1_results[3], width, color='c')
+    bar25 = plt.bar(ind+width*4, avg1_results[4], width)
     # Make xticks list
     xtick_list = []
     curr_p = 0
@@ -756,11 +758,13 @@ def plot3():
     ind = np.arange(11)
     width = 0.20
 
+    print(avg2_results)
+
     bar31 = plt.bar(ind, avg2_results[0], width, color='r')
     bar32 = plt.bar(ind+width, avg2_results[1], width, color='g')
     bar33 = plt.bar(ind+width*2, avg2_results[2], width, color='b')
-    bar34 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
-    bar35 = plt.bar(ind+width*4, traj_path_results[4], width)
+    bar34 = plt.bar(ind+width*3, avg2_results[3], width, color='c')
+    bar35 = plt.bar(ind+width*4, avg2_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -792,8 +796,10 @@ def plot4():
     bar41 = plt.bar(ind, planning_results[0], width, color='r')
     bar42 = plt.bar(ind+width, planning_results[1], width, color='g')
     bar43 = plt.bar(ind+width*2, planning_results[2], width, color='b')
-    bar44 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
-    bar45 = plt.bar(ind+width*4, traj_path_results[4], width)
+    bar44 = plt.bar(ind+width*3, planning_results[3], width, color='c')
+    bar45 = plt.bar(ind+width*4, planning_results[4], width)
+
+    print(planning_results)
 
     # Make xticks list
     xtick_list = []
@@ -816,6 +822,8 @@ def plot5():
     # Initialize constants:
     curr_p = 0
     interval = .033
+
+    print(runtime_results)
 
     N = 4
     ind = np.arange(11)
@@ -853,11 +861,13 @@ def plot6():
     ind = np.arange(11)
     width = 0.20
 
+    print(processed_results)
+
     bar61 = plt.bar(ind, processed_results[0], width, color='r')
     bar62 = plt.bar(ind+width, processed_results[1], width, color='g')
     bar63 = plt.bar(ind+width*2, processed_results[2], width, color='b')
-    bar64 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
-    bar65 = plt.bar(ind+width*4, traj_path_results[4], width)
+    bar64 = plt.bar(ind+width*3, processed_results[3], width, color='c')
+    bar65 = plt.bar(ind+width*4, processed_results[4], width)
 
     # Make xticks list
     xtick_list = []
@@ -885,6 +895,8 @@ def plot7():
     N = 4
     ind = np.arange(11)
     width = 0.20
+
+    print(traj_path_results)
 
     bar71 = plt.bar(ind, traj_path_results[0], width, color='r')
     bar72 = plt.bar(ind+width, traj_path_results[1], width, color='g')
@@ -935,11 +947,11 @@ if __name__ == "__main__":
 
     generate_all_graphs()
     plot1()
-    # plot2()
-    # plot3()
-    # plot4()
-    # plot5()
-    # plot6()
-    # plot7()
+    plot2()
+    plot3()
+    plot4()
+    plot5()
+    plot6()
+    plot7()
 
     # density_v_planning_time()

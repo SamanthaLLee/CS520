@@ -877,10 +877,12 @@ def solve5():
 
     global goal, gridworld, equation_KB, alldirections, trajectorylen
 
+    agent = 4
+
     path, len = astar5(gridworld[0][0])
 
     if path is None:
-        path, len = astar(gridworld[0][0])
+        path, len = astar(gridworld[0][0], agent)
         if path is None:
             return None
 
@@ -936,8 +938,8 @@ def solve5():
             curr, len = astar5(curr.parent)
             if curr is None:
                 curr, len = astar(curr.parent)
-            
-        # Sense new cell, basic infer, add new equation to KB, 
+
+        # Sense new cell, basic infer, add new equation to KB,
         # remove cell from eq's in KB, infer, and replan/continue
         else:
             # Agent senses and sets curr cell's values
@@ -978,7 +980,7 @@ def solve5():
                 if ptr.confirmed and ptr.blocked:
                     curr, len = astar5(curr)
                     if curr is None:
-                        curr, len = astar(curr)
+                        curr, len = astar(curr, agent)
                     replanned = True
                     break
                 ptr = ptr.child

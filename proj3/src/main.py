@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import solve
 import time
 
-agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4, solve.solve5]
-# agents = [solve.solve1, solve.solve2, solve.solve3, solve.solve4]
+agents = [solve.solve6, solve.solve7, solve.solve8]
 
 traj_results = []
 avg1_results = []
@@ -922,36 +921,34 @@ def plot7():
 
 
 if __name__ == "__main__":
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # p = input("With what probability will a cell be blocked? ")
-    # while not isfloat(p) or float(p) > 1 or float(p) < 0:
-    #     p = input("Enter a valid probability. ")
+    p = input("With what probability will a cell be blocked? ")
+    while not isfloat(p) or float(p) > 1 or float(p) < 0:
+        p = input("Enter a valid probability. ")
 
-    # solve.generategridworld(int(dim), float(p))
-    # starttime = time.time()
-    # result = solve.solve4()
-    # solve.printGridworld()
-    # endtime = time.time()
-    # if (result is None):
-    #     print("No solution.")
+    solve.generategridworld(int(dim), float(p))
+    starttime = time.time()
+    result = solve.solve4()
+    solve.printGridworld()
+    endtime = time.time()
+    if (result is None):
+        print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
+    solve.trajectorylen = solve.trajectorylen if result is not None else None
+    print("Trajectory length:", solve.trajectorylen)
+    print("Cells processed: ", solve.numcellsprocessed)
+    print("Runtime: ", endtime - starttime, "s")
 
-    # solve.printGridworld()
+    solve.printGridworld()
 
-    generate_all_graphs()
-    plot1()
-    plot2()
-    plot3()
-    plot4()
-    plot5()
-    plot6()
-    plot7()
-
-    # density_v_planning_time()
+    # generate_all_graphs()
+    # plot1()
+    # plot2()
+    # plot3()
+    # plot4()
+    # plot5()
+    # plot6()
+    # plot7()

@@ -882,7 +882,7 @@ def solve5():
     path, len = astar5(gridworld[0][0])
 
     if path is None:
-        path, len = astar(gridworld[0][0], agent)
+        path, len = astar(gridworld[0][0], 4)
         if path is None:
             return None
 
@@ -991,7 +991,7 @@ def solve5():
 
 
 def astar5(start):
-    """Performs the A* algorithm on the gridworld
+    """Performs the modified A* algorithm on the gridworld
     Args:
         start (Cell): The cell from which A* will find a path to the goal
     Returns:

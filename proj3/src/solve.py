@@ -8,8 +8,9 @@ import time
 # Global gridworld of Cell objects
 gridworld = []
 
-# Global goal cell
+# Global start and goal cells
 goal = None
+start = None
 
 # Vectors that represent directions
 cardinaldirections = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -24,10 +25,11 @@ finaldiscovered = False
 fullgridworld = False
 
 
-def generategridworld(d, p):
+def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, gridworld, dim
     dim = d
+    p = .3
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -51,8 +53,18 @@ def generategridworld(d, p):
             curr.id = id
             id += 1
 
-    # Set the goal node
-    goal = gridworld[dim-1][dim-1]
+    # Set the start and goal nodes
+    while goal is None:
+        x = random.randrange(dim)
+        y = random.randrange(dim)
+        if gridworld[x][y].blocked == 0:
+            goal = gridworld[x][y]
+
+    while start is None:
+        x = random.randrange(dim)
+        y = random.randrange(dim)
+        if gridworld[x][y].blocked == 0:
+            goal = gridworld[x][y]
 
     # Ensure that the start and end positions are unblocked
     gridworld[0][0].blocked = 0

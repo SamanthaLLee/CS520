@@ -925,11 +925,7 @@ if __name__ == "__main__":
     while not dim.isdigit() or int(dim) < 2:
         dim = input("Enter a valid length. ")
 
-    p = input("With what probability will a cell be blocked? ")
-    while not isfloat(p) or float(p) > 1 or float(p) < 0:
-        p = input("Enter a valid probability. ")
-
-    solve.generategridworld(int(dim), float(p))
+    solve.generategridworld(int(dim))
     starttime = time.time()
     result = solve.solve4()
     solve.printGridworld()

@@ -880,7 +880,7 @@ def solve5():
     path, len = astar5(gridworld[0][0])
 
     if path is None:
-        path, len = astar(gridworld[0][0])
+        path, len = astar(gridworld[0][0], 4)
         if path is None:
             return None
 
@@ -935,7 +935,7 @@ def solve5():
             trajectorylen = trajectorylen - 2
             curr, len = astar5(curr.parent)
             if curr is None:
-                curr, len = astar(curr.parent)
+                curr, len = astar(curr.parent, 4)
             
         # Sense new cell, basic infer, add new equation to KB, 
         # remove cell from eq's in KB, infer, and replan/continue
@@ -978,7 +978,7 @@ def solve5():
                 if ptr.confirmed and ptr.blocked:
                     curr, len = astar5(curr)
                     if curr is None:
-                        curr, len = astar(curr)
+                        curr, len = astar(curr, 4)
                     replanned = True
                     break
                 ptr = ptr.child
@@ -989,7 +989,7 @@ def solve5():
 
 
 def astar5(start):
-    """Performs the A* algorithm on the gridworld
+    """Performs the modified A* algorithm on the gridworld
     Args:
         start (Cell): The cell from which A* will find a path to the goal
     Returns:

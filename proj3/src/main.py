@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import solve
 import time
+from terrain import Terrain
+
 
 agents = [solve.solve6, solve.solve7, solve.solve8]
 
@@ -921,24 +923,27 @@ def plot7():
 
 
 if __name__ == "__main__":
+
+    # print(int(Terrain.HILLY))
     dim = input("What is the length of your gridworld? ")
     while not dim.isdigit() or int(dim) < 2:
         dim = input("Enter a valid length. ")
 
     solve.generategridworld(int(dim))
-    starttime = time.time()
-    result = solve.solve4()
-    solve.printGridworld()
-    endtime = time.time()
-    if (result is None):
-        print("No solution.")
+    solve.solve6()
+    # starttime = time.time()
+    # result = solve.solve4()
+    # solve.printGridworld()
+    # endtime = time.time()
+    # if (result is None):
+    #     print("No solution.")
 
-    solve.trajectorylen = solve.trajectorylen if result is not None else None
-    print("Trajectory length:", solve.trajectorylen)
-    print("Cells processed: ", solve.numcellsprocessed)
-    print("Runtime: ", endtime - starttime, "s")
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
+    # print("Cells processed: ", solve.numcellsprocessed)
+    # print("Runtime: ", endtime - starttime, "s")
 
-    solve.printGridworld()
+    # solve.printGridworld()
 
     # generate_all_graphs()
     # plot1()

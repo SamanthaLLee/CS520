@@ -18,13 +18,13 @@ terrainprobabilities = [0.2, 0.5, 0.8, 1]
 # Global start and goal cells
 goal = None
 start = None
-maxcell = None
 
 # Vectors that represent directions
 cardinaldirections = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 numcellsprocessed = 0
 trajectorylen = 0
+actions = 0
 dim = 0
 totalplanningtime = 0
 finaldiscovered = False
@@ -233,18 +233,67 @@ def solve6():
     """
     Agent 6
     """
-    global maxcell, start, gridworld, cardinaldirections, trajectorylen
+    global start, gridworld, cardinaldirections, trajectorylen, actions
 
     agent = 6
 
-    setmaxcell(start)
+    maxcell = getmaxcell(start)
 
     path, pathlen = astar(start, maxcell, agent)
 
     curr = path
     while True:
 
-        # A* failed – what do?
+        # A* failed
+        if curr is None:
+            return None
+
+        # Goal found
+        if istarget(curr):
+            actions += 1
+            return path
+
+        # Pre-process cell
+        curr.seen = True
+        trajectorylen += 1
+
+        # Update probs by sensing terrain
+        updateprobabilities(curr)
+
+        newmaxcell = getmaxcell()
+
+        # Run into blocked cell
+        if maxcell is not newmaxcell:
+            trajectorylen -= 1
+            path, len = astar(curr, newmaxcell, agent)
+            curr = path
+        elif curr.blocked == True:
+            trajectorylen -= 2
+            path, len = astar(curr.parent, maxcell, agent)
+            curr = path
+        # Continue along A* path
+        else:
+            # Move onto next cell along A* path
+            curr = curr.child
+            actions += 1
+
+
+def solve7():
+    """
+    Agent 7
+    """
+    global start, gridworld, cardinaldirections, trajectorylen
+
+    agent = 7
+
+    maxcell = getmaxcell(start)
+
+    path, pathlen = astar(start, maxcell, agent)
+
+    curr = path
+    while True:
+
+        # A* failed
         if curr is None:
             return None
 
@@ -256,43 +305,74 @@ def solve6():
         curr.seen = True
         trajectorylen += 1
 
-        updateprobabilities(curr)
+        # Update probs by sensing terrain
+        updateprobabilities(curr, agent)
 
-        break
+        newmaxcell = getmaxcell()
 
         # Run into blocked cell
-        if curr.blocked == True:
+        if maxcell is not newmaxcell:
             trajectorylen -= 1
-            path, len = astar(curr.parent, agent)
+            path, len = astar(curr, newmaxcell, agent)
             curr = path
-
+        elif curr.blocked == True:
+            trajectorylen -= 2
+            path, len = astar(curr.parent, maxcell, agent)
+            curr = path
         # Continue along A* path
         else:
             # Move onto next cell along A* path
             curr = curr.child
-
-    # update cell prob
-
-
-def solve7():
-    """
-    Agent 7
-    """
-    global gridworld, cardinaldirections, trajectorylen
-
-    agent = 7
 
 
 def solve8():
     """
     Agent 8
     """
-    global gridworld, cardinaldirections, trajectorylen
+    global start, gridworld, cardinaldirections, trajectorylen
 
     agent = 8
 
+    maxcell = getmaxcell(start)
 
-def setmaxcell(curr):
+    path, pathlen = astar(start, maxcell, agent)
+
+    curr = path
+    while True:
+
+        # A* failed
+        if curr is None:
+            return None
+
+        # Goal found
+        if istarget(curr):
+            return path
+
+        # Pre-process cell
+        curr.seen = True
+        trajectorylen += 1
+
+        # Update probs by sensing terrain
+        updateprobabilities(curr, agent)
+
+        newmaxcell = getmaxcell()
+
+        # Run into blocked cell
+        if maxcell is not newmaxcell:
+            trajectorylen -= 1
+            path, len = astar(curr, newmaxcell, agent)
+            curr = path
+        elif curr.blocked == True:
+            trajectorylen -= 2
+            path, len = astar(curr.parent, maxcell, agent)
+            curr = path
+        # Continue along A* path
+        else:
+            # Move onto next cell along A* path
+            curr = curr.child
+
+
+def getmaxcell(curr):
     global maxcell
     p = np.array(probabilities)
     maxp = np.amax(p)
@@ -309,9 +389,8 @@ def setmaxcell(curr):
             elif currdist == mindist:
                 equidistant.append(occ)
         i, j = random.choice(equidistant)
-        maxcell = gridworld[i][j]
-    else:
-        maxcell = gridworld[occs[0][0]][occs[0][1]]
+        return gridworld[i][j]
+    return gridworld[occs[0][0]][occs[0][1]]
 
 
 def updateprobability(x, y, curr, probabilities):
@@ -326,17 +405,29 @@ def squash_updateprobability(args):
     return updateprobability(*args)
 
 
-def updateprobabilities(curr):
+def updateprobabilities(curr, agent):
     global probabilities
 
-    # Update probability of current cell by multiplying it by factor
-    probabilities[curr.x][curr.y] *= terrainprobabilities[int(curr.terrain)]
+    if agent == 6:
+        # Update probability of current cell by multiplying it by factor
+        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+            curr.terrain)]
 
-    pool = Pool(processes=5)
-    results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
-                                                  for j in range(dim)))
-    probabilities = np.array(results).reshape(dim, dim)
-    pool.close()
+        if curr.blocked == 1:
+            probabilities[curr.x][curr.y] = 0
+
+        pool = Pool(processes=5)
+        results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
+                                                      for j in range(dim)))
+        probabilities = np.array(results).reshape(dim, dim)
+        pool.close()
+    elif agent == 7:
+        # Update probability of current cell by multiplying it by factor
+        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+            curr.terrain)]
+
+        if curr.blocked == 1:
+            probabilities[curr.x][curr.y] = 0
 
 
 def get_weighted_manhattan_distance(x1, y1, x2, y2):

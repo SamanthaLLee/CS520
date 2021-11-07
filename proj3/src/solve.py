@@ -305,12 +305,11 @@ def setmaxcell(curr):
                 curr.x, curr.y, occ[0], occ[1])
             if currdist < mindist:
                 mindist = currdist
-                equidistant = []
-                equidistant.append(occ)
+                equidistant = [occ]
             elif currdist == mindist:
                 equidistant.append(occ)
-            i, j = random.choice(equidistant)
-            maxcell = gridworld[i][j]
+        i, j = random.choice(equidistant)
+        maxcell = gridworld[i][j]
     else:
         maxcell = gridworld[occs[0][0]][occs[0][1]]
 

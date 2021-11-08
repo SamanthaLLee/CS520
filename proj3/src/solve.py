@@ -403,7 +403,7 @@ def getmaxcell(curr, agent):
 def updateprobability(x, y, curr, probabilities):
     if curr.x == x and curr.y == y:
         return probabilities[x][y]
-    factor = terrainprobabilities[int(curr.terrain)]
+    factor = 1 - terrainprobabilities[int(curr.terrain)]
     denom = 1 - (factor * probabilities[curr.x][curr.y])
     return probabilities[x][y] / denom
 
@@ -415,18 +415,21 @@ def squash_updateprobability(args):
 def updateprobabilities(curr, agent):
     global probabilities
 
-    # Update probability of current cell
-    if curr.blocked == 1:
-        probabilities[curr.x][curr.y] = 0
-    else:
-        print("Update probability of current cell")
-
     # Update probabilities of all other cells
     pool = Pool(processes=5)
     results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
                                                   for j in range(dim)))
     probabilities = np.array(results).reshape(dim, dim)
     pool.close()
+
+    # Update probability of current cell
+    if curr.blocked == 1:
+        probabilities[curr.x][curr.y] = 0
+    else:
+        print("Update probability of current cell")
+        probabilities[curr.x][curr.y] * terrainprobabilities[int(
+            curr.terrain)]
+        # normalize
 
     if agent == 7 and curr.blocked == 0:
         # Update probability of success by multiplying probs[x][y] by factor

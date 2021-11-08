@@ -401,8 +401,6 @@ def getmaxcell(curr, agent):
 
 
 def updateprobability(x, y, curr, probabilities):
-    if curr.x == x and curr.y == y:
-        return probabilities[x][y]
     factor = 1 - terrainprobabilities[int(curr.terrain)]
     denom = 1 - (factor * probabilities[curr.x][curr.y])
     return probabilities[x][y] / denom
@@ -423,13 +421,8 @@ def updateprobabilities(curr, agent):
     pool.close()
 
     # Update probability of current cell
-    if curr.blocked == 1:
-        probabilities[curr.x][curr.y] = 0
-    else:
-        print("Update probability of current cell")
-        probabilities[curr.x][curr.y] * terrainprobabilities[int(
-            curr.terrain)]
-        # normalize
+    probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+        curr.terrain)]
 
     if agent == 7 and curr.blocked == 0:
         # Update probability of success by multiplying probs[x][y] by factor

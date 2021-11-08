@@ -15,6 +15,8 @@ probabilities = []
 
 terrainprobabilities = [0.2, 0.5, 0.8, 1]
 
+priorityqueue = PriorityQueue()
+
 # Global start and goal cells
 goal = None
 start = None
@@ -258,9 +260,9 @@ def solve6():
         trajectorylen += 1
 
         # Update probs by sensing terrain
-        updateprobabilities(curr)
+        updateprobabilities(curr, agent)
 
-        newmaxcell = getmaxcell()
+        newmaxcell = getmaxcell(curr, agent)
 
         # Run into blocked cell
         if maxcell is not newmaxcell:
@@ -372,25 +374,30 @@ def solve8():
             curr = curr.child
 
 
-def getmaxcell(curr):
+def getmaxcell(curr, agent):
     global maxcell
-    p = np.array(probabilities)
-    maxp = np.amax(p)
-    occs = list(zip(*np.where(p == maxp)))
-    if len(occs) > 1:
-        equidistant = []
-        mindist = sys.maxsize
-        for occ in occs:
-            currdist = get_weighted_manhattan_distance(
-                curr.x, curr.y, occ[0], occ[1])
-            if currdist < mindist:
-                mindist = currdist
-                equidistant = [occ]
-            elif currdist == mindist:
-                equidistant.append(occ)
-        i, j = random.choice(equidistant)
-        return gridworld[i][j]
-    return gridworld[occs[0][0]][occs[0][1]]
+
+    if agent == 6:
+        p = np.array(probabilities)
+        maxp = np.amax(p)
+        occs = list(zip(*np.where(p == maxp)))
+        if len(occs) > 1:
+            equidistant = []
+            mindist = sys.maxsize
+            for occ in occs:
+                currdist = get_weighted_manhattan_distance(
+                    curr.x, curr.y, occ[0], occ[1])
+                if currdist < mindist:
+                    mindist = currdist
+                    equidistant = [occ]
+                elif currdist == mindist:
+                    equidistant.append(occ)
+            i, j = random.choice(equidistant)
+            return gridworld[i][j]
+        return gridworld[occs[0][0]][occs[0][1]]
+    elif agent == 7:
+        p, cell = priorityqueue.get()
+        return cell
 
 
 def updateprobability(x, y, curr, probabilities):
@@ -408,23 +415,26 @@ def squash_updateprobability(args):
 def updateprobabilities(curr, agent):
     global probabilities
 
-    if agent == 6:
-        # Update probability of current cell by multiplying it by factor
-        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+    # Update probability of current cell
+    if curr.blocked == 1:
+        probabilities[curr.x][curr.y] = 0
+    else:
+        print("Update probability of current cell")
+
+    # Update probabilities of all other cells
+    pool = Pool(processes=5)
+    results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
+                                                  for j in range(dim)))
+    probabilities = np.array(results).reshape(dim, dim)
+    pool.close()
+
+    if agent == 7 and curr.blocked == 0:
+        # Update probability of success by multiplying probs[x][y] by factor
+        psucc = probabilities[curr.x][curr.y] * terrainprobabilities[int(
             curr.terrain)]
 
-        if curr.blocked == 1:
-            probabilities[curr.x][curr.y] = 0
-
-        pool = Pool(processes=5)
-        results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
-                                                      for j in range(dim)))
-        probabilities = np.array(results).reshape(dim, dim)
-        pool.close()
-    elif agent == 7:
-        # Update probability of current cell by multiplying it by factor
-        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
-            curr.terrain)]
+        # Negative psucc for max PQ
+        priorityqueue.put(-psucc, curr)
 
         if curr.blocked == 1:
             probabilities[curr.x][curr.y] = 0

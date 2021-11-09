@@ -12,6 +12,7 @@ import sys
 gridworld = []
 
 probabilities = []
+prob_of_finding = []
 
 terrainprobabilities = [0.2, 0.5, 0.8, 1]
 
@@ -317,6 +318,7 @@ def solve7():
     global start, gridworld, cardinaldirections, trajectorylen
 
     agent = 7
+    prob_of_finding = gridworld = [[0 for _ in range(dim)] for _ in range(dim)]
 
     maxcell = getmaxcell(start)
 
@@ -405,29 +407,35 @@ def solve8():
 
 
 def getmaxcell(curr, agent):
-    global maxcell
+    global prob_of_finding, probabilities
 
+    p = None
     if agent == 6:
         p = np.array(probabilities)
-        maxp = np.amax(p)
-        occs = list(zip(*np.where(p == maxp)))
-        if len(occs) > 1:
-            equidistant = []
-            mindist = sys.maxsize
-            for occ in occs:
-                currdist = get_weighted_manhattan_distance(
-                    curr.x, curr.y, occ[0], occ[1])
-                if currdist < mindist:
-                    mindist = currdist
-                    equidistant = [occ]
-                elif currdist == mindist:
-                    equidistant.append(occ)
-            i, j = random.choice(equidistant)
-            return gridworld[i][j]
-        return gridworld[occs[0][0]][occs[0][1]]
-    elif agent == 7:
-        p, cell = priorityqueue.get()
-        return cell
+    if agent == 7:
+        for i in range(dim):
+            for j in range(dim):
+                if gridworld[i][j].seen:
+                    prob_of_finding[i][j] = probabilities[i][j] * \
+                        (1-terrainprobabilities[int(gridworld[i][j].terrain)])
+        p = np.array(prob_of_finding)
+
+    maxp = np.amax(p)
+    occs = list(zip(*np.where(p == maxp)))
+    if len(occs) > 1:
+        equidistant = []
+        mindist = sys.maxsize
+        for occ in occs:
+            currdist = get_weighted_manhattan_distance(
+                curr.x, curr.y, occ[0], occ[1])
+            if currdist < mindist:
+                mindist = currdist
+                equidistant = [occ]
+            elif currdist == mindist:
+                equidistant.append(occ)
+        i, j = random.choice(equidistant)
+        return gridworld[i][j]
+    return gridworld[occs[0][0]][occs[0][1]]
 
 
 def updateprobability(x, y, curr, probabilities):
@@ -451,22 +459,7 @@ def updateprobabilities(curr, agent):
     pool.close()
 
     # Update probability of current cell
-    if curr.blocked:
-        probabilities[curr.x][curr.y] = 0
-    else:
-        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
-            curr.terrain)]
-
-    if agent == 7 and curr.blocked == 0:
-        # Update probability of success by multiplying probs[x][y] by factor
-        psucc = probabilities[curr.x][curr.y] * terrainprobabilities[int(
-            curr.terrain)]
-
-        # Negative psucc for max PQ
-        priorityqueue.put(-psucc, curr)
-
-        if curr.blocked == 1:
-            probabilities[curr.x][curr.y] = 0
+    probabilities[curr.x][curr.y] *= terrainprobabilities[int(curr.terrain)]
 
 
 def get_weighted_manhattan_distance(x1, y1, x2, y2):

@@ -256,6 +256,7 @@ def solve6():
     while True:
 
         # A* failed, no solution
+        # REVISE/RETHINK THIS!!! WHEN DO WE STOF???
         if curr is None:
             print("fail")
             return None

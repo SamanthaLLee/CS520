@@ -931,6 +931,8 @@ if __name__ == "__main__":
 
     solve.generategridworld(int(dim))
     solve.solve6()
+    solve.printGridworld()
+    print(solve.probabilities)
     # starttime = time.time()
     # result = solve.solve4()
     # solve.printGridworld()

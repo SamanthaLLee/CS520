@@ -37,13 +37,11 @@ def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, start, gridworld, probabilities, dim
     dim = d
-    p = .3
+    p = 0.3
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
     probabilities = [[1/(dim*dim) for y in range(dim)] for x in range(dim)]
-    probabilities[0][0] = .4
-    probabilities[0][2] = .4
     id = 0
 
     terrains = [Terrain.FLAT, Terrain.HILLY, Terrain.FOREST]
@@ -56,7 +54,7 @@ def generategridworld(d):
             # Determine block status, randomly decide terrain
             rand = random.random()
             if rand < p:
-                curr.blocked = 1
+                curr.blocked = True
                 curr.terrain = Terrain.BLOCKED
             else:
                 curr.terrain = random.choice(terrains)
@@ -69,13 +67,13 @@ def generategridworld(d):
     while goal is None:
         x = random.randrange(dim)
         y = random.randrange(dim)
-        if gridworld[x][y].blocked == 0:
+        if not gridworld[x][y].blocked:
             goal = gridworld[x][y]
 
     while start is None:
         x = random.randrange(dim)
         y = random.randrange(dim)
-        if gridworld[x][y].blocked == 0:
+        if not gridworld[x][y].blocked:
             start = gridworld[x][y]
 
     # Initialize starting cell values
@@ -160,6 +158,9 @@ def astar(start, maxcell, agent):
     fringe.put((curr.f, curr))
     fringeSet.add(curr.id)
 
+    if start.id == maxcell.id:
+        return start, 0
+
     # Generate all valid children and add to fringe
     # Terminate loop if fringe is empty or if path has reached goal
     while len(fringeSet) != 0:
@@ -185,7 +186,7 @@ def astar(start, maxcell, agent):
                         nextCell.parent = curr
                         nextCell.g = curr.g + 1
                         nextCell.h = get_weighted_manhattan_distance(
-                            xx, yy, goal.x, goal.y)
+                            xx, yy, maxcell.x, maxcell.y)
                         nextCell.f = nextCell.g + nextCell.h
                         fringe.put((nextCell.f, nextCell))
                         fringeSet.add(nextCell.id)
@@ -198,19 +199,21 @@ def astar(start, maxcell, agent):
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
     if goalfound:
-        parentPtr = goal
+        parentPtr = maxcell
         childPtr = None
         oldParent = start.parent
         start.parent = None
+        print("START PATH from", start)
         while(parentPtr is not None):
+            print(parentPtr)
             astarlen += 1
             parentPtr.child = childPtr
             childPtr = parentPtr
             parentPtr = parentPtr.parent
+        print("END PATH to", maxcell)
         start.parent = oldParent
         endtime = time.time()
         totalplanningtime += endtime - starttime
-
         return start, astarlen
     else:
         endtime = time.time()
@@ -219,6 +222,8 @@ def astar(start, maxcell, agent):
 
 
 def istarget(curr):
+    global actions
+    actions += 1
     if curr is goal:
         rand = random.random()
         if curr.terrain == Terrain.FLAT and rand < terrainprobabilities[int(Terrain.FLAT)]:
@@ -239,22 +244,27 @@ def solve6():
 
     agent = 6
 
-    maxcell = getmaxcell(start)
+    printGridworld()
+    print(probabilities)
+
+    maxcell = getmaxcell(start, agent)
 
     path, pathlen = astar(start, maxcell, agent)
 
     curr = path
     while True:
 
-        # A* failed
+        # A* failed, no solution
         if curr is None:
+            print("fail")
             return None
 
         # Goal found
         if istarget(curr):
-            actions += 1
+            print("checked w/ success", curr)
             return path
 
+        print("checked", curr)
         # Pre-process cell
         curr.seen = True
         trajectorylen += 1
@@ -262,22 +272,42 @@ def solve6():
         # Update probs by sensing terrain
         updateprobabilities(curr, agent)
 
-        newmaxcell = getmaxcell(curr, agent)
-
         # Run into blocked cell
-        if maxcell is not newmaxcell:
-            trajectorylen -= 1
-            path, len = astar(curr, newmaxcell, agent)
-            curr = path
-        elif curr.blocked == True:
-            trajectorylen -= 2
+        if curr.blocked:
+            print("blocked cell")
+            trajectorylen -= 2  # avoid counting block and re-counting parent
+            if curr.id == maxcell.id:
+                maxcell = getmaxcell(curr, agent)
             path, len = astar(curr.parent, maxcell, agent)
-            curr = path
-        # Continue along A* path
+            if len == 0:
+                curr = path
+            else:
+                curr = path.child
         else:
-            # Move onto next cell along A* path
-            curr = curr.child
-            actions += 1
+            # Check if maximum probability has changed
+            newmaxcell = getmaxcell(curr, agent)
+            if maxcell.id is not newmaxcell.id:
+                print("max p update", newmaxcell)
+                print(probabilities)
+                maxcell = newmaxcell
+                trajectorylen -= 1  # avoid re-counting curr
+                path, len = astar(curr, maxcell, agent)
+                if len == 0:
+                    curr = path
+                else:
+                    curr = path.child
+            # Continue along A* path
+            elif curr.child is not None:
+                # Move onto next cell along A* path
+                print("cont path")
+                curr = curr.child
+                actions += 1
+            elif maxcell.id == newmaxcell.id:
+                path, len = astar(curr, maxcell, agent)
+                if len == 0:
+                    curr = path
+                else:
+                    curr = path.child
 
 
 def solve7():
@@ -414,15 +444,18 @@ def updateprobabilities(curr, agent):
     global probabilities
 
     # Update probabilities of all other cells
-    pool = Pool(processes=5)
+    pool = Pool(processes=10)
     results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
                                                   for j in range(dim)))
     probabilities = np.array(results).reshape(dim, dim)
     pool.close()
 
     # Update probability of current cell
-    probabilities[curr.x][curr.y] *= terrainprobabilities[int(
-        curr.terrain)]
+    if curr.blocked:
+        probabilities[curr.x][curr.y] = 0
+    else:
+        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+            curr.terrain)]
 
     if agent == 7 and curr.blocked == 0:
         # Update probability of success by multiplying probs[x][y] by factor

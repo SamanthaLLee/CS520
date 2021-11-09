@@ -160,6 +160,7 @@ def astar(start, maxcell, agent):
     fringeSet.add(curr.id)
 
     if start.id == maxcell.id:
+        # check if we need to set child/parent to null?
         return start, 0
 
     # Generate all valid children and add to fringe
@@ -204,17 +205,15 @@ def astar(start, maxcell, agent):
         childPtr = None
         oldParent = start.parent
         start.parent = None
-        print("START PATH from", start)
         while(parentPtr is not None):
-            print(parentPtr)
             astarlen += 1
             parentPtr.child = childPtr
             childPtr = parentPtr
             parentPtr = parentPtr.parent
-        print("END PATH to", maxcell)
         start.parent = oldParent
         endtime = time.time()
         totalplanningtime += endtime - starttime
+        print("from", start, "to", maxcell)
         return start, astarlen
     else:
         endtime = time.time()
@@ -256,7 +255,8 @@ def solve6():
     while True:
 
         # A* failed, no solution
-        # REVISE/RETHINK THIS!!! WHEN DO WE STOF???
+        # REVISE/RETHINK THIS!!! WHEN DO WE STOP???
+        # with unreachable attribute, we can just keep going until target.unreachable
         if curr is None:
             print("fail")
             return None
@@ -278,32 +278,46 @@ def solve6():
         if curr.blocked:
             print("blocked cell")
             trajectorylen -= 2  # avoid counting block and re-counting parent
+
+            # if old maxcell is blocked, must update maxcell
             if curr.id == maxcell.id:
-                maxcell = getmaxcell(curr, agent)
+                maxcell = getmaxcell(curr.parent, agent)
+
+            # replan starting from cell right before block to maxcell
             path, len = astar(curr.parent, maxcell, agent)
+
+            # if len == 0, then curr.parent IS the maxcell, and we should check it again
             if len == 0:
                 curr = path
+            # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
             else:
                 curr = path.child
         else:
             # Check if maximum probability has changed
             newmaxcell = getmaxcell(curr, agent)
+
+            # case: there's a new maxcell and we must replan from the current cell
             if maxcell.id is not newmaxcell.id:
                 print("max p update", newmaxcell)
                 print(probabilities)
                 maxcell = newmaxcell
                 trajectorylen -= 1  # avoid re-counting curr
                 path, len = astar(curr, maxcell, agent)
+                # if len == 0, then curr.parent IS the maxcell, and we should check it again
                 if len == 0:
                     curr = path
+                # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
                 else:
                     curr = path.child
+
             # Continue along A* path
             elif curr.child is not None:
                 # Move onto next cell along A* path
                 print("cont path")
                 curr = curr.child
                 actions += 1
+
+            # case:
             elif maxcell.id == newmaxcell.id:
                 path, len = astar(curr, maxcell, agent)
                 if len == 0:
@@ -460,7 +474,11 @@ def updateprobabilities(curr, agent):
     pool.close()
 
     # Update probability of current cell
-    probabilities[curr.x][curr.y] *= terrainprobabilities[int(curr.terrain)]
+    if curr.blocked:
+        probabilities[curr.x][curr.y] = 0
+    else:
+        probabilities[curr.x][curr.y] *= terrainprobabilities[int(
+            curr.terrain)]
 
 
 def get_weighted_manhattan_distance(x1, y1, x2, y2):

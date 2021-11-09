@@ -43,6 +43,7 @@ class Cell(object):
         self.child = None
         self.probability = 0
         self.terrain = Terrain
+        self.unreachable = False
 
     def __lt__(self, other):
         return self.id < other.id

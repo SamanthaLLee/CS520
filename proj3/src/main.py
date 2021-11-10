@@ -930,7 +930,7 @@ if __name__ == "__main__":
         dim = input("Enter a valid length. ")
 
     solve.generategridworld(int(dim))
-    solve.solve6()
+    solve.solve7()
     solve.printGridworld()
     print(solve.probabilities)
     # starttime = time.time()

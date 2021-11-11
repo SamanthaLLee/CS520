@@ -38,7 +38,7 @@ def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, start, gridworld, probabilities, dim
     dim = d
-    p = 0.3
+    p = 0
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -188,6 +188,7 @@ def astar(start, maxcell, agent):
 
     if start.id == maxcell.id:
         # check if we need to set child/parent to null?
+        print("from", start, "to", maxcell, "START = MAXCELL")
         return start, 0
 
     # Generate all valid children and add to fringe
@@ -305,7 +306,7 @@ def solve6():
         trajectorylen += 1
 
         # Update probs by sensing terrain
-        updateprobabilities(curr, agent)
+        updateprobabilities(curr)
 
         # Run into blocked cell
         if curr.blocked:
@@ -368,7 +369,7 @@ def solve7():
     global start, gridworld, cardinaldirections, trajectorylen, actions, prob_of_finding, probabilities
 
     agent = 7
-    prob_of_finding = [[0 for _ in range(dim)] for _ in range(dim)]
+    prob_of_finding = [[1/dim*dim for _ in range(dim)] for _ in range(dim)]
 
     printGridworld()
     print(probabilities)
@@ -404,7 +405,8 @@ def solve7():
         trajectorylen += 1
 
         # Update probs by sensing terrain
-        updateprobabilities(curr, agent)
+        updateprobabilities(curr)
+        updateprobabilitiesoffinding(curr)
 
         # Run into blocked cell
         if curr.blocked:
@@ -488,7 +490,7 @@ def solve8():
         trajectorylen += 1
 
         # Update probs by sensing terrain
-        updateprobabilities(curr, agent)
+        updateprobabilities(curr)
 
         newmaxcell = getmaxcell()
 
@@ -515,7 +517,7 @@ def getmaxcell(curr, agent):
         p = np.array(probabilities)
     if agent == 7:
         # consider making concurrent
-        updateprobabilitiesoffinding()
+        # updateprobabilitiesoffinding()
         # for i in range(dim):
         #     for j in range(dim):
         #         if gridworld[i][j].seen:
@@ -551,7 +553,7 @@ def squash_updateprobability(args):
     return updateprobability(*args)
 
 
-def updateprobabilities(curr, agent):
+def updateprobabilities(curr):
     global probabilities
 
     # Update probabilities of all other cells
@@ -569,25 +571,45 @@ def updateprobabilities(curr, agent):
             curr.terrain)]
 
 
-def updateprobabilityoffinding(x, y, probabilities, prob_of_finding):
+def updateprobabilityoffinding(x, y, probabilities, gridworld):
     if gridworld[x][y].seen:
-        prob_of_finding[x][y] = probabilities[x][y] * \
+        return probabilities[x][y] * \
             (1-terrainprobabilities[int(gridworld[x][y].terrain)])
+    else:
+        return probabilities[x][y]
 
 
 def squash_updateprobabilityoffinding(args):
-    return updateprobability(*args)
+    return updateprobabilityoffinding(*args)
 
 
-def updateprobabilitiesoffinding():
-    global probabilities, prob_of_finding
+def updateprobabilitiesoffinding(curr):
+    global probabilities, prob_of_finding, gridworld
 
     # Update probabilities of all other cells
     pool = Pool(processes=5)
-    results = pool.map(squash_updateprobabilityoffinding, ((i, j, probabilities, prob_of_finding) for i in range(dim)
+    results = pool.map(squash_updateprobabilityoffinding, ((i, j, probabilities, gridworld) for i in range(dim)
                                                            for j in range(dim)))
+
+    print(results)
     prob_of_finding = np.array(results).reshape(dim, dim)
     pool.close()
+
+    # Update probability of current cell
+    if curr.blocked:
+        prob_of_finding[curr.x][curr.y] = 0
+    else:
+        prob_of_finding[curr.x][curr.y] *= terrainprobabilities[int(
+            curr.terrain)]
+    
+     # for i in range(dim):
+    #     for j in range(dim):
+    #         if gridworld[i][j].seen:
+    #             prob_of_finding[i][j] = probabilities[i][j] * \
+    #                 (1-terrainprobabilities[int(gridworld[i][j].terrain)])
+
+    # print(prob_of_finding)
+    # return
 
 
 def get_weighted_manhattan_distance(x1, y1, x2, y2):

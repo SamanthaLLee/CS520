@@ -590,7 +590,6 @@ def updateprobabilitiesoffinding(curr):
     pool = Pool(processes=5)
     results = pool.map(squash_updateprobabilityoffinding, ((i, j, probabilities, gridworld) for i in range(dim)
                                                            for j in range(dim)))
-
     print(results)
     prob_of_finding = np.array(results).reshape(dim, dim)
     pool.close()
@@ -601,7 +600,7 @@ def updateprobabilitiesoffinding(curr):
     else:
         prob_of_finding[curr.x][curr.y] *= terrainprobabilities[int(
             curr.terrain)]
-    
+
      # for i in range(dim):
     #     for j in range(dim):
     #         if gridworld[i][j].seen:

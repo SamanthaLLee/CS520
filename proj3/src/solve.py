@@ -5,7 +5,7 @@ from cell import Cell
 from terrain import Terrain
 import time
 import numpy as np
-from multiprocessing import Pool
+import multiprocessing
 import sys
 
 # Global gridworld of Cell objects
@@ -32,13 +32,15 @@ dim = 0
 totalplanningtime = 0
 finaldiscovered = False
 fullgridworld = False
+maxcelltime = 0
+updateptime = 0
 
 
 def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, start, gridworld, probabilities, dim
     dim = d
-    p = 0
+    p = 0.2
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -188,7 +190,7 @@ def astar(start, maxcell, agent):
 
     if start.id == maxcell.id:
         # check if we need to set child/parent to null?
-        print("from", start, "to", maxcell, "START = MAXCELL")
+        # print("from", start, "to", maxcell, "START = MAXCELL")
         return start, 0
 
     # Generate all valid children and add to fringe
@@ -241,7 +243,7 @@ def astar(start, maxcell, agent):
         start.parent = oldParent
         endtime = time.time()
         totalplanningtime += endtime - starttime
-        print("from", start, "to", maxcell)
+        # print("from", start, "to", maxcell)
         return start, astarlen
     else:
         endtime = time.time()
@@ -268,12 +270,12 @@ def solve6():
     """
     Agent 6
     """
-    global start, gridworld, cardinaldirections, trajectorylen, actions
+    global start, gridworld, cardinaldirections, trajectorylen, actions, updateptime
 
     agent = 6
 
     printGridworld()
-    print(probabilities)
+    # print(probabilities)
 
     maxcell = getmaxcell(start, agent)
 
@@ -288,7 +290,7 @@ def solve6():
         while curr is None:
             if goal.unreachable:
                 return None
-            print("curr is None")
+            # print("curr is None")
             maxcell.unreachable = True
             # Prevent cell from being chosen as maxiumum again
             probabilities[maxcell.x][maxcell.y] *= -1
@@ -297,20 +299,23 @@ def solve6():
 
         # Goal found
         if istarget(curr):
-            print("checked w/ success", curr)
+            # print("checked w/ success", curr)
             return path
 
-        print("checked", curr)
+        # print("checked", curr)
         # Pre-process cell
         curr.seen = True
         trajectorylen += 1
 
+        starttime = time.time()
         # Update probs by sensing terrain
         updateprobabilities(curr)
+        endtime = time.time()
+        updateptime += endtime - starttime
 
         # Run into blocked cell
         if curr.blocked:
-            print("blocked cell")
+            # print("blocked cell")
             trajectorylen -= 2  # avoid counting block and re-counting parent
 
             # if maxcell is the current blocked cell, must update maxcell
@@ -333,8 +338,8 @@ def solve6():
 
             # If there's a new maxcell, we must replan from the current cell
             if maxcell.id is not newmaxcell.id:
-                print("max p update", newmaxcell)
-                print(probabilities)
+                # print("max p update", newmaxcell)
+                # print(probabilities)
                 maxcell = newmaxcell
                 trajectorylen -= 1  # avoid re-counting curr
                 path, len = astar(curr, maxcell, agent)
@@ -349,7 +354,7 @@ def solve6():
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
-                print("cont path")
+                # print("cont path")
                 curr = curr.child
                 actions += 1
 
@@ -372,7 +377,7 @@ def solve7():
     prob_of_finding = [[1/dim*dim for _ in range(dim)] for _ in range(dim)]
 
     printGridworld()
-    print(probabilities)
+    # print(probabilities)
 
     maxcell = getmaxcell(start, agent)
 
@@ -510,7 +515,9 @@ def solve8():
 
 
 def getmaxcell(curr, agent):
-    global prob_of_finding, probabilities
+    global prob_of_finding, probabilities, maxcelltime
+
+    starttime = time.time()
 
     p = None
     if agent == 6:
@@ -539,7 +546,11 @@ def getmaxcell(curr, agent):
             elif currdist == mindist:
                 equidistant.append(occ)
         i, j = random.choice(equidistant)
+        endtime = time.time()
+        maxcelltime += endtime-starttime
         return gridworld[i][j]
+    endtime = time.time()
+    maxcelltime += endtime-starttime
     return gridworld[occs[0][0]][occs[0][1]]
 
 
@@ -556,12 +567,21 @@ def squash_updateprobability(args):
 def updateprobabilities(curr):
     global probabilities
 
-    # Update probabilities of all other cells
-    pool = Pool(processes=5)
-    results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
-                                                  for j in range(dim)))
-    probabilities = np.array(results).reshape(dim, dim)
-    pool.close()
+    for i in range(dim):
+        for j in range(dim):
+            factor = 1 - terrainprobabilities[int(curr.terrain)]
+            denom = 1 - (factor * probabilities[curr.x][curr.y])
+            probabilities[i][j] /= denom
+
+    # # Update probabilities of all other cells
+    # pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+
+    # # print(multiprocessing.cpu_count())
+
+    # results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
+    #                                               for j in range(dim)))
+    # probabilities = np.array(results).reshape(dim, dim)
+    # pool.close()
 
     # Update probability of current cell
     if curr.blocked:
@@ -587,7 +607,7 @@ def updateprobabilitiesoffinding(curr):
     global probabilities, prob_of_finding, gridworld
 
     # Update probabilities of all other cells
-    pool = Pool(processes=5)
+    pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     results = pool.map(squash_updateprobabilityoffinding, ((i, j, probabilities, gridworld) for i in range(dim)
                                                            for j in range(dim)))
     print(results)

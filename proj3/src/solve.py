@@ -247,6 +247,7 @@ def astar(start, maxcell, agent):
         endtime = time.time()
         totalplanningtime += endtime - starttime
         print("from", start, "to", maxcell)
+        maxcell.child = None
         return start, astarlen
     else:
         endtime = time.time()
@@ -455,7 +456,7 @@ def solve7():
 
         # Run into blocked cell
         if curr.blocked:
-            # print("blocked cell")
+            print("blocked cell")
             trajectorylen -= 2  # avoid counting block and re-counting parent
 
             # if maxcell is the current blocked cell, must update maxcell
@@ -479,8 +480,8 @@ def solve7():
             # If there's a new maxcell, we must replan from the current cell
             # if maxcell.id != newmaxcell.id:
             # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
-            if probabilities[maxcell.x][maxcell.y] != probabilities[newmaxcell.x][newmaxcell.y]:
-                # print("max p update", newmaxcell)
+            if prob_of_finding[maxcell.x][maxcell.y] != prob_of_finding[newmaxcell.x][newmaxcell.y]:
+                print("max p update", newmaxcell)
                 # print(probabilities)
                 maxcell = newmaxcell
                 trajectorylen -= 1  # avoid re-counting curr
@@ -503,6 +504,7 @@ def solve7():
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
             elif curr.id != maxcell.id:
+                print("new path")
                 path, len = astar(curr, maxcell, agent)
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again

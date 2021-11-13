@@ -4,7 +4,7 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve6]
+agents = [solve.solve7]
 
 actions_results = []
 runtime_results = []
@@ -24,7 +24,7 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results
 
     # Initialize constants:
-    trials_per_agent = 30
+    trials_per_agent = 100
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     actions_results = [0 for _ in range(3)]
@@ -42,7 +42,7 @@ def generate_all_graphs():
             solve.start = None
             solve.actions = 0
             solve.numcellsprocessed = 0
-            solve.generategridworld(3)
+            solve.generategridworld(10)
             solve.printGridworld()
 
             start_time = time.time()

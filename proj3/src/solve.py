@@ -42,7 +42,7 @@ def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, start, gridworld, probabilities, dim
     dim = d
-    p = 0.2
+    p = 0.3
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -82,38 +82,38 @@ def generategridworld(d):
         if not gridworld[x][y].blocked:
             start = gridworld[x][y]
 
-    start = gridworld[2][1]
-    goal = gridworld[1][0]
-
     # Initialize starting cell values
     start.g = 1
     start.h = get_weighted_manhattan_distance(0, 0, goal.x, goal.y)
     start.f = gridworld[0][0].g + gridworld[0][0].h
     start.seen = True
 
-    gridworld[0][0].blocked = False
-    gridworld[0][1].blocked = False
-    gridworld[0][2].blocked = False
+    # start = gridworld[2][1]
+    # goal = gridworld[1][0]
 
-    gridworld[0][0].terrain = Terrain.FLAT
-    gridworld[0][1].terrain = Terrain.FLAT
-    gridworld[0][2].terrain = Terrain.FOREST
+    # gridworld[0][0].blocked = False
+    # gridworld[0][1].blocked = False
+    # gridworld[0][2].blocked = False
 
-    gridworld[1][0].blocked = False
-    gridworld[1][1].blocked = False
-    gridworld[1][2].blocked = True
+    # gridworld[0][0].terrain = Terrain.FLAT
+    # gridworld[0][1].terrain = Terrain.FLAT
+    # gridworld[0][2].terrain = Terrain.FOREST
 
-    gridworld[1][0].terrain = Terrain.FOREST
-    gridworld[1][1].terrain = Terrain.FLAT
-    gridworld[1][2].terrain = Terrain.BLOCKED
+    # gridworld[1][0].blocked = False
+    # gridworld[1][1].blocked = False
+    # gridworld[1][2].blocked = True
 
-    gridworld[2][0].blocked = False
-    gridworld[2][1].blocked = False
-    gridworld[2][2].blocked = False
+    # gridworld[1][0].terrain = Terrain.FOREST
+    # gridworld[1][1].terrain = Terrain.FLAT
+    # gridworld[1][2].terrain = Terrain.BLOCKED
 
-    gridworld[2][0].terrain = Terrain.FOREST
-    gridworld[2][1].terrain = Terrain.FOREST
-    gridworld[2][2].terrain = Terrain.FOREST
+    # gridworld[2][0].blocked = False
+    # gridworld[2][1].blocked = False
+    # gridworld[2][2].blocked = False
+
+    # gridworld[2][0].terrain = Terrain.FOREST
+    # gridworld[2][1].terrain = Terrain.FOREST
+    # gridworld[2][2].terrain = Terrain.FOREST
 
 
 def printGridworld():
@@ -328,11 +328,11 @@ def solve6():
         curr.seen = True
         trajectorylen += 1
 
-        starttime = time.time()
-        # Update probs by sensing terrain
+        # starttime = time.time()
+        # # Update probs by sensing terrain
 
-        endtime = time.time()
-        updateptime += endtime - starttime
+        # endtime = time.time()
+        # updateptime += endtime - starttime
 
         # Run into blocked cell
         if curr.blocked:
@@ -359,9 +359,10 @@ def solve6():
             newmaxcell = getmaxcell(curr, agent)
 
             # If there's a new maxcell, we must replan from the current cell
-            if maxcell.id != newmaxcell.id:
-                # print("max p update", newmaxcell)
-                print(probabilities)
+            # if maxcell.id != newmaxcell.id:
+            if probabilities[maxcell.x][maxcell.y] != probabilities[newmaxcell.x][newmaxcell.y]:
+                print("max p update", newmaxcell)
+                # print(probabilities)
                 maxcell = newmaxcell
                 trajectorylen -= 1  # avoid re-counting curr
                 path, len = astar(curr, maxcell, agent)
@@ -426,21 +427,26 @@ def solve7():
             maxcell = getmaxcell(laststartcell, agent)
             path, len = astar(laststartcell, maxcell, agent)
 
-        # Goal found
-        if curr.id == maxcell.id and istarget(curr):
-            print("checked w/ success", curr)
-            return path
+        if curr.id == maxcell.id:
+            if istarget(curr):
+                return path
+            updateprobabilities(curr)
+
+        # # Goal found
+        # if curr.id == maxcell.id and istarget(curr):
+        #     print("checked w/ success", curr)
+        #     return path
 
         print("checked", curr)
         # Pre-process cell
         curr.seen = True
         trajectorylen += 1
 
-        starttime = time.time()
-        # Update probs by sensing terrain
-        updateprobabilities(curr)
-        endtime = time.time()
-        updateptime += endtime - starttime
+        # starttime = time.time()
+        # # Update probs by sensing terrain
+        # updateprobabilities(curr)
+        # endtime = time.time()
+        # updateptime += endtime - starttime
 
         starttime = time.time()
         updateprobabilitiesoffinding(curr)
@@ -471,7 +477,9 @@ def solve7():
             newmaxcell = getmaxcell(curr, agent)
 
             # If there's a new maxcell, we must replan from the current cell
-            if maxcell.id != newmaxcell.id:
+            # if maxcell.id != newmaxcell.id:
+            # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
+            if probabilities[maxcell.x][maxcell.y] != probabilities[newmaxcell.x][newmaxcell.y]:
                 # print("max p update", newmaxcell)
                 # print(probabilities)
                 maxcell = newmaxcell

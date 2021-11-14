@@ -4,7 +4,7 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve7]
+agents = [solve.solve8]
 
 actions_results = []
 runtime_results = []
@@ -24,7 +24,7 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results
 
     # Initialize constants:
-    trials_per_agent = 100
+    trials_per_agent = 10
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     actions_results = [0 for _ in range(3)]
@@ -43,7 +43,6 @@ def generate_all_graphs():
             solve.actions = 0
             solve.numcellsprocessed = 0
             solve.generategridworld(10)
-            solve.printGridworld()
 
             start_time = time.time()
             test = agent()
@@ -169,17 +168,17 @@ def plot_processed():
 
 if __name__ == "__main__":
 
-    # dim = input("What is the length of your gridworld? ")
-    # while not dim.isdigit() or int(dim) < 2:
-    #     dim = input("Enter a valid length. ")
+    dim = input("What is the length of your gridworld? ")
+    while not dim.isdigit() or int(dim) < 2:
+        dim = input("Enter a valid length. ")
 
-    # solve.generategridworld(int(dim))
-    # starttime = time.time()
-    # result = solve.solve7()
-    # endtime = time.time()
-    # solve.printGridworld()
-    # if (result is None):
-    #     print("No solution.")
+    solve.generategridworld(int(dim))
+    starttime = time.time()
+    result = solve.solve8()
+    endtime = time.time()
+    solve.printGridworld()
+    if (result is None):
+        print("No solution.")
 
     # # solve.trajectorylen = solve.trajectorylen if result is not None else None
     # # print("Trajectory length:", solve.trajectorylen)
@@ -193,10 +192,10 @@ if __name__ == "__main__":
 
     # solve.printGridworld()
 
-    generate_all_graphs()
-    plot_actions()
-    plot_processed()
-    plot_runtime()
+    # generate_all_graphs()
+    # plot_actions()
+    # plot_processed()
+    # plot_runtime()
     # plot2()
     # plot3()
     # plot4()

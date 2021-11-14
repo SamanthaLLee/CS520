@@ -4,8 +4,8 @@ import solve
 import time
 from terrain import Terrain
 
-# agents = [solve.solve6, solve.solve7, solve.solve8]
-agents = [solve.solve8]
+agents = [solve.solve6, solve.solve7, solve.solve8]
+# agents = [solve.solve8]
 
 actions_results = []
 runtime_results = []
@@ -43,7 +43,7 @@ def generate_all_graphs():
             solve.start = None
             solve.actions = 0
             solve.numcellsprocessed = 0
-            solve.generategridworld(50)
+            solve.generategridworld(100)
 
             start_time = time.time()
             test = agent()
@@ -169,18 +169,18 @@ def plot_processed():
 
 if __name__ == "__main__":
 
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 2:
-        dim = input("Enter a valid length. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 2:
+    #     dim = input("Enter a valid length. ")
 
-    solve.generategridworld(int(dim))
-    solve.printGridworld()
-    starttime = time.time()
-    result = solve.solve8()
-    endtime = time.time()
-    solve.printGridworld()
-    if (result is None):
-        print("No solution.")
+    # solve.generategridworld(int(dim))
+    # solve.printGridworld()
+    # starttime = time.time()
+    # result = solve.solve8()
+    # endtime = time.time()
+    # solve.printGridworld()
+    # if (result is None):
+    #     print("No solution.")
 
     # # solve.trajectorylen = solve.trajectorylen if result is not None else None
     # # print("Trajectory length:", solve.trajectorylen)
@@ -194,10 +194,10 @@ if __name__ == "__main__":
 
     # solve.printGridworld()
 
-    # generate_all_graphs()
-    # plot_actions()
-    # plot_processed()
-    # plot_runtime()
+    generate_all_graphs()
+    plot_actions()
+    plot_processed()
+    plot_runtime()
     # plot2()
     # plot3()
     # plot4()

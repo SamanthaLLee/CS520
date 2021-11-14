@@ -42,7 +42,7 @@ def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
     global goal, start, gridworld, probabilities, dim
     dim = d
-    p = 0
+    p = 0.3
     # Cells are constructed in the following way:
     # Cell(g, h, f, blocked, seen, parent)
     gridworld = [[Cell(x, y) for y in range(dim)] for x in range(dim)]
@@ -384,6 +384,8 @@ def solve7():
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
 
+            # print("curr is none")
+
             # Check if maze is unsolvable
             if goal.unreachable:
                 return None
@@ -391,6 +393,7 @@ def solve7():
             # Prevent cell from being chosen as maxiumum again
             maxcell.unreachable = True
             probabilities[maxcell.x][maxcell.y] *= -1
+            prob_of_finding[maxcell.x][maxcell.y] *= -1
 
             # Generate a new path
             maxcell = getmaxcell(laststartcell, agent)
@@ -412,6 +415,7 @@ def solve7():
         # Run into blocked cell
         if curr.blocked:
             updateprobabilities(curr)
+            # print("curr blocked")
 
             # If maxcell is the current blocked cell, must update maxcell
             if curr.id == maxcell.id:
@@ -434,6 +438,7 @@ def solve7():
             # If there's a new maxcell, we must replan from the current cell
             # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
             if prob_of_finding[maxcell.x][maxcell.y] != prob_of_finding[newmaxcell.x][newmaxcell.y]:
+                # print("maxp update")
                 maxcell = newmaxcell
                 path, len = astar(curr, maxcell, agent)
                 laststartcell = curr
@@ -492,7 +497,7 @@ def solve8():
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
 
-            print("curr None,", maxcell, "unreachable")
+            # print("curr None,", maxcell, "unreachable")
 
             # Check if maze is unsolvable
             if goal.unreachable:
@@ -518,18 +523,18 @@ def solve8():
         # Pre-process cell
         curr.seen = True
 
-        print("checked", curr)
+        # print("checked", curr)
 
         updateprobabilitiesoffinding(curr)
         # updateutilities(curr)
 
-        print(probabilities)
-        print(prob_of_finding)
-        print(utilities)
+        # print(probabilities)
+        # print(prob_of_finding)
+        # print(utilities)
 
         # Run into blocked cell
         if curr.blocked:
-            print("blocked")
+            # print("blocked")
             updateprobabilities(curr)
             updateprobabilitiesoffinding(curr)
             updateutilities(curr)
@@ -559,7 +564,7 @@ def solve8():
                 path, len = astar(curr, maxcell, agent)
                 laststartcell = curr
 
-                print("new max p")
+                # print("new max p")
 
                 # if len == 0, then curr.parent IS the maxcell, and we should check it again
                 if len == 0 or path is None:
@@ -570,7 +575,7 @@ def solve8():
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
-                print("cont path")
+                # print("cont path")
                 curr = curr.child
                 actions += 1
 

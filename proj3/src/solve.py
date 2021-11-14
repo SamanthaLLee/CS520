@@ -83,8 +83,8 @@ def generategridworld(d):
         if not gridworld[x][y].blocked:
             start = gridworld[x][y]
 
-    start = gridworld[2][1]
-    goal = gridworld[1][0]
+    # start = gridworld[2][1]
+    # goal = gridworld[1][0]
 
     # Initialize starting cell values
     start.g = 1
@@ -92,29 +92,29 @@ def generategridworld(d):
     start.f = gridworld[0][0].g + gridworld[0][0].h
     start.seen = True
 
-    gridworld[0][0].blocked = False
-    gridworld[0][1].blocked = False
-    gridworld[0][2].blocked = False
+    # gridworld[0][0].blocked = False
+    # gridworld[0][1].blocked = False
+    # gridworld[0][2].blocked = False
 
-    gridworld[0][0].terrain = Terrain.FLAT
-    gridworld[0][1].terrain = Terrain.FLAT
-    gridworld[0][2].terrain = Terrain.FOREST
+    # gridworld[0][0].terrain = Terrain.FLAT
+    # gridworld[0][1].terrain = Terrain.FLAT
+    # gridworld[0][2].terrain = Terrain.FOREST
 
-    gridworld[1][0].blocked = False
-    gridworld[1][1].blocked = False
-    gridworld[1][2].blocked = True
+    # gridworld[1][0].blocked = False
+    # gridworld[1][1].blocked = False
+    # gridworld[1][2].blocked = True
 
-    gridworld[1][0].terrain = Terrain.FOREST
-    gridworld[1][1].terrain = Terrain.FLAT
-    gridworld[1][2].terrain = Terrain.BLOCKED
+    # gridworld[1][0].terrain = Terrain.FOREST
+    # gridworld[1][1].terrain = Terrain.FLAT
+    # gridworld[1][2].terrain = Terrain.BLOCKED
 
-    gridworld[2][0].blocked = False
-    gridworld[2][1].blocked = False
-    gridworld[2][2].blocked = False
+    # gridworld[2][0].blocked = False
+    # gridworld[2][1].blocked = False
+    # gridworld[2][2].blocked = False
 
-    gridworld[2][0].terrain = Terrain.FOREST
-    gridworld[2][1].terrain = Terrain.FOREST
-    gridworld[2][2].terrain = Terrain.FOREST
+    # gridworld[2][0].terrain = Terrain.FOREST
+    # gridworld[2][1].terrain = Terrain.FOREST
+    # gridworld[2][2].terrain = Terrain.FOREST
 
 
 def printGridworld():
@@ -429,6 +429,7 @@ def solve7():
             if istarget(curr):
                 return path
             updateprobabilities(curr)
+            updateutilities(curr)
 
         # # Goal found
         # if curr.id == maxcell.id and istarget(curr):
@@ -446,15 +447,16 @@ def solve7():
         # endtime = time.time()
         # updateptime += endtime - starttime
 
-        starttime = time.time()
-        updateprobabilitiesoffinding(curr)
-        updateutilities(curr)
-        endtime = time.time()
-        updatepfindtime += endtime - starttime
+        # starttime = time.time()
+        # updateprobabilitiesoffinding(curr)
+
+        # endtime = time.time()
+        # updatepfindtime += endtime - starttime
 
         # Run into blocked cell
         if curr.blocked:
             updateprobabilities(curr)
+            updateutilities(curr)
             # print("blocked cell")
             trajectorylen -= 2  # avoid counting block and re-counting parent
 
@@ -479,7 +481,7 @@ def solve7():
             # If there's a new maxcell, we must replan from the current cell
             # if maxcell.id != newmaxcell.id:
             # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
-            if prob_of_finding[maxcell.x][maxcell.y] != prob_of_finding[newmaxcell.x][newmaxcell.y]:
+            if utilities[maxcell.x][maxcell.y] != utilities[newmaxcell.x][newmaxcell.y]:
                 # print("max p update", newmaxcell)
                 # print(probabilities)
                 maxcell = newmaxcell
@@ -533,19 +535,13 @@ def solve8():
         # if inf > 30:
         #     print("blah")
         #     return None
-        counter = 0
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
             if goal.unreachable:
-                print("goal unreachable")
-                return None
-              # occasional inf loop? can't find out why
-            counter += 1
-            if counter > 10:
-                print("counter > 10")
+                # print("goal unreachable")
                 return None
             mincell.unreachable = True
-            print(mincell, "unreachable")
+            # print(mincell, "unreachable")
             # Prevent cell from being chosen as maxiumum again
             probabilities[mincell.x][mincell.y] *= -1
             utilities[mincell.x][mincell.y] = sys.maxsize
@@ -555,11 +551,11 @@ def solve8():
 
         if curr.id == mincell.id:
             if istarget(curr):
-                print("return path")
+                # print("return path")
                 return path
             updateprobabilities(curr)
 
-        print("checked", curr)
+        # print("checked", curr)
 
         # Pre-process cell
         curr.seen = True
@@ -572,7 +568,7 @@ def solve8():
 
         # Run into blocked cell
         if curr.blocked:
-            print("blocked cell")
+            # print("blocked cell")
             updateprobabilities(curr)
             trajectorylen -= 2  # avoid counting block and re-counting parent
 
@@ -598,8 +594,8 @@ def solve8():
             # if maxcell.id != newmaxcell.id:
             # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
             if utilities[mincell.x][mincell.y] != utilities[newmincell.x][newmincell.y]:
-                print("max p update", newmincell)
-                print(utilities)
+                # print("max p update", newmincell)
+                # print(utilities)
                 mincell = newmincell
                 trajectorylen -= 1  # avoid re-counting curr
                 path, len = astar(curr, mincell, agent)
@@ -614,14 +610,14 @@ def solve8():
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
-                print("cont path")
+                # print("cont path")
                 curr = curr.child
                 actions += 1
 
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
             elif curr.id != mincell.id:
-                print("new path")
+                # print("new path")
                 path, len = astar(curr, mincell, agent)
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again
@@ -674,10 +670,10 @@ def getmincell(curr, agent):
     p = np.array(utilities)
     utilities[curr.x][curr.y] = temp
 
-    print(utilities)
+    # print(utilities)
     minp = np.amin(p)
 
-    print("min p is", minp)
+    # print("min p is", minp)
 
     occs = list(zip(*np.where(p == minp)))
     if len(occs) > 1:

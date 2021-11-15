@@ -89,7 +89,7 @@ def generategridworld(d):
 
         path, len = astar(start, goal)
 
-        if path:
+        if path is not None:
             break
 
     if astar(start, goal) is None:
@@ -199,6 +199,8 @@ def astar(start, maxcell):
     astarlen = 0
     goalfound = False
 
+    # print("from", start, "to", maxcell)
+
     curr = start
     fringe.put((curr.f, curr))
     fringeSet.add(curr.id)
@@ -206,6 +208,7 @@ def astar(start, maxcell):
     if start.id == maxcell.id:
         # check if we need to set child/parent to null?
         # print("from", start, "to", maxcell, "START = MAXCELL")
+        start.child = None
         return start, 0
 
     # Generate all valid children and add to fringe
@@ -259,7 +262,6 @@ def astar(start, maxcell):
         start.parent = oldParent
         endtime = time.time()
         totalplanningtime += endtime - starttime
-        print("from", start, "to", maxcell)
         maxcell.child = None
         return start, astarlen
     else:
@@ -583,11 +585,11 @@ def solve8():
 
 def solve8old():
     """
-    Agent 8
+    Agent 9 - testing
     """
     global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, utilities
 
-    agent = 8
+    agent = 9
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
 
     utilities = [[0 for _ in range(dim)] for _ in range(dim)]
@@ -596,7 +598,7 @@ def solve8old():
 
     maxcell = getmaxcell(start, agent)
 
-    path, pathlen = astar(start, maxcell, agent)
+    path, pathlen = astar(start, maxcell)
     laststartcell = start
 
     inf = 0
@@ -611,9 +613,7 @@ def solve8old():
 
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
-
             # print("curr None,", maxcell, "unreachable")
-
             # Check if maze is unsolvable
             if goal.unreachable:
                 return None
@@ -621,15 +621,17 @@ def solve8old():
             # Prevent cell from being chosen as maxiumum again
             maxcell.unreachable = True
             probabilities[maxcell.x][maxcell.y] *= -1
+            prob_of_finding[maxcell.x][maxcell.y] *= -1
             utilities[maxcell.x][maxcell.y] = -1
+
             # Generate a new path
             maxcell = getmaxcell(laststartcell, agent)
-            curr, len = astar(laststartcell, maxcell, agent)
+            curr, len = astar(laststartcell, maxcell)
 
         # Only examine goal cells
         if curr.id == maxcell.id:
             if istarget(curr):
-                return path
+                return curr
 
             # Look at this again. Update upon discovering terrain type?
             updateprobabilities(curr)
@@ -640,7 +642,7 @@ def solve8old():
 
         # print("checked", curr)
 
-        updateprobabilitiesoffinding(curr)
+        # updateprobabilitiesoffinding(curr)
         # updateutilities(curr)
 
         # print(probabilities)
@@ -651,7 +653,7 @@ def solve8old():
         if curr.blocked:
             # print("blocked")
             updateprobabilities(curr)
-            updateprobabilitiesoffinding(curr)
+            # updateprobabilitiesoffinding(curr)
             updateutilities(curr)
 
             # If maxcell is the current blocked cell, must update maxcell
@@ -659,8 +661,12 @@ def solve8old():
                 maxcell = getmaxcell(curr.parent, agent)
 
             # Replan starting from cell right before block to maxcell
-            path, len = astar(curr.parent, maxcell, agent)
+            path, len = astar(curr.parent, maxcell)
             laststartcell = curr.parent
+
+            # print("path:", path)
+
+            # curr = path
 
             # If len == 0, then curr.parent IS the maxcell, and we should check it again
             if len == 0 or path is None:
@@ -670,38 +676,41 @@ def solve8old():
                 curr = path.child
         else:
             # Check if maximum probability has changed
-            newmaxcell = getmaxcell(curr, agent)
+            # newmaxcell = getmaxcell(curr, agent)
 
-            # If there's a new maxcell, we must replan from the current cell
-            # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
-            if utilities[maxcell.x][maxcell.y] != utilities[newmaxcell.x][newmaxcell.y]:
-                maxcell = newmaxcell
-                path, len = astar(curr, maxcell, agent)
-                laststartcell = curr
+            # # If there's a new maxcell, we must replan from the current cell
+            # # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
+            # if utilities[maxcell.x][maxcell.y] != utilities[newmaxcell.x][newmaxcell.y]:
+            #     maxcell = newmaxcell
+            #     path, len = astar(curr, maxcell)
+            #     laststartcell = curr
 
-                # print("new max p")
+            #     print("new max p")
 
-                # if len == 0, then curr.parent IS the maxcell, and we should check it again
-                if len == 0 or path is None:
-                    curr = path
-                # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
-                else:
-                    curr = path.child
+            #     # if len == 0, then curr.parent IS the maxcell, and we should check it again
+            #     if len == 0 or path is None:
+            #         curr = path
+            #     # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
+            #     else:
+            #         curr = path.child
 
             # If there is a path to follow, continue to follow it
-            elif curr.child is not None:
+            if curr.child is not None:
                 # print("cont path")
+                # inf loop
                 curr = curr.child
                 actions += 1
 
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
-            elif curr.id != maxcell.id:
+            else:
+                updateutilities(curr)
+                maxcell = getmaxcell(curr, agent)
                 # print("new path")
-                path, len = astar(curr, maxcell, agent)
+                path, len = astar(curr, maxcell)
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again
-                curr = path.child
+                curr = path
 
 
 def getmaxcell(curr, agent):
@@ -716,6 +725,8 @@ def getmaxcell(curr, agent):
         p = np.array(prob_of_finding)
     elif agent == 8:
         p = np.array(prob_of_finding)
+    elif agent == 9:
+        p = np.array(utilities)
 
     maxp = np.amax(p)
     occs = list(zip(*np.where(p == maxp)))
@@ -750,44 +761,6 @@ def getmaxcell(curr, agent):
             return gridworld[i][j]
     endtime = time.time()
     maxcelltime += endtime-starttime
-    return gridworld[occs[0][0]][occs[0][1]]
-
-
-def getmincell(curr, agent):
-    global utilities, prob_of_finding, probabilities, maxcelltime
-
-    starttime = time.time()
-
-    temp = utilities[curr.x][curr.y]
-    utilities[curr.x][curr.y] = sys.maxsize
-    p = np.array(utilities)
-    utilities[curr.x][curr.y] = temp
-
-    # print(utilities)
-    minp = np.amin(p)
-
-    # print("min p is", minp)
-
-    occs = list(zip(*np.where(p == minp)))
-    if len(occs) > 1:
-        equidistant = []
-        mindist = sys.maxsize
-        for occ in occs:
-            currdist = get_weighted_manhattan_distance(
-                curr.x, curr.y, occ[0], occ[1])
-            if currdist < mindist:
-                mindist = currdist
-                equidistant = [occ]
-            elif currdist == mindist:
-                equidistant.append(occ)
-        i, j = random.choice(equidistant)
-        endtime = time.time()
-        maxcelltime += endtime-starttime
-        # print("mincell", gridworld[i][j])
-        return gridworld[i][j]
-    endtime = time.time()
-    maxcelltime += endtime-starttime
-    # print("mincell", gridworld[occs[0][0]][occs[0][1]])
     return gridworld[occs[0][0]][occs[0][1]]
 
 
@@ -873,22 +846,24 @@ def updateutilities(curr):
 
     for i in range(dim):
         for j in range(dim):
-            # if gridworld[i][j].seen:
-            #     prob_of_finding[i][j] = probabilities[i][j] * \
-            #         (1-terrainprobabilities[int(gridworld[i][j].terrain)])
-            # if gridworld[i][j] is curr:
-            #     if curr.blocked:
-            #         prob_of_finding[i][j] = 0
-            #     else:
-            #         prob_of_finding[i][j] *= terrainprobabilities[int(
-            #             curr.terrain)]
+            if gridworld[i][j].seen:
+                prob_of_finding[i][j] = probabilities[i][j] * \
+                    (1-terrainprobabilities[int(gridworld[i][j].terrain)])
+            if gridworld[i][j] is curr:
+                if curr.blocked:
+                    prob_of_finding[i][j] = 0
+                else:
+                    prob_of_finding[i][j] *= terrainprobabilities[int(
+                        curr.terrain)]
+
+            # new utility function: U = pf / d*.01
             if utilities[i][j] != -1:
                 dist = get_weighted_manhattan_distance(
                     curr.x, curr.y, i, j)
-                if prob_of_finding[i][j] > 0:
-                    utilities[i][j] = dist/prob_of_finding[i][j]
-                # if dist > 0:
-                #     utilities[i][j] = prob_of_finding[i][j] / dist
+                # if prob_of_finding[i][j] > 0:
+                #     utilities[i][j] = dist/prob_of_finding[i][j]
+                if dist > 0:
+                    utilities[i][j] = prob_of_finding[i][j] / (dist*.01)
                 else:
                     utilities[i][j] = 0
 

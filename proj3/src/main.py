@@ -4,8 +4,8 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve6, solve.solve7, solve.solve8]
-# agents = [solve.solve8]
+agents = [solve.solve6, solve.solve7, solve.solve8, solve.solve8old]
+# agents = [solve.solve8old]
 
 actions_results = []
 runtime_results = []
@@ -25,12 +25,12 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results
 
     # Initialize constants:
-    trials_per_agent = 500
+    trials_per_agent = 200
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
-    actions_results = [0 for _ in range(3)]
-    runtime_results = [0 for _ in range(3)]
-    processed_results = [0 for _ in range(3)]
+    actions_results = [0 for _ in range(4)]
+    runtime_results = [0 for _ in range(4)]
+    processed_results = [0 for _ in range(4)]
 
     # For each agent, create trials_per_p # of gridworlds
     for agent_num, agent in enumerate(agents):
@@ -178,14 +178,12 @@ if __name__ == "__main__":
     # solve.generategridworld(int(dim))
     # solve.printGridworld()
     # starttime = time.time()
-    # result = solve.solve7()
+    # result = solve.solve8old()
     # endtime = time.time()
     # solve.printGridworld()
     # if (result is None):
     #     print("No solution.")
 
-    # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # print("Trajectory length:", solve.trajectorylen)
     # print("Num actions: ", solve.actions)
     # print("Cells processed: ", solve.numcellsprocessed)
     # print("Runtime: ", endtime - starttime, "s")

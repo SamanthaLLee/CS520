@@ -32,6 +32,8 @@ alldirections = [(1, 0), (-1, 0), (0, 1), (0, -1),
                  (-2, -2), (2, 2), (2, -2), (-2, 2)]
 numcellsprocessed = 0
 actions = 0
+examinations = 0
+movements = 0
 dim = 0
 totalplanningtime = 0
 finaldiscovered = False
@@ -271,8 +273,9 @@ def astar(start, maxcell):
 
 
 def istarget(curr):
-    global actions
-    # actions += 1
+    global actions, examinations
+    examinations += 1
+    actions += 1
     if curr is goal:
         rand = random.random()
         if curr.terrain == Terrain.FLAT and rand < terrainprobabilities[int(Terrain.FLAT)]:
@@ -289,7 +292,7 @@ def solve6():
     """
     Agent 6
     """
-    global start, gridworld, cardinaldirections, actions, updateptime
+    global start, gridworld, cardinaldirections, actions, updateptime, movements
 
     agent = 6
 
@@ -346,6 +349,8 @@ def solve6():
             # Otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
             else:
                 curr = path.child
+                actions += 1
+                movements += 1
         else:
             # Check if maximum probability has changed
             newmaxcell = getmaxcell(curr, agent)
@@ -362,11 +367,14 @@ def solve6():
                 # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
                 else:
                     curr = path.child
+                    actions += 1
+                movements += 1
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
                 curr = curr.child
                 actions += 1
+                movements += 1
 
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
@@ -375,13 +383,15 @@ def solve6():
                 laststartcell = curr
                 # We must look at the second cell in the path because we don't want to examine curr.parent again
                 curr = path.child
+                actions += 1
+                movements += 1
 
 
 def solve7():
     """
     Agent 7
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, movements
 
     agent = 7
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -445,6 +455,8 @@ def solve7():
             # Otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
             else:
                 curr = path.child
+                actions += 1
+                movements += 1
         else:
             # Check if maximum probability has changed
             newmaxcell = getmaxcell(curr, agent)
@@ -463,11 +475,14 @@ def solve7():
                 # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
                 else:
                     curr = path.child
+                    actions += 1
+                    movements += 1
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
                 # print("cont path")
                 curr = curr.child
+                movements += 1
                 actions += 1
 
             # If there is no path to follow, and we must create a new one
@@ -478,13 +493,15 @@ def solve7():
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again
                 curr = path.child
+                actions += 1
+                movements += 1
 
 
 def solve8():
     """
     Agent 8
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, movements
 
     agent = 8
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -548,6 +565,8 @@ def solve8():
             # Otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
             else:
                 curr = path.child
+                actions += 1
+                movements += 1
         else:
             # Check if maximum probability has changed
             newmaxcell = getmaxcell(curr, agent)
@@ -566,11 +585,14 @@ def solve8():
                 # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
                 else:
                     curr = path.child
+                    actions += 1
+                    movements += 1
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
                 # print("cont path")
                 curr = curr.child
+                movements += 1
                 actions += 1
 
             # If there is no path to follow, and we must create a new one
@@ -581,20 +603,22 @@ def solve8():
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again
                 curr = path.child
+                actions += 1
+                movements += 1
 
 
 def solve8old():
     """
     Agent 9 - testing
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, utilities
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, utilities, movements
 
     agent = 9
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
 
     utilities = [[0 for _ in range(dim)] for _ in range(dim)]
     updateutilities(start)
-    print(utilities)
+    # print(utilities)
 
     maxcell = getmaxcell(start, agent)
 
@@ -674,6 +698,8 @@ def solve8old():
             # Otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
             else:
                 curr = path.child
+                actions += 1
+                movements += 1
         else:
             # Check if maximum probability has changed
             # newmaxcell = getmaxcell(curr, agent)
@@ -700,6 +726,7 @@ def solve8old():
                 # inf loop
                 curr = curr.child
                 actions += 1
+                movements += 1
 
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
@@ -709,7 +736,6 @@ def solve8old():
                 # print("new path")
                 path, len = astar(curr, maxcell)
                 laststartcell = curr
-                # we must look at the second cell in the path because we don't want to examine curr.parent again
                 curr = path
 
 

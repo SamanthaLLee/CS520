@@ -8,6 +8,9 @@ agents = [solve.solve6, solve.solve7, solve.solve8, solve.solve8old]
 # agents = [solve.solve8old]
 
 actions_results = []
+movements_results = []
+examinations_results = []
+movements_examinations_results = []
 runtime_results = []
 processed_results = []
 
@@ -22,15 +25,18 @@ def isfloat(str):
 
 
 def generate_all_graphs():
-    global agents, actions_results, runtime_results, processed_results
+    global agents, actions_results, runtime_results, processed_results, movements_results, examinations_results, movements_examinations_results
 
     # Initialize constants:
     trials_per_agent = 200
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     actions_results = [0 for _ in range(4)]
+    movements_results = [0 for _ in range(4)]
+    examinations_results = [0 for _ in range(4)]
     runtime_results = [0 for _ in range(4)]
     processed_results = [0 for _ in range(4)]
+    movements_examinations_results = [0 for _ in range(4)]
 
     # For each agent, create trials_per_p # of gridworlds
     for agent_num, agent in enumerate(agents):
@@ -54,8 +60,12 @@ def generate_all_graphs():
                 num_fail += 1
             else:
                 runtime_results[agent_num] += stop_time - start_time
+                movements_results[agent_num] += solve.movements
+                examinations_results[agent_num] += solve.examinations
                 actions_results[agent_num] += solve.actions
                 processed_results[agent_num] += solve.numcellsprocessed
+                movements_examinations_results[agent_num] += solve.movements / \
+                    solve.examinations
 
             print(i, "done")
 
@@ -65,6 +75,9 @@ def generate_all_graphs():
             actions_results[agent_num] /= num_success
             runtime_results[agent_num] /= num_success
             processed_results[agent_num] /= num_success
+            movements_results[agent_num] /= num_success
+            examinations_results[agent_num] /= num_success
+            movements_examinations_results[agent_num] /= num_success
 
         print("\t" + str(num_success) +
               " gridworlds succeeded for agent = " + str(agent_num))
@@ -82,6 +95,93 @@ def plot_actions():
     # plt.show()
 
     print("actions", actions_results)
+
+    # N = 4
+    # ind = np.arange(1)
+    # width = 0.20
+
+    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
+    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
+    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
+
+    # plt.title('Density vs. Runtime by Agent')
+    # plt.xlabel('Density')
+    # plt.ylabel('Average Time (s)')
+    # plt.legend((bar1, bar2, bar3),
+    #            ('Agent 6', 'Agent 7', 'Agent 8'))
+    # plt.show()
+
+
+def plot_movements():
+    global agents, movements_results
+    # Initialize constants:
+    # curr_p = 0
+
+    # fig = plt.figure()
+    # ax = fig.add_axes([0, 0, 1, 1])
+    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
+    # ax.bar(langs, actions_results)
+    # plt.show()
+
+    print("movements", movements_results)
+
+    # N = 4
+    # ind = np.arange(1)
+    # width = 0.20
+
+    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
+    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
+    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
+
+    # plt.title('Density vs. Runtime by Agent')
+    # plt.xlabel('Density')
+    # plt.ylabel('Average Time (s)')
+    # plt.legend((bar1, bar2, bar3),
+    #            ('Agent 6', 'Agent 7', 'Agent 8'))
+    # plt.show()
+
+
+def plot_examinations():
+    global agents, examinations_results
+    # Initialize constants:
+    # curr_p = 0
+
+    # fig = plt.figure()
+    # ax = fig.add_axes([0, 0, 1, 1])
+    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
+    # ax.bar(langs, actions_results)
+    # plt.show()
+
+    print("examinations", examinations_results)
+
+    # N = 4
+    # ind = np.arange(1)
+    # width = 0.20
+
+    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
+    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
+    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
+
+    # plt.title('Density vs. Runtime by Agent')
+    # plt.xlabel('Density')
+    # plt.ylabel('Average Time (s)')
+    # plt.legend((bar1, bar2, bar3),
+    #            ('Agent 6', 'Agent 7', 'Agent 8'))
+    # plt.show()
+
+
+def plot_movements_examinations():
+    global agents, movements_examinationss_results
+    # Initialize constants:
+    # curr_p = 0
+
+    # fig = plt.figure()
+    # ax = fig.add_axes([0, 0, 1, 1])
+    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
+    # ax.bar(langs, actions_results)
+    # plt.show()
+
+    print("movements/examinations result", movements_examinations_results)
 
     # N = 4
     # ind = np.arange(1)

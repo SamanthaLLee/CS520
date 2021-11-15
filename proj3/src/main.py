@@ -25,7 +25,7 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results
 
     # Initialize constants:
-    trials_per_agent = 100
+    trials_per_agent = 500
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
     actions_results = [0 for _ in range(3)]
@@ -37,13 +37,13 @@ def generate_all_graphs():
         print(agent_num)
         num_fail = 0
 
-        for _ in range(trials_per_agent):
+        for i in range(trials_per_agent):
             # Generate and solve new gridworld with current agent
             solve.goal = None
             solve.start = None
             solve.actions = 0
             solve.numcellsprocessed = 0
-            solve.generategridworld(100)
+            solve.generategridworld(25)
 
             start_time = time.time()
             test = agent()
@@ -56,6 +56,8 @@ def generate_all_graphs():
                 runtime_results[agent_num] += stop_time - start_time
                 actions_results[agent_num] += solve.actions
                 processed_results[agent_num] += solve.numcellsprocessed
+
+            print(i, "done")
 
         # Calculate average pathlen for each agent
         num_success = trials_per_agent - num_fail
@@ -176,14 +178,14 @@ if __name__ == "__main__":
     # solve.generategridworld(int(dim))
     # solve.printGridworld()
     # starttime = time.time()
-    # result = solve.solve8()
+    # result = solve.solve7()
     # endtime = time.time()
     # solve.printGridworld()
     # if (result is None):
     #     print("No solution.")
 
-    # # solve.trajectorylen = solve.trajectorylen if result is not None else None
-    # # print("Trajectory length:", solve.trajectorylen)
+    # solve.trajectorylen = solve.trajectorylen if result is not None else None
+    # print("Trajectory length:", solve.trajectorylen)
     # print("Num actions: ", solve.actions)
     # print("Cells processed: ", solve.numcellsprocessed)
     # print("Runtime: ", endtime - starttime, "s")

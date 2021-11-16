@@ -98,9 +98,9 @@ def plot_actions():
     plt.ylabel('Number of Actions')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -115,9 +115,9 @@ def plot_movements():
     plt.ylabel('Number of Movements')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -132,9 +132,9 @@ def plot_examinations():
     plt.ylabel('Number of Examinations')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -149,9 +149,9 @@ def plot_movements_examinations():
     plt.ylabel('Movements/Examinations')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -164,9 +164,9 @@ def plot_runtime():
     plt.ylabel('Runtime (s)')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -179,9 +179,9 @@ def plot_processed():
     plt.ylabel('Number of Cells Processed')
 
     ind = np.arange(3)
-    width = 1
+    width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
     plt.xlabel('Agent Number')
     plt.show()
 

@@ -889,7 +889,7 @@ def updateutilities(curr):
                 # if prob_of_finding[i][j] > 0:
                 #     utilities[i][j] = dist/prob_of_finding[i][j]
                 if dist > 0:
-                    utilities[i][j] = prob_of_finding[i][j] / (dist*.01)
+                    utilities[i][j] = prob_of_finding[i][j] / (dist)
                 else:
                     utilities[i][j] = 0
 

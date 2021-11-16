@@ -296,6 +296,9 @@ if __name__ == "__main__":
 
     generate_all_graphs()
     plot_actions()
+    plot_movements()
+    plot_examinations()
+    plot_movements_examinations()
     plot_processed()
     plot_runtime()
     # plot2()

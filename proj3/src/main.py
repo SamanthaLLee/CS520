@@ -14,6 +14,11 @@ movements_examinations_results = []
 runtime_results = []
 processed_results = []
 
+# agent vs movement
+# agent vs examinations
+# agent vs number of actions (movement + examinations) 
+# agent vs movement/examinations
+# agent vs runtime
 
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
@@ -85,188 +90,100 @@ def generate_all_graphs():
 
 def plot_actions():
     global agents, actions_results
-    # Initialize constants:
-    # curr_p = 0
-
-    # fig = plt.figure()
-    # ax = fig.add_axes([0, 0, 1, 1])
-    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
-    # ax.bar(langs, actions_results)
-    # plt.show()
 
     print("actions", actions_results)
 
-    # N = 4
-    # ind = np.arange(1)
-    # width = 0.20
+    results = actions_results
+    plt.title('Agent vs. Number of Actions')
+    plt.ylabel('Number of Actions')
 
-    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
-    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
-    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
-
-    # plt.title('Density vs. Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Time (s)')
-    # plt.legend((bar1, bar2, bar3),
-    #            ('Agent 6', 'Agent 7', 'Agent 8'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 def plot_movements():
     global agents, movements_results
-    # Initialize constants:
-    # curr_p = 0
-
-    # fig = plt.figure()
-    # ax = fig.add_axes([0, 0, 1, 1])
-    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
-    # ax.bar(langs, actions_results)
-    # plt.show()
 
     print("movements", movements_results)
 
-    # N = 4
-    # ind = np.arange(1)
-    # width = 0.20
+    results = movements_results
+    plt.title('Agent vs. Number of Movements')
+    plt.ylabel('Number of Movements')
 
-    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
-    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
-    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
-
-    # plt.title('Density vs. Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Time (s)')
-    # plt.legend((bar1, bar2, bar3),
-    #            ('Agent 6', 'Agent 7', 'Agent 8'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 def plot_examinations():
     global agents, examinations_results
-    # Initialize constants:
-    # curr_p = 0
-
-    # fig = plt.figure()
-    # ax = fig.add_axes([0, 0, 1, 1])
-    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
-    # ax.bar(langs, actions_results)
-    # plt.show()
 
     print("examinations", examinations_results)
 
-    # N = 4
-    # ind = np.arange(1)
-    # width = 0.20
+    results = examinations_results
+    plt.title('Agent vs. Number of Examinations')
+    plt.ylabel('Number of Examinations')
 
-    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
-    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
-    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
-
-    # plt.title('Density vs. Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Time (s)')
-    # plt.legend((bar1, bar2, bar3),
-    #            ('Agent 6', 'Agent 7', 'Agent 8'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 def plot_movements_examinations():
-    global agents, movements_examinationss_results
-    # Initialize constants:
-    # curr_p = 0
-
-    # fig = plt.figure()
-    # ax = fig.add_axes([0, 0, 1, 1])
-    # langs = ['Agent 6', 'Agent 7', 'Agent 8']
-    # ax.bar(langs, actions_results)
-    # plt.show()
+    global agents, movements_examinations_results
 
     print("movements/examinations result", movements_examinations_results)
 
-    # N = 4
-    # ind = np.arange(1)
-    # width = 0.20
+    results = movements_examinations_results
+    plt.title('Agent vs. Movements/Examinations')
+    plt.ylabel('Movements/Examinations')
 
-    # bar1 = plt.bar(ind, actions_results[0], width, color='r')
-    # bar2 = plt.bar(ind+width, actions_results[1], width, color='g')
-    # bar3 = plt.bar(ind+width*2, actions_results[2], width, color='b')
-
-    # plt.title('Density vs. Runtime by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Time (s)')
-    # plt.legend((bar1, bar2, bar3),
-    #            ('Agent 6', 'Agent 7', 'Agent 8'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 def plot_runtime():
-    global agents, traj_results, avg1_results, avg2_results, planning_results, runtime_results, processed_results, traj_path_results
-    # Initialize constants:
-    curr_p = 0
-    interval = .033
+    global agents, runtime_results
 
-    N = 4
-    ind = np.arange(11)
-    width = 0.20
+    results = runtime_results
+    plt.title('Agent vs. Runtime')
+    plt.ylabel('Runtime (s)')
 
-    print("runtime", runtime_results)
-
-    # bar61 = plt.bar(ind, processed_results[0], width, color='r')
-    # bar62 = plt.bar(ind+width, processed_results[1], width, color='g')
-    # bar63 = plt.bar(ind+width*2, processed_results[2], width, color='b')
-    # bar64 = plt.bar(ind+width*3, processed_results[3], width, color='c')
-    # bar65 = plt.bar(ind+width*4, processed_results[4], width)
-
-    # # Make xticks list
-    # xtick_list = []
-    # curr_p = 0
-    # for _ in range(11):
-    #     xtick_list.append(str('{0:.3g}'.format(curr_p)))
-    #     curr_p += interval
-    # plt.xticks(ind+width, xtick_list)
-
-    # plt.title(
-    #     'Density vs. Average Number of Cells Processed')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Number of Cells Processed')
-    # plt.legend((bar61, bar62, bar63, bar64, bar65),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 def plot_processed():
-    global agents, traj_results, avg1_results, avg2_results, planning_results, runtime_results, processed_results, traj_path_results
-    # Initialize constants:
-    curr_p = 0
-    interval = .033
+    global agents, processed_results
 
-    N = 4
-    ind = np.arange(11)
-    width = 0.20
+    results = processed_results
+    plt.title('Agent vs. Number of Cells Processed')
+    plt.ylabel('Number of Cells Processed')
 
-    print("processed", processed_results)
-
-    # bar71 = plt.bar(ind, traj_path_results[0], width, color='r')
-    # bar72 = plt.bar(ind+width, traj_path_results[1], width, color='g')
-    # bar73 = plt.bar(ind+width*2, traj_path_results[2], width, color='b')
-    # bar74 = plt.bar(ind+width*3, traj_path_results[3], width, color='c')
-    # bar75 = plt.bar(ind+width*4, traj_path_results[4], width)
-
-    # # Make xticks list
-    # xtick_list = []
-    # curr_p = 0
-    # for _ in range(11):
-    #     xtick_list.append(str('{0:.3g}'.format(curr_p)))
-    #     curr_p += interval
-    # plt.xticks(ind+width, xtick_list)
-
-    # plt.title(
-    #     'Density vs. Average Trajectory / Path Length Through Discovered Gridworld by Agent')
-    # plt.xlabel('Density')
-    # plt.ylabel('Average Trajectory / Path Length')
-    # plt.legend((bar71, bar72, bar73, bar74, bar75),
-    #            ('Agent1 - Blindfolded', 'Agent2 - 4-Neighbor', 'Agent3', 'Agent4', 'Agent5'))
-    # plt.show()
+    ind = np.arange(3)
+    width = 1
+    plt.bar(ind, results, width, color='r')
+    plt.xticks(ind+width, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xlabel('Agent Number')
+    plt.show()
 
 
 if __name__ == "__main__":

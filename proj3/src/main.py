@@ -4,7 +4,7 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve6, solve.solve7, solve.solve8, solve.solve8old]
+agents = [solve.solve6, solve.solve7, solve.solve8]
 # agents = [solve.solve8old]
 
 actions_results = []
@@ -16,9 +16,10 @@ processed_results = []
 
 # agent vs movement
 # agent vs examinations
-# agent vs number of actions (movement + examinations) 
+# agent vs number of actions (movement + examinations)
 # agent vs movement/examinations
 # agent vs runtime
+
 
 def isfloat(str):
     """Determines whether a given string can be converted to float"""
@@ -33,15 +34,15 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results, movements_results, examinations_results, movements_examinations_results
 
     # Initialize constants:
-    trials_per_agent = 200
+    trials_per_agent = 100
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
-    actions_results = [0 for _ in range(4)]
-    movements_results = [0 for _ in range(4)]
-    examinations_results = [0 for _ in range(4)]
-    runtime_results = [0 for _ in range(4)]
-    processed_results = [0 for _ in range(4)]
-    movements_examinations_results = [0 for _ in range(4)]
+    actions_results = [0 for _ in range(3)]
+    movements_results = [0 for _ in range(3)]
+    examinations_results = [0 for _ in range(3)]
+    runtime_results = [0 for _ in range(3)]
+    processed_results = [0 for _ in range(3)]
+    movements_examinations_results = [0 for _ in range(3)]
 
     # For each agent, create trials_per_p # of gridworlds
     for agent_num, agent in enumerate(agents):
@@ -54,6 +55,8 @@ def generate_all_graphs():
             solve.start = None
             solve.actions = 0
             solve.numcellsprocessed = 0
+            solve.examinations = 0
+            solve.movements = 0
             solve.generategridworld(25)
 
             start_time = time.time()
@@ -159,6 +162,8 @@ def plot_movements_examinations():
 def plot_runtime():
     global agents, runtime_results
 
+    print("runtime", runtime_results)
+
     results = runtime_results
     plt.title('Agent vs. Runtime')
     plt.ylabel('Runtime (s)')
@@ -173,6 +178,8 @@ def plot_runtime():
 
 def plot_processed():
     global agents, processed_results
+
+    print("processed", processed_results)
 
     results = processed_results
     plt.title('Agent vs. Number of Cells Processed')

@@ -17,8 +17,6 @@ utilities = []
 
 terrainprobabilities = [0.2, 0.5, 0.8, 1]
 
-priorityqueue = PriorityQueue()
-
 # Global start and goal cells
 goal = None
 start = None
@@ -35,13 +33,6 @@ actions = 0
 examinations = 0
 movements = 0
 dim = 0
-totalplanningtime = 0
-finaldiscovered = False
-fullgridworld = False
-
-maxcelltime = 0
-updateptime = 0
-updatepfindtime = 0
 
 
 def generategridworld(d):
@@ -194,22 +185,17 @@ def astar(start, maxcell):
         int: Length of returned final path
     """
     global gridworld, finaldiscovered, fullgridworld, cardinaldirections, numcellsprocessed, totalplanningtime
-    starttime = time.time()
     fringe = PriorityQueue()
     fringeSet = set()
     seenSet = set()
     astarlen = 0
     goalfound = False
 
-    # print("from", start, "to", maxcell)
-
     curr = start
     fringe.put((curr.f, curr))
     fringeSet.add(curr.id)
 
     if start.id == maxcell.id:
-        # check if we need to set child/parent to null?
-        # print("from", start, "to", maxcell, "START = MAXCELL")
         start.child = None
         return start, 0
 
@@ -246,7 +232,6 @@ def astar(start, maxcell):
     # Return None if no solution exists
     if len(fringeSet) == 0:
         endtime = time.time()
-        totalplanningtime += endtime - starttime
         return None, -1
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
@@ -256,19 +241,15 @@ def astar(start, maxcell):
         oldParent = start.parent
         start.parent = None
         while(parentPtr is not None):
-            # print(parentPtr)
             astarlen += 1
             parentPtr.child = childPtr
             childPtr = parentPtr
             parentPtr = parentPtr.parent
         start.parent = oldParent
         endtime = time.time()
-        totalplanningtime += endtime - starttime
         maxcell.child = None
         return start, astarlen
     else:
-        endtime = time.time()
-        totalplanningtime += endtime - starttime
         return None, -1
 
 
@@ -292,7 +273,7 @@ def solve6():
     """
     Agent 6
     """
-    global start, gridworld, cardinaldirections, actions, updateptime, movements
+    global start, gridworld, cardinaldirections, actions, movements
 
     agent = 6
 
@@ -324,8 +305,6 @@ def solve6():
         if curr.id == maxcell.id:
             if istarget(curr):
                 return path
-
-            # Look at this again. Update upon discovering terrain type?
             updateprobabilities(curr)
 
         # Pre-process cell
@@ -368,7 +347,7 @@ def solve6():
                 else:
                     curr = path.child
                     actions += 1
-                movements += 1
+                    movements += 1
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
@@ -391,7 +370,7 @@ def solve7():
     """
     Agent 7
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements
 
     agent = 7
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -408,8 +387,6 @@ def solve7():
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
 
-            # print("curr is none")
-
             # Check if maze is unsolvable
             if goal.unreachable:
                 return None
@@ -427,8 +404,6 @@ def solve7():
         if curr.id == maxcell.id:
             if istarget(curr):
                 return path
-
-            # Look at this again. Update upon discovering terrain type?
             updateprobabilities(curr)
 
         # Pre-process cell
@@ -439,7 +414,6 @@ def solve7():
         # Run into blocked cell
         if curr.blocked:
             updateprobabilities(curr)
-            # print("curr blocked")
 
             # If maxcell is the current blocked cell, must update maxcell
             if curr.id == maxcell.id:
@@ -497,11 +471,11 @@ def solve7():
                 movements += 1
 
 
-def solve8():
+def solve8_v1():
     """
     Agent 8
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements
 
     agent = 8
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -518,8 +492,6 @@ def solve8():
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
 
-            # print("curr is none")
-
             # Check if maze is unsolvable
             if goal.unreachable:
                 return None
@@ -538,7 +510,6 @@ def solve8():
             if istarget(curr):
                 return path
 
-            # Look at this again. Update upon discovering terrain type?
             updateprobabilities(curr)
 
         # Pre-process cell
@@ -549,7 +520,6 @@ def solve8():
         # Run into blocked cell
         if curr.blocked:
             updateprobabilities(curr)
-            # print("curr blocked")
 
             # If maxcell is the current blocked cell, must update maxcell
             if curr.id == maxcell.id:
@@ -574,7 +544,6 @@ def solve8():
             # If there's a new maxcell, we must replan from the current cell
             # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
             if prob_of_finding[maxcell.x][maxcell.y] != prob_of_finding[newmaxcell.x][newmaxcell.y]:
-                # print("maxp update")
                 maxcell = newmaxcell
                 path, len = astar(curr, maxcell)
                 laststartcell = curr
@@ -590,7 +559,6 @@ def solve8():
 
             # If there is a path to follow, continue to follow it
             elif curr.child is not None:
-                # print("cont path")
                 curr = curr.child
                 movements += 1
                 actions += 1
@@ -598,7 +566,6 @@ def solve8():
             # If there is no path to follow, and we must create a new one
             # In the case that curr is the maxcell, no need to update
             elif curr.id != maxcell.id:
-                # print("new path")
                 path, len = astar(curr, maxcell)
                 laststartcell = curr
                 # we must look at the second cell in the path because we don't want to examine curr.parent again
@@ -607,18 +574,17 @@ def solve8():
                 movements += 1
 
 
-def solve8old():
+def solve8_v2():
     """
-    Agent 9 - testing
+    Agent 9
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, updateptime, updatepfindtime, utilities, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, utilities, movements
 
     agent = 9
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
 
     utilities = [[0 for _ in range(dim)] for _ in range(dim)]
     updateutilities(start)
-    # print(utilities)
 
     maxcell = getmaxcell(start, agent)
 
@@ -630,14 +596,9 @@ def solve8old():
     # Terminate if maze discovered to be unsolvable
     curr = path
     while not goal.unreachable:
-        # inf += 1
-        # if inf > 40:
-        #     print("blah")
-        #     return None
 
         # If path DNE, then the current maxcell is unreachable and must be updated
         while curr is None:
-            # print("curr None,", maxcell, "unreachable")
             # Check if maze is unsolvable
             if goal.unreachable:
                 return None
@@ -656,28 +617,15 @@ def solve8old():
         if curr.id == maxcell.id:
             if istarget(curr):
                 return curr
-
-            # Look at this again. Update upon discovering terrain type?
             updateprobabilities(curr)
             updateutilities(curr)
 
         # Pre-process cell
         curr.seen = True
 
-        # print("checked", curr)
-
-        # updateprobabilitiesoffinding(curr)
-        # updateutilities(curr)
-
-        # print(probabilities)
-        # print(prob_of_finding)
-        # print(utilities)
-
         # Run into blocked cell
         if curr.blocked:
-            # print("blocked")
             updateprobabilities(curr)
-            # updateprobabilitiesoffinding(curr)
             updateutilities(curr)
 
             # If maxcell is the current blocked cell, must update maxcell
@@ -688,10 +636,6 @@ def solve8old():
             path, len = astar(curr.parent, maxcell)
             laststartcell = curr.parent
 
-            # print("path:", path)
-
-            # curr = path
-
             # If len == 0, then curr.parent IS the maxcell, and we should check it again
             if len == 0 or path is None:
                 curr = path
@@ -701,29 +645,9 @@ def solve8old():
                 actions += 1
                 movements += 1
         else:
-            # Check if maximum probability has changed
-            # newmaxcell = getmaxcell(curr, agent)
-
-            # # If there's a new maxcell, we must replan from the current cell
-            # # getmaxcell() is partly random, so we check probabilities (we get occasional infinite loops otherwise)
-            # if utilities[maxcell.x][maxcell.y] != utilities[newmaxcell.x][newmaxcell.y]:
-            #     maxcell = newmaxcell
-            #     path, len = astar(curr, maxcell)
-            #     laststartcell = curr
-
-            #     print("new max p")
-
-            #     # if len == 0, then curr.parent IS the maxcell, and we should check it again
-            #     if len == 0 or path is None:
-            #         curr = path
-            #     # otherwise, we must look at the second cell in the path because we don't want to examine curr.parent again
-            #     else:
-            #         curr = path.child
 
             # If there is a path to follow, continue to follow it
             if curr.child is not None:
-                # print("cont path")
-                # inf loop
                 curr = curr.child
                 actions += 1
                 movements += 1
@@ -733,23 +657,18 @@ def solve8old():
             else:
                 updateutilities(curr)
                 maxcell = getmaxcell(curr, agent)
-                # print("new path")
                 path, len = astar(curr, maxcell)
                 laststartcell = curr
                 curr = path
 
 
 def getmaxcell(curr, agent):
-    global utilities, prob_of_finding, probabilities, maxcelltime
-
-    starttime = time.time()
+    global utilities, prob_of_finding, probabilities
 
     p = None
     if agent == 6:
         p = np.array(probabilities)
-    elif agent == 7:
-        p = np.array(prob_of_finding)
-    elif agent == 8:
+    elif agent == 7 or agent == 8:
         p = np.array(prob_of_finding)
     elif agent == 9:
         p = np.array(utilities)
@@ -778,15 +697,10 @@ def getmaxcell(curr, agent):
                 if combinedutility > maxutil:
                     maxutil = combinedutility
                     result = gridworld[i][j]
-            # print("combined utility", maxutil)
             return result
         else:
             i, j = random.choice(equidistant)
-            endtime = time.time()
-            maxcelltime += endtime-starttime
             return gridworld[i][j]
-    endtime = time.time()
-    maxcelltime += endtime-starttime
     return gridworld[occs[0][0]][occs[0][1]]
 
 
@@ -809,10 +723,8 @@ def updateprobabilities(curr):
             denom = 1 - (factor * probabilities[curr.x][curr.y])
             probabilities[i][j] /= denom
 
-    # # Update probabilities of all other cells
+    # Update probabilities of all other cells
     # pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-
-    # # print(multiprocessing.cpu_count())
 
     # results = pool.map(squash_updateprobability, ((i, j, curr, probabilities) for i in range(dim)
     #                                               for j in range(dim)))
@@ -842,11 +754,10 @@ def squash_updateprobabilityoffinding(args):
 def updateprobabilitiesoffinding(curr):
     global probabilities, prob_of_finding, gridworld
 
-    # # Update probabilities of all other cells
+    # Update probabilities of all other cells
     # pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     # results = pool.map(squash_updateprobabilityoffinding, ((i, j, probabilities, gridworld) for i in range(dim)
     #                                                        for j in range(dim)))
-    # print(results)
     # prob_of_finding = np.array(results).reshape(dim, dim)
     # pool.close()
 
@@ -863,12 +774,31 @@ def updateprobabilitiesoffinding(curr):
         prob_of_finding[curr.x][curr.y] *= terrainprobabilities[int(
             curr.terrain)]
 
-    # print(prob_of_finding)
-    # return
+
+def updateutility(i, j, curr, utilities, prob_of_finding):
+    if utilities[i][j] != -1:
+        dist = get_weighted_manhattan_distance(curr.x, curr.y, i, j)
+        if dist > 0:
+            return prob_of_finding[i][j] / (dist)
+        else:
+            return 0
+
+
+def squash_updateutility(args):
+    return updateutility(*args)
 
 
 def updateutilities(curr):
     global utilities, prob_of_finding, gridworld
+
+    updateprobabilitiesoffinding(curr)
+
+    # Update probabilities of all other cells
+    # pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+    # results = pool.map(squash_updateutility, ((i, j, curr, utilities, prob_of_finding) for i in range(dim)
+    #                                           for j in range(dim)))
+    # utilities = np.array(results).reshape(dim, dim)
+    # pool.close()
 
     for i in range(dim):
         for j in range(dim):
@@ -882,12 +812,9 @@ def updateutilities(curr):
                     prob_of_finding[i][j] *= terrainprobabilities[int(
                         curr.terrain)]
 
-            # new utility function: U = pf / d*.01
             if utilities[i][j] != -1:
                 dist = get_weighted_manhattan_distance(
                     curr.x, curr.y, i, j)
-                # if prob_of_finding[i][j] > 0:
-                #     utilities[i][j] = dist/prob_of_finding[i][j]
                 if dist > 0:
                     utilities[i][j] = prob_of_finding[i][j] / (dist)
                 else:

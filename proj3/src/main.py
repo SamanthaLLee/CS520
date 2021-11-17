@@ -4,8 +4,7 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve6, solve.solve7, solve.solve8]
-# agents = [solve.solve8old]
+agents = [solve.solve6, solve.solve7, solve.solve8_v2, solve.solve8_v2]
 
 actions_results = []
 movements_results = []
@@ -13,12 +12,6 @@ examinations_results = []
 movements_examinations_results = []
 runtime_results = []
 processed_results = []
-
-# agent vs movement
-# agent vs examinations
-# agent vs number of actions (movement + examinations)
-# agent vs movement/examinations
-# agent vs runtime
 
 
 def isfloat(str):
@@ -34,15 +27,15 @@ def generate_all_graphs():
     global agents, actions_results, runtime_results, processed_results, movements_results, examinations_results, movements_examinations_results
 
     # Initialize constants:
-    trials_per_agent = 100
+    trials_per_agent = 200
 
     # Initialize results matrix - range[2][5] = agent 3's runtime at p=.033*5=.165
-    actions_results = [0 for _ in range(3)]
-    movements_results = [0 for _ in range(3)]
-    examinations_results = [0 for _ in range(3)]
-    runtime_results = [0 for _ in range(3)]
-    processed_results = [0 for _ in range(3)]
-    movements_examinations_results = [0 for _ in range(3)]
+    actions_results = [0 for _ in range(len(agents))]
+    movements_results = [0 for _ in range(len(agents))]
+    examinations_results = [0 for _ in range(len(agents))]
+    runtime_results = [0 for _ in range(len(agents))]
+    processed_results = [0 for _ in range(len(agents))]
+    movements_examinations_results = [0 for _ in range(len(agents))]
 
     # For each agent, create trials_per_p # of gridworlds
     for agent_num, agent in enumerate(agents):
@@ -100,10 +93,24 @@ def plot_actions():
     plt.title('Agent vs. Number of Actions')
     plt.ylabel('Number of Actions')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -117,10 +124,24 @@ def plot_movements():
     plt.title('Agent vs. Number of Movements')
     plt.ylabel('Number of Movements')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -134,10 +155,24 @@ def plot_examinations():
     plt.title('Agent vs. Number of Examinations')
     plt.ylabel('Number of Examinations')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -151,10 +186,24 @@ def plot_movements_examinations():
     plt.title('Agent vs. Movements/Examinations')
     plt.ylabel('Movements/Examinations')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -168,10 +217,24 @@ def plot_runtime():
     plt.title('Agent vs. Runtime')
     plt.ylabel('Runtime (s)')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -185,10 +248,24 @@ def plot_processed():
     plt.title('Agent vs. Number of Cells Processed')
     plt.ylabel('Number of Cells Processed')
 
-    ind = np.arange(3)
+    # ind = np.arange(2)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 6", "Agent 7"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    # ind = np.arange(3)
+    # width = .75
+    # plt.bar(ind, results, width, color='r')
+    # plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    # plt.xlabel('Agent Number')
+    # plt.show()
+
+    ind = np.arange(4)
     width = .75
     plt.bar(ind, results, width, color='r')
-    plt.xticks(ind, ["Agent 1", "Agent 2", "Agent 3"])
+    plt.xticks(ind, ["Agent 6", "Agent 7", "Agent 8 (v1)", "Agent 8 (v2)"])
     plt.xlabel('Agent Number')
     plt.show()
 
@@ -201,22 +278,9 @@ if __name__ == "__main__":
 
     # solve.generategridworld(int(dim))
     # solve.printGridworld()
-    # starttime = time.time()
-    # result = solve.solve8old()
-    # endtime = time.time()
     # solve.printGridworld()
     # if (result is None):
     #     print("No solution.")
-
-    # print("Num actions: ", solve.actions)
-    # print("Cells processed: ", solve.numcellsprocessed)
-    # print("Runtime: ", endtime - starttime, "s")
-    # print("Total planning time: ", solve.totalplanningtime)
-    # print("Total maxcell time: ", solve.maxcelltime)
-    # print("Total update time: ", solve.updateptime)
-    # print("Total update find time: ", solve.updatepfindtime)
-
-    # solve.printGridworld()
 
     generate_all_graphs()
     plot_actions()
@@ -225,9 +289,3 @@ if __name__ == "__main__":
     plot_movements_examinations()
     plot_processed()
     plot_runtime()
-    # plot2()
-    # plot3()
-    # plot4()
-    # plot5()
-    # plot6()
-    # plot7()

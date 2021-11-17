@@ -34,6 +34,10 @@ examinations = 0
 movements = 0
 dim = 0
 
+numhilly = 0
+numforest = 0
+numflat = 0
+
 
 def generategridworld(d):
     """Generates a random gridworld based on user inputs"""
@@ -273,7 +277,7 @@ def solve6():
     """
     Agent 6
     """
-    global start, gridworld, cardinaldirections, actions, movements
+    global start, gridworld, cardinaldirections, actions, movements, numhilly, numflat, numforest
 
     agent = 6
 
@@ -309,6 +313,12 @@ def solve6():
 
         # Pre-process cell
         curr.seen = True
+        if curr.terrain is Terrain.HILLY:
+            numhilly += 1
+        elif curr.terrain is Terrain.FLAT:
+            numflat += 1
+        elif curr.terrain is Terrain.FOREST:
+            numforest += 1
 
         # Run into blocked cell
         if curr.blocked:
@@ -370,7 +380,7 @@ def solve7():
     """
     Agent 7
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements, numhilly, numflat, numforest
 
     agent = 7
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -408,6 +418,12 @@ def solve7():
 
         # Pre-process cell
         curr.seen = True
+        if curr.terrain is Terrain.HILLY:
+            numhilly += 1
+        elif curr.terrain is Terrain.FLAT:
+            numflat += 1
+        elif curr.terrain is Terrain.FOREST:
+            numforest += 1
 
         updateprobabilitiesoffinding(curr)
 
@@ -475,7 +491,7 @@ def solve8_v1():
     """
     Agent 8
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, movements, numhilly, numflat, numforest
 
     agent = 8
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -514,6 +530,13 @@ def solve8_v1():
 
         # Pre-process cell
         curr.seen = True
+
+        if curr.terrain is Terrain.HILLY:
+            numhilly += 1
+        elif curr.terrain is Terrain.FLAT:
+            numflat += 1
+        elif curr.terrain is Terrain.FOREST:
+            numforest += 1
 
         updateprobabilitiesoffinding(curr)
 
@@ -578,7 +601,7 @@ def solve8_v2():
     """
     Agent 9
     """
-    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, utilities, movements
+    global start, gridworld, cardinaldirections, actions, prob_of_finding, probabilities, utilities, movements, numhilly, numflat, numforest
 
     agent = 9
     prob_of_finding = [[1/(dim*dim) for _ in range(dim)] for _ in range(dim)]
@@ -622,6 +645,13 @@ def solve8_v2():
 
         # Pre-process cell
         curr.seen = True
+
+        if curr.terrain is Terrain.HILLY:
+            numhilly += 1
+        elif curr.terrain is Terrain.FLAT:
+            numflat += 1
+        elif curr.terrain is Terrain.FOREST:
+            numforest += 1
 
         # Run into blocked cell
         if curr.blocked:

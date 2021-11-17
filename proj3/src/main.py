@@ -401,13 +401,13 @@ if __name__ == "__main__":
     # if (result is None):
     #     print("No solution.")
 
-    # generate_all_graphs()
-    # plot_actions()
-    # plot_movements()
-    # plot_examinations()
-    # plot_movements_examinations()
-    # plot_processed()
-    # plot_runtime()
+    generate_all_graphs()
+    plot_actions()
+    plot_movements()
+    plot_examinations()
+    plot_movements_examinations()
+    plot_processed()
+    plot_runtime()
 
     # plot_hilly()
     # plot_flat()

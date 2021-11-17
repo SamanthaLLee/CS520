@@ -4,7 +4,7 @@ import solve
 import time
 from terrain import Terrain
 
-agents = [solve.solve6, solve.solve7, solve.solve8_v2, solve.solve8_v2]
+agents = [solve.solve6, solve.solve7, solve.solve8_v1, solve.solve8_v2]
 
 actions_results = []
 movements_results = []

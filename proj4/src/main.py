@@ -1,9 +1,6 @@
 import tensorflow as tf
+import numpy as np
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import datasets, layers, models
-import matplotlib.pyplot as plt
-import numpy as np
-import numpy as np
 import matplotlib.pyplot as plt
 import solve
 import time
@@ -13,7 +10,7 @@ agents = [solve.solve1]
 
 def generate_data():
 
-    trials_per_agent = 5
+    trials_per_agent = 20
     dim = 25
 
     for agent_num, agent in enumerate(agents):
@@ -24,82 +21,56 @@ def generate_data():
             solve.generategridworld(dim)
             test = agent()
 
-    solve.solve1()
-
 
 def generate_confusion_matrix(data, labels):
-    mat = [[0 for i in range(10)] for j in range(10)]
+    mat = [[0 for i in range(4)] for j in range(4)]
 
     predictions = np.argmax(model.predict(data), axis=1)
 
     for i in range(data.shape[0]):
         mat[labels[i]][predictions[i]] += 1
 
-    for i in range(10):
+    for i in range(4):
         print("\t".join([str(c) for c in mat[i]]))
 
 
 if __name__ == "__main__":
-    # generate_data()
+    generate_data()
 
-    dim = input("What is the length of your gridworld? ")
-    while not dim.isdigit() or int(dim) < 2:
-        dim = input("Enter a valid length. ")
+    # dim = input("What is the length of your gridworld? ")
+    # while not dim.isdigit() or int(dim) < 2:
+    #     dim = input("Enter a valid length. ")
 
-    solve.generategridworld(int(dim))
-    result = solve.solve1()
-    solve.printGridworld()
+    # solve.generategridworld(int(dim))
+    # result = solve.solve1()
+    # solve.printGridworld()
 
-    if (result is None):
-        print("No solution.")
-
-    # print(solve.current_locations)
-    # print(solve.input_states)
-    # print(solve.output_states)
+    # if (result is None):
+    #     print("No solution.")
 
     x_train, x_test, y_train, y_test = train_test_split(
         solve.input_states, solve.output_states, test_size=0.1)
 
-    train_in = np.reshape(x_train, (-1, 10, 10))
-    test_in = np.reshape(x_test, (-1, 10, 10))
-    train_out = tf.keras.utils.to_categorical(y_train, 10)
-    test_out = tf.keras.utils.to_categorical(y_test, 10)
+    train_in = np.reshape(x_train, (-1, 25, 25, 4))
+    test_in = np.reshape(x_test, (-1, 25, 25, 4))
+    train_out = tf.keras.utils.to_categorical(y_train, 4)
+    test_out = tf.keras.utils.to_categorical(y_test, 4)
 
-    digit_input = tf.keras.layers.Input(shape=(10, 10))
-    flatten_image = tf.keras.layers.Flatten()(digit_input)
+    maze_input = tf.keras.layers.Input(shape=(25, 25, 4))
+    flatten_array = tf.keras.layers.Flatten()(maze_input)
     dense_1 = tf.keras.layers.Dense(
-        units=100, activation=tf.nn.relu)(flatten_image)
+        units=100, activation=tf.nn.relu)(flatten_array)
     dense_2 = tf.keras.layers.Dense(units=50, activation=tf.nn.relu)(dense_1)
-    logits = tf.keras.layers.Dense(units=10, activation=None)(dense_2)
+    logits = tf.keras.layers.Dense(units=4, activation=None)(dense_2)
     probabilities = tf.keras.layers.Softmax()(logits)
 
-    model = tf.keras.Model(inputs=digit_input, outputs=probabilities)
+    model = tf.keras.Model(inputs=maze_input, outputs=probabilities)
+
     model.compile(optimizer='adam', loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    generate_confusion_matrix(test_in, y_test)
-
-    history = model.fit(train_in, train_out, epochs=20)
+    # GENERATING CONFUSION MATRICES
 
     generate_confusion_matrix(test_in, y_test)
-
-    # train_dataset = tf.data.Dataset.from_tensor_slices(
-    #     (x_train, y_train))
-
-    # test_dataset = tf.data.Dataset.from_tensor_slices(
-    #     (x_test, y_test))
-
-    # model = tf.keras.Sequential([
-    #     tf.keras.layers.Flatten(input_shape=(10, 10)),
-    #     tf.keras.layers.Dense(100, activation='relu'),
-    #     tf.keras.layers.Dense(10)
-    # ])
-
-    # model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-    #               loss=tf.keras.losses.SparseCategoricalCrossentropy(
-    #     from_logits=True),
-    #     metrics=['sparse_categorical_accuracy'])
-
-    # model.fit(train_dataset, epochs=2)
-
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+    history = model.fit(train_in, train_out, epochs=60)
+    generate_confusion_matrix(test_in, y_test)

@@ -5,6 +5,7 @@ from cell import Cell
 import itertools
 import time
 import numpy as np
+import copy
 
 
 # Global gridworld of Cell objects
@@ -28,6 +29,8 @@ totalplanningtime = 0
 
 input_states = []
 output_states = []
+
+ignore_right = False
 
 
 def generategridworld(d):
@@ -204,7 +207,7 @@ def solve1():
 
     path, len = astar(gridworld[0][0], agent)
 
-    currstate = np.full((dim, dim, 4), -1)
+    currstate = np.full((dim, dim, 2), -1)
 
     # Initial A* failed - unsolvable gridworld
     if path is None:
@@ -250,16 +253,10 @@ def solve1():
             output_states.append(get_action(curr, curr.child))
             curr = curr.child
 
-        currstate[curr.x][curr.y][1] = curr.x
-        currstate[curr.x][curr.y][2] = curr.y
-        currstate[curr.x][curr.y][3] = get_weighted_manhattan_distance(
-            curr.x, curr.y, goal.x, goal.y)
-        input_states.append(currstate)
-
-        # print(currstate)
-        # print(currstate[curr.x][curr.y][1])
-        # print(currstate[curr.x][curr.y][2])
-        # print(currstate[curr.x][curr.y][3])
+        currstate[curr.x][curr.y][1] = 1
+        currstate2 = copy.deepcopy(currstate)
+        input_states.append(currstate2)
+        currstate[curr.x][curr.y][1] = -1
 
 
 def solve2():

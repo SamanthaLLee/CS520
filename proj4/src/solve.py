@@ -231,9 +231,11 @@ def solve1():
 
         # Run into blocked cell
         if curr.blocked == True:
+
             currstate[curr.x][curr.y] = 1
-            trajectorylen -= 1
             output_states.append(get_action(curr, curr.parent))
+            
+            trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
 
@@ -266,6 +268,9 @@ def solve2():
 
     path, len = astar(gridworld[0][0], agent)
 
+    currstate = np.full((dim, dim), 2)
+    curr_knowledge = np.full((dim, dim, 5), 0)
+
     if path is None:
         return None
 
@@ -285,19 +290,26 @@ def solve2():
         if curr.child is None:
             return path
 
+        current_locations.append([curr.x, curr.y])
+
         # Update neighbors and cascade inferences
-        updatekb(curr)
+        updatekb(curr, curr_knowledge, currstate)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
+            
+            currstate[curr.x][curr.y] = 1
+            output_states.append(get_action(curr, curr.parent))
+
             trajectorylen -= 1
             curr, len = astar(curr.parent, agent)
-            continue
         else:
+            currstate[curr.x][curr.y] = 0
+
             # Sense number of blocked and confirmed neighbors for curr
-            senseorcount(curr, True)
+            senseorcount(curr, True, curr_knowledge)
             # Make inferences from this sensing
-            infer(curr)
+            infer(curr, curr_knowledge, currstate)
 
             # Replan if agent finds inferred block in path
             ptr = curr.child
@@ -313,9 +325,12 @@ def solve2():
             # Otherwise, continue along A* path
             if not replanned:
                 curr = curr.child
+        
+        input_pair = [currstate, curr_knowledge]
+        input_states.append(input_pair)
 
 
-def senseorcount(curr, sense):
+def senseorcount(curr : Cell, sense, curr_knowledge):
     """Sets curr's C, E, H, B values based on current KB
     Args:
         curr (cell): current cell
@@ -346,9 +361,15 @@ def senseorcount(curr, sense):
                 else:
                     curr.E += 1
                 curr.H -= 1
+                
+    curr_knowledge[curr.x][curr.y][0] = curr.N
+    curr_knowledge[curr.x][curr.y][1] = curr.C
+    curr_knowledge[curr.x][curr.y][2] = curr.B
+    curr_knowledge[curr.x][curr.y][3] = curr.E
+    curr_knowledge[curr.x][curr.y][4] = curr.H
 
 
-def infer(curr):
+def infer(curr, curr_knowledge, currstate):
     """Tests for the 3 given inferences
     Args:
         curr (cell): current cell to make inferences on
@@ -368,6 +389,11 @@ def infer(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.E += 1
                         curr.H -= 1
+
+                        currstate[xx][yy] = 0
+                        curr_knowledge[curr.x][curr.y][3] += 1
+                        curr_knowledge[curr.x][curr.y][4] -= 1
+
         elif curr.N - curr.C == curr.E:
             inferencemade = True
             # All remaining hidden neighbors are blocked
@@ -379,24 +405,28 @@ def infer(curr):
                         gridworld[xx][yy].confirmed = True
                         curr.B += 1
                         curr.H -= 1
+
+                        currstate[xx][yy] = 2
+                        curr_knowledge[curr.x][curr.y][2] += 1
+                        curr_knowledge[curr.x][curr.y][4] -= 1
         return inferencemade
 
 
-def updatekb(curr):
+def updatekb(curr, curr_knowledge, currstate):
     for x, y in alldirections:
         xx = curr.x + x
         yy = curr.y + y
         if is_in_bounds([xx, yy]):
             # Find all inbounds neighbors of curr
             neighbor = gridworld[xx][yy]
-            senseorcount(neighbor, False)
+            senseorcount(neighbor, False, curr_knowledge)
             if neighbor.seen and neighbor.blocked == 0 and neighbor.H > 0:
-                if infer(neighbor):
+                if infer(neighbor, curr_knowledge, currstate):f
                     for x, y in alldirections:
                         xx2 = neighbor.x + x
                         yy2 = neighbor.y + y
                         if is_in_bounds([xx2, yy2]):
-                            updatekb(gridworld[xx2][yy2])
+                            updatekb(gridworld[xx2][yy2], curr_knowledge, currstate)
 
 
 def is_in_bounds(curr):

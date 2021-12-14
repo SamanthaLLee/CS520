@@ -5,6 +5,7 @@ from cell import Cell
 import itertools
 import time
 import numpy as np
+import copy
 
 
 # Global gridworld of Cell objects
@@ -26,9 +27,10 @@ fullgridworld = False
 
 totalplanningtime = 0
 
-input_states = []  # [np.zeros(shape=(5, 5, 10))]  # 10 states of 10x10 grids
-current_locations = []  # np.zeros(shape=(2, 100))  # 100 coordinates
-output_states = []  # np.arange(10)  # 10 actions
+input_states = []
+output_states = []
+
+ignore_right = False
 
 
 def generategridworld(d):
@@ -205,7 +207,7 @@ def solve1():
 
     path, len = astar(gridworld[0][0], agent)
 
-    currstate = np.full((dim, dim), 2)
+    currstate = np.full((dim, dim, 2), -1)
 
     # Initial A* failed - unsolvable gridworld
     if path is None:
@@ -227,12 +229,10 @@ def solve1():
         if curr.child is None:
             return path
 
-        current_locations.append([curr.x, curr.y])
-
         # Run into blocked cell
         if curr.blocked == True:
-
-            currstate[curr.x][curr.y] = 1
+            currstate[curr.x][curr.y][0] = 1
+            trajectorylen -= 1
             output_states.append(get_action(curr, curr.parent))
             
             trajectorylen -= 1
@@ -242,20 +242,23 @@ def solve1():
         # Continue along A* path
         else:
             # Take note of environment within viewing distance (adjacent cells)
-            currstate[curr.x][curr.y] = 0
+            currstate[curr.x][curr.y][0] = 0
             for dx, dy in cardinaldirections:
                 xx, yy = curr.x + dx, curr.y + dy
 
                 # Only mark blocked neighbors as seen
                 if is_in_bounds([xx, yy]) and gridworld[xx][yy].blocked:
                     neighbor = gridworld[xx][yy]
-                    currstate[neighbor.x][neighbor.y] = 1
+                    currstate[xx][yy][0] = 1
                     neighbor.seen = True
             # Move onto next cell along A* path
             output_states.append(get_action(curr, curr.child))
             curr = curr.child
 
-        input_states.append(currstate)
+        currstate[curr.x][curr.y][1] = 1
+        currstate2 = copy.deepcopy(currstate)
+        input_states.append(currstate2)
+        currstate[curr.x][curr.y][1] = -1
 
 
 def solve2():
@@ -421,7 +424,7 @@ def updatekb(curr, curr_knowledge, currstate):
             neighbor = gridworld[xx][yy]
             senseorcount(neighbor, False, curr_knowledge)
             if neighbor.seen and neighbor.blocked == 0 and neighbor.H > 0:
-                if infer(neighbor, curr_knowledge, currstate):f
+                if infer(neighbor, curr_knowledge, currstate):
                     for x, y in alldirections:
                         xx2 = neighbor.x + x
                         yy2 = neighbor.y + y

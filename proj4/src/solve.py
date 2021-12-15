@@ -271,8 +271,9 @@ def solve2():
 
     path, len = astar(gridworld[0][0], agent)
 
-    currstate = np.full((dim, dim), 2)
-    curr_knowledge = np.full((dim, dim, 5), 0)
+    currstate = np.full((2, dim, dim), -1)
+    curr_knowledge = np.full((5, dim, dim), 0)
+    currstate = np.concatenate([currstate, curr_knowledge])
 
     if path is None:
         return None
@@ -293,26 +294,24 @@ def solve2():
         if curr.child is None:
             return path
 
-        current_locations.append([curr.x, curr.y])
-
         # Update neighbors and cascade inferences
-        updatekb(curr, curr_knowledge, currstate)
+        updatekb(curr, currstate)
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
             
-            currstate[curr.x][curr.y] = 1
+            currstate[0][curr.x][curr.y] = 1
             output_states.append(get_action(curr, curr.parent))
 
             trajectorylen -= 1
             curr, len = astar(curr.parent, agent)
         else:
-            currstate[curr.x][curr.y] = 0
+            currstate[0][curr.x][curr.y] = 0
 
             # Sense number of blocked and confirmed neighbors for curr
-            senseorcount(curr, True, curr_knowledge)
+            senseorcount(curr, True, currstate)
             # Make inferences from this sensing
-            infer(curr, curr_knowledge, currstate)
+            infer(curr, currstate)
 
             # Replan if agent finds inferred block in path
             ptr = curr.child
@@ -323,17 +322,21 @@ def solve2():
                     trajectorylen -= 1
                     replanned = True
                     break
+
                 ptr = ptr.child
+
+            output_states.append(get_action(curr, curr.child))
 
             # Otherwise, continue along A* path
             if not replanned:
                 curr = curr.child
-        
-        input_pair = [currstate, curr_knowledge]
-        input_states.append(input_pair)
+
+        currstate[1][curr.x][curr.y] = 1
+        input_states.append(copy.deepcopy(currstate))
+        currstate[1][curr.x][curr.y] = -1
 
 
-def senseorcount(curr : Cell, sense, curr_knowledge):
+def senseorcount(curr : Cell, sense, currstate):
     """Sets curr's C, E, H, B values based on current KB
     Args:
         curr (cell): current cell
@@ -365,14 +368,14 @@ def senseorcount(curr : Cell, sense, curr_knowledge):
                     curr.E += 1
                 curr.H -= 1
                 
-    curr_knowledge[curr.x][curr.y][0] = curr.N
-    curr_knowledge[curr.x][curr.y][1] = curr.C
-    curr_knowledge[curr.x][curr.y][2] = curr.B
-    curr_knowledge[curr.x][curr.y][3] = curr.E
-    curr_knowledge[curr.x][curr.y][4] = curr.H
+    currstate[2][curr.x][curr.y] = curr.N
+    currstate[3][curr.x][curr.y] = curr.C
+    currstate[4][curr.x][curr.y] = curr.B
+    currstate[5][curr.x][curr.y] = curr.E
+    currstate[6][curr.x][curr.y] = curr.H
 
 
-def infer(curr, curr_knowledge, currstate):
+def infer(curr, currstate):
     """Tests for the 3 given inferences
     Args:
         curr (cell): current cell to make inferences on
@@ -393,9 +396,9 @@ def infer(curr, curr_knowledge, currstate):
                         curr.E += 1
                         curr.H -= 1
 
-                        currstate[xx][yy] = 0
-                        curr_knowledge[curr.x][curr.y][3] += 1
-                        curr_knowledge[curr.x][curr.y][4] -= 1
+                        currstate[0][xx][yy] = 0
+                        currstate[5][curr.x][curr.y] += 1
+                        currstate[6][curr.x][curr.y] -= 1
 
         elif curr.N - curr.C == curr.E:
             inferencemade = True
@@ -409,27 +412,27 @@ def infer(curr, curr_knowledge, currstate):
                         curr.B += 1
                         curr.H -= 1
 
-                        currstate[xx][yy] = 2
-                        curr_knowledge[curr.x][curr.y][2] += 1
-                        curr_knowledge[curr.x][curr.y][4] -= 1
+                        currstate[0][xx][yy] = 1
+                        currstate[4][curr.x][curr.y] += 1
+                        currstate[6][curr.x][curr.y] -= 1
         return inferencemade
 
 
-def updatekb(curr, curr_knowledge, currstate):
+def updatekb(curr, currstate):
     for x, y in alldirections:
         xx = curr.x + x
         yy = curr.y + y
         if is_in_bounds([xx, yy]):
             # Find all inbounds neighbors of curr
             neighbor = gridworld[xx][yy]
-            senseorcount(neighbor, False, curr_knowledge)
+            senseorcount(neighbor, False, currstate)
             if neighbor.seen and neighbor.blocked == 0 and neighbor.H > 0:
-                if infer(neighbor, curr_knowledge, currstate):
+                if infer(neighbor, currstate):
                     for x, y in alldirections:
                         xx2 = neighbor.x + x
                         yy2 = neighbor.y + y
                         if is_in_bounds([xx2, yy2]):
-                            updatekb(gridworld[xx2][yy2], curr_knowledge, currstate)
+                            updatekb(gridworld[xx2][yy2], currstate)
 
 
 def is_in_bounds(curr):

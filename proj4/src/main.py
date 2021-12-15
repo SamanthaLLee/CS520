@@ -12,7 +12,7 @@ from numpy import load
 from imblearn.under_sampling import RandomUnderSampler
 
 
-agents = [solve.solve1]
+agents = [solve.solve2]
 in_data = []
 out_data = []
 
@@ -125,8 +125,14 @@ if __name__ == "__main__":
     x_train, x_test, y_train, y_test = train_test_split(
         in_data, out_data, test_size=0.1)
 
-    train_in = np.reshape(x_train, (-1, 50, 50, 2))
-    test_in = np.reshape(x_test, (-1, 50, 50, 2))
+    # Solve1
+    # train_in = np.reshape(x_train, (-1, 50, 50, 2))
+    # test_in = np.reshape(x_test, (-1, 50, 50, 2))
+
+    # Solve2
+    train_in = np.reshape(x_train, (-1, 7, 50, 50))
+    test_in = np.reshape(x_test, (-1, 7, 50, 50))
+
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 
@@ -156,7 +162,18 @@ if __name__ == "__main__":
     # history = model.fit(train_dataset, epochs=20)
     # generate_confusion_matrix(test_in, y_test)
 
-    maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
+
+    # Solve1
+    # maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
+
+
+    # Solve2
+    maze_input = tf.keras.layers.Input(shape=(7, 50, 50))
+
+
+    train_out = tf.keras.utils.to_categorical(y_train, 4)
+    test_out = tf.keras.utils.to_categorical(y_test, 4)
+
     flatten_array = tf.keras.layers.Flatten()(maze_input)
     dense_1 = tf.keras.layers.Dense(
         units=100, activation=tf.nn.relu)(flatten_array)
@@ -173,5 +190,5 @@ if __name__ == "__main__":
     # GENERATING CONFUSION MATRICES
 
     generate_confusion_matrix(test_in, y_test)
-    history = model.fit(train_in, train_out, epochs=50, class_weight=weights)
+    history = model.fit(train_in, train_out, epochs=5000, class_weight=weights)
     generate_confusion_matrix(test_in, y_test)

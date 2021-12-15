@@ -136,8 +136,14 @@ def p1_dense():
     x_train, x_test, y_train, y_test = train_test_split(
         in_data, out_data, test_size=0.1)
 
-    train_in = np.reshape(x_train, (-1, 50, 50, 2))
-    test_in = np.reshape(x_test, (-1, 50, 50, 2))
+    # Solve1
+    # train_in = np.reshape(x_train, (-1, 50, 50, 2))
+    # test_in = np.reshape(x_test, (-1, 50, 50, 2))
+
+    # Solve2
+    train_in = np.reshape(x_train, (-1, 7, 50, 50))
+    test_in = np.reshape(x_test, (-1, 7, 50, 50))
+
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 

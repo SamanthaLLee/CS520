@@ -16,6 +16,16 @@ class Cell(object):
         the heuristic value, estimating the distance from the cell n to the goal node
     f : float
         an estimate of the distance from the initial search node to the final goal node through cell n (g+h)
+    N : int
+        total number of neighbors
+    C : int
+        number of neighbors SENSED to be BLOCKED
+    B : int
+        number of neighbors CONFIRMED to be BLOCKED
+    E : int
+        number of neighbors CONFIRMED to be empty
+    H : int
+        number of neighbors UNCONFIRMED/hidden
     blocked : boolean
         whether the cell is actually blocked in the gridworld
     seen : boolean

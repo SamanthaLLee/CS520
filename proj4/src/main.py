@@ -1,33 +1,33 @@
 import tensorflow as tf
-import pickle
 import numpy as np
 import pandas as pd
-import sklearn
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import solve
-import time
-from numpy import asarray
 from numpy import savez_compressed
 from numpy import load
 from imblearn.under_sampling import RandomUnderSampler
 
 
-agents = [solve.solve1]
 in_data = []
 out_data = []
 model = None
 
 
-def generate_data():
+def generate_data(agentnum):
     trials_per_agent = 100
     dim = 50
-    for agent_num, agent in enumerate(agents):
-        for i in range(trials_per_agent):
-            # Generate and solve new gridworld with current agent
-            solve.generategridworld(dim)
-            test = agent()
-    save_to_npz()
+    for i in range(trials_per_agent):
+        # Generate and solve new gridworld with current agent
+        solve.generategridworld(dim)
+        if agentnum == 1:
+            solve.solve1()
+        else:
+            solve.solve2()
+
+    print(len(solve.input_states))
+    print(len(solve.output_states))
+    # save_to_npz()
 
 
 def generate_confusion_matrix(data, labels):
@@ -43,6 +43,7 @@ def generate_confusion_matrix(data, labels):
 
 
 def save_to_npz():
+    # not currently using
     input = solve.input_states
     output = solve.output_states
     savez_compressed('input.npz', input)
@@ -50,6 +51,7 @@ def save_to_npz():
 
 
 def load_data(fromFile):
+    # not currently using
     global in_data, out_data
     if fromFile:
         loaded_in = load('input.npz')
@@ -89,20 +91,23 @@ def undersample_data():
 
 def p1_dense():
 
-    print("1: Project 1 - Full Dense Layers")
-    print("2: Project 1 - Convolutional Neural Network")
-    print("3: Project 2 - Full Dense Layers")
-    print("4: Project 2 - Convolutional Neural Network")
+    global in_data, out_data, model
     opt = input("Are you creating a new model? Y/N")
 
     createModel = False
-    if opt == 'Y':
+    if opt == 'Y' or opt == 'y':
         createModel = True
 
-    loadDataFromFile = False
-    generate_data()
-    load_data(loadDataFromFile)
+    # loadDataFromFile = False
+    # load_data(loadDataFromFile)
+
+    generate_data(1)
+    in_data = solve.input_states
+    out_data = solve.output_states
     undersample_data()
+
+    print(len(solve.input_states))
+    print(len(solve.output_states))
 
     if createModel:
         maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
@@ -118,9 +123,11 @@ def p1_dense():
             inputs=maze_input, outputs=probabilities)
 
         model.compile(optimizer='adam', loss='categorical_crossentropy',
-                      metrics=['accuracy'])
+                      metrics=['categorical_accuracy'])
     else:
         model = tf.keras.models.load_model('./p1_dense_model')
+        model.compile(optimizer='adam', loss='categorical_crossentropy',
+                      metrics=['categorical_accuracy'])
 
     filename = 'p1_dense_history_log.csv'
     history_logger = tf.keras.callbacks.CSVLogger(
@@ -138,7 +145,7 @@ def p1_dense():
 
     generate_confusion_matrix(test_in, y_test)
     history = model.fit(train_in, train_out, epochs=500,
-                        callbacks=[history_logger])
+                        callbacks=[history_logger], workers=0)
     generate_confusion_matrix(test_in, y_test)
 
     model.save("./p1_dense_model")
@@ -163,14 +170,16 @@ if __name__ == "__main__":
     print("3: Project 2 - Full Dense Layers")
     print("4: Project 2 - Convolutional Neural Network")
     opt = input("What NN would you like to train? ")
-    while not opt.isdigit() or int(opt) < 2 or int(opt) > 4:
-        dim = input("Enter a valid option. ")
+    while not opt.isdigit() or int(opt) < 1 or int(opt) > 4:
+        opt = input("Enter a valid option. ")
 
-    if opt == 1:
+    if opt == '1':
         p1_dense()
-    elif opt == 2:
+    elif opt == '2':
         p1_cnn()
-    elif opt == 3:
+    elif opt == '3':
         p2_dense()
-    else:
+    elif opt == '4':
         p2_cnn()
+    else:
+        print("Error.")

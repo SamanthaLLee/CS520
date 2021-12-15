@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import solve
 from numpy import savez_compressed
 from numpy import load
-from imblearn.under_sampling import RandomUnderSampler
-
+import run_models
 
 in_data = []
 out_data = []
@@ -31,13 +30,11 @@ def generate_data(agentnum):
 
 
 def generate_confusion_matrix(data, labels):
-    print(data.shape[1])
-    print(labels)
     mat = [[0 for i in range(4)] for j in range(4)]
 
     predictions = np.argmax(model.predict(data), axis=1)
 
-    for i in range(data.shape[1]):
+    for i in range(data.shape[0]):
         mat[labels[i]][predictions[i]] += 1
 
     for i in range(4):
@@ -99,7 +96,7 @@ def undersample_data():
 def p1_dense():
 
     global in_data, out_data, model
-    opt = input("Are you creating a new model? Y/N")
+    opt = input("Are you creating a new model? Y/N ")
 
     createModel = False
     if opt == 'Y' or opt == 'y':
@@ -155,7 +152,7 @@ def p1_dense():
     callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=20)
 
     generate_confusion_matrix(test_in, y_test)
-    history = model.fit(train_in, train_out,
+    history = model.fit(train_in, train_out, validation_split=0.33,
                         epochs=500, batch_size=64,
                         callbacks=[callback, history_logger],
                         workers=0,
@@ -170,18 +167,41 @@ def p1_dense():
 
     # model.save("./p1_dense_model2")
 
+    # summarize history for accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
 
 def p1_cnn():
     global in_data, out_data, model
+
+    opt = input("Are you creating a new model? Y/N ")
+
+    createModel = False
+    if opt == 'Y' or opt == 'y':
+        createModel = True
 
     generate_data(1)
     in_data = solve.input_states
     out_data = solve.output_states
     undersample_data()
 
-    # filename = 'p1_cnn_history_log.csv'
-    # history_logger = tf.keras.callbacks.CSVLogger(
-    #     filename, separator=",", append=True)
+    filename = 'p1_cnn_history_log.csv'
+    history_logger = tf.keras.callbacks.CSVLogger(
+        filename, separator=",", append=True)
 
     x_train, x_test, y_train, y_test = train_test_split(
         in_data, out_data, test_size=0.5)
@@ -192,34 +212,61 @@ def p1_cnn():
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 
-    maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
-    cnn_1 = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1),
-                                   padding="valid", activation=tf.nn.relu)(maze_input)
-    flatten_array = tf.keras.layers.Flatten()(cnn_1)
-    dropout_1 = tf.keras.layers.Dropout(rate=0.5)(flatten_array)
-    dense_1 = tf.keras.layers.Dense(units=50, activation=tf.nn.relu)(dropout_1)
-    logits = tf.keras.layers.Dense(units=4, activation=None)(dense_1)
-    probabilities = tf.keras.layers.Softmax()(logits)
+    if createModel:
+        maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
+        cnn_1 = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1),
+                                       padding="valid", activation=tf.nn.relu)(maze_input)
+        flatten_array = tf.keras.layers.Flatten()(cnn_1)
+        dropout_1 = tf.keras.layers.Dropout(rate=0.5)(flatten_array)
+        dense_1 = tf.keras.layers.Dense(
+            units=50, activation=tf.nn.relu)(dropout_1)
+        logits = tf.keras.layers.Dense(units=4, activation=None)(dense_1)
+        probabilities = tf.keras.layers.Softmax()(logits)
 
-    model = tf.keras.Model(
-        inputs=maze_input, outputs=probabilities)
+        model = tf.keras.Model(
+            inputs=maze_input, outputs=probabilities)
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+        model.compile(optimizer='adam', loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+    else:
+        model = tf.keras.models.load_model('./p1_cnn_model')
 
-    # generate_confusion_matrix(test_in, y_test)
-    history = model.fit(train_in, train_out,
-                        epochs=20, batch_size=64,
-                        # callbacks=[callback, history_logger],
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+
+    generate_confusion_matrix(test_in, y_test)
+    history = model.fit(train_in, train_out, validation_split=0.33,
+                        epochs=30, batch_size=64,
+                        callbacks=[callback, history_logger],
                         workers=0,
                         shuffle=True)
-    # generate_confusion_matrix(test_in, y_test)
+    generate_confusion_matrix(test_in, y_test)
+
+    run_models.run_p1_dense(model)
 
     results = model.evaluate(test_in, test_out, batch_size=128)
     print("test loss, test acc:", results)
 
     predictions = model.predict(test_in[:3])
     print("predictions shape:", predictions.shape)
+
+    model.save("./p1_cnn_model")
+
+    # summarize history for accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
 
 def p2_dense():
@@ -231,6 +278,8 @@ def p2_cnn():
 
 
 if __name__ == "__main__":
+
+    # run_models.run_p1_dense()
 
     print("1: Project 1 - Full Dense Layers")
     print("2: Project 1 - Convolutional Neural Network")

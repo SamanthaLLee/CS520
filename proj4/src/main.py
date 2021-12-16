@@ -446,10 +446,8 @@ def p2_dense():
         flatten_array = tf.keras.layers.Flatten()(maze_input)
         dense_1 = tf.keras.layers.Dense(
             units=100, activation=tf.nn.relu)(flatten_array)
-        dense_15 = tf.keras.layers.Dense(
-            units=75, activation=tf.nn.relu)(dense_1)
         dense_2 = tf.keras.layers.Dense(
-            units=30, activation=tf.nn.relu)(dense_15)
+            units=50, activation=tf.nn.relu)(dense_1)
         logits = tf.keras.layers.Dense(units=4, activation=None)(dense_2)
         probabilities = tf.keras.layers.Softmax()(logits)
 
@@ -521,14 +519,14 @@ def p2_cnn():
     x_train, x_test, y_train, y_test = train_test_split(
         in_data, out_data, test_size=0.5)
 
-    train_in = np.reshape(x_train, (-1, 7, 50, 50))
-    test_in = np.reshape(x_test, (-1, 7, 50, 50))
+    train_in = np.reshape(x_train, (-1, 7, 5, 5))
+    test_in = np.reshape(x_test, (-1, 7, 5, 5))
 
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 
     if createModel:
-        maze_input = tf.keras.layers.Input(shape=(7, 50, 50))
+        maze_input = tf.keras.layers.Input(shape=(7, 5, 5))
         cnn_1 = tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1),
                                        padding="valid", activation=tf.nn.relu)(maze_input)
         flatten_array = tf.keras.layers.Flatten()(cnn_1)
@@ -547,7 +545,7 @@ def p2_cnn():
         model = tf.keras.models.load_model('./p2_cnn_model')
         model.load_weights('./p2_cnn_weights')
 
-    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=30)
 
     generate_confusion_matrix(test_in, y_test)
     history = model.fit(train_in, train_out, validation_split=0.33,

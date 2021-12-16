@@ -345,7 +345,7 @@ def solve2():
             if not replanned:
                 curr = curr.child
 
-        currstate[1][curr.x][curr.y] = 1
+        currstate[1][curr.x][curr.y] = curr.x + curr.y
         append_local(currstate, curr.x, curr.y, 2)
         currstate[1][curr.x][curr.y] = -1
 

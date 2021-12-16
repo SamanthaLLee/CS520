@@ -87,10 +87,8 @@ def p1_dense():
     x_train, x_test, y_train, y_test = train_test_split(
         in_data, out_data, test_size=0.5)
 
-    # Solve1
     train_in = np.reshape(x_train, (-1, 5, 5, 2))
     test_in = np.reshape(x_test, (-1, 5, 5, 2))
-
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 
@@ -212,8 +210,6 @@ def p1_cnn():
                         shuffle=True)
     generate_confusion_matrix(test_in, y_test)
 
-    # run_models.run_p1_dense(model)
-
     results = model.evaluate(test_in, test_out, batch_size=128)
     print("test loss, test acc:", results)
 
@@ -249,16 +245,10 @@ def p2_dense():
     opt = input("Are you creating a new model? Y/N ")
     createModel = (opt == 'Y' or opt == 'y')
 
-    # loadDataFromFile = False
-    # load_data(loadDataFromFile)
-
     generate_data(2)
     in_data = solve.input_states
     out_data = solve.output_states
     undersample_data()
-
-    print(len(solve.input_states))
-    print(len(solve.output_states))
 
     filename = 'p2_dense_history_log.csv'
     history_logger = tf.keras.callbacks.CSVLogger(
@@ -278,10 +268,8 @@ def p2_dense():
         flatten_array = tf.keras.layers.Flatten()(maze_input)
         dense_1 = tf.keras.layers.Dense(
             units=100, activation=tf.nn.relu)(flatten_array)
-        dense_15 = tf.keras.layers.Dense(
-            units=75, activation=tf.nn.relu)(dense_1)
         dense_2 = tf.keras.layers.Dense(
-            units=30, activation=tf.nn.relu)(dense_15)
+            units=50, activation=tf.nn.relu)(dense_1)
         logits = tf.keras.layers.Dense(units=4, activation=None)(dense_2)
         probabilities = tf.keras.layers.Softmax()(logits)
 

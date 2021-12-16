@@ -339,48 +339,6 @@ def solve2():
         currstate[1][curr.x][curr.y] = -1
 
 
-def append_local_1(currstate, x, y, r):
-    global input_states, gridworld
-
-    local_view = np.full((2*r+1, 2*r+1, 2), 0)
-
-    for i in range(2*r+1):
-        for j in range(2*r+1):
-            if 0 <= x-r+i < len(gridworld) and 0 <= y-r+j < len(gridworld):
-                for k in range(2):
-                    local_view[i][j][k] = currstate[x-r+i][y-r+j][k]
-            else:
-                local_view[i][j][0] = 1
-                local_view[i][j][1] = -1
-
-    input_states.append(local_view)
-
-    return local_view
-
-# Append to input_states a deepcopy of currstate of size (2r+1)x(2r+1) around index (x,y)
-# r=1 -> 3x3    r=2 -> 5x5    r=3 -> 7x7
-# Out of bounds are considered blocked
-
-
-def append_local_2(currstate, x, y, r):
-    global input_states, gridworld
-
-    local_view = np.full((7, 2*r+1, 2*r+1), 0)
-
-    for i in range(2*r+1):
-        for j in range(2*r+1):
-            if 0 <= x-r+i < len(gridworld) and 0 <= y-r+j < len(gridworld):
-                for k in range(7):
-                    local_view[k][i][j] = currstate[k][x-r+i][y-r+j]
-            else:
-                local_view[0][i][j] = 1
-                local_view[1][i][j] = -1
-
-    input_states.append(local_view)
-
-    return local_view
-
-
 def senseorcount(curr: Cell, sense, currstate):
     """Sets curr's C, E, H, B values based on current KB
     Args:
@@ -412,7 +370,8 @@ def senseorcount(curr: Cell, sense, currstate):
                 else:
                     curr.E += 1
                 curr.H -= 1
-
+                
+    # Updates currstate knowledge base to reflect gridworld's knowledge
     currstate[2][curr.x][curr.y] = curr.N
     currstate[3][curr.x][curr.y] = curr.C
     currstate[4][curr.x][curr.y] = curr.B
@@ -464,6 +423,8 @@ def infer(curr, currstate):
 
 
 def updatekb(curr, currstate):
+    """Recursively updates the knowledge base after possible sensing updates
+    """
     for x, y in alldirections:
         xx = curr.x + x
         yy = curr.y + y
@@ -478,6 +439,63 @@ def updatekb(curr, currstate):
                         yy2 = neighbor.y + y
                         if is_in_bounds([xx2, yy2]):
                             updatekb(gridworld[xx2][yy2], currstate)
+
+
+# Append to input_states a deepcopy of currstate of size (2r+1)x(2r+1) around index (x,y)
+# r=1 -> 3x3    r=2 -> 5x5    r=3 -> 7x7
+# Out of bounds are considered blocked
+def append_local_1(currstate, x, y, r):
+    """ Appends the local knowledge around cell (x,y) to input_states
+    """
+    global input_states, gridworld
+
+    local_view = np.full((2*r+1, 2*r+1, 2), 0)
+
+    for i in range(2*r+1):
+        for j in range(2*r+1):
+            if 0 <= x-r+i < len(gridworld) and 0 <= y-r+j < len(gridworld):
+                for k in range(2):
+                    local_view[i][j][k] = currstate[x-r+i][y-r+j][k]
+            else:
+                local_view[i][j][0] = 1
+                local_view[i][j][1] = -1
+    input_states.append(local_view)
+    return local_view
+
+def append_local_2(currstate, x, y, r):
+    """ Appends the local knowledge around cell (x,y) to input_states
+    """
+    global input_states, gridworld
+
+    local_view = np.full((7, 2*r+1, 2*r+1), 0)
+
+    for i in range(2*r+1):
+        for j in range(2*r+1):
+            if 0 <= x-r+i < len(gridworld) and 0 <= y-r+j < len(gridworld):
+                for k in range(7):
+                    local_view[k][i][j] = currstate[k][x-r+i][y-r+j]
+            else:
+                local_view[0][i][j] = 1
+                local_view[1][i][j] = -1
+    input_states.append(local_view)
+    return local_view
+
+
+def get_action(curr, next):
+    """ Returns value of the action just taken by the agent
+        Up: 0
+        Down: 1
+        Left: 2
+        Right: 3
+    """
+    if curr.y < next.y:
+        return 3  # right
+    elif curr.y > next.y:
+        return 2  # left
+    elif curr.x < next.x:
+        return 1  # down
+    else:
+        return 0  # up
 
 
 def is_in_bounds(curr):
@@ -499,14 +517,3 @@ def get_weighted_manhattan_distance(x1, y1, x2, y2):
     """Manhattan: d((x1, y1),(x2, y2)) = abs(x1 - x2) + abs(y1 - y2)"""
 
     return 2*(abs(x1-x2) + abs(y1-y2))
-
-
-def get_action(curr, next):
-    if curr.y < next.y:
-        return 3  # right
-    elif curr.y > next.y:
-        return 2  # left
-    elif curr.x < next.x:
-        return 1  # down
-    else:
-        return 0  # up

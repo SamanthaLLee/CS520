@@ -43,31 +43,6 @@ def generate_confusion_matrix(data, labels):
         print("\t".join([str(c) for c in mat[i]]))
 
 
-def save_to_npz():
-    # not currently using
-    input = solve.input_states
-    output = solve.output_states
-    savez_compressed('input.npz', input)
-    savez_compressed('output.npz', output)
-
-
-def load_data(fromFile):
-    # not currently using
-    global in_data, out_data
-    if fromFile:
-        loaded_in = load('input.npz')
-        loaded_out = load('output.npz')
-        in_data = loaded_in['arr_0']
-        out_data = loaded_out['arr_0']
-
-        # np.concatenate((in_data, solve.input_states), axis=1)
-        # np.concatenate((out_data, solve.output_states))
-
-    else:
-        in_data = solve.input_states
-        out_data = solve.output_states
-
-
 def undersample_data():
     global in_data, out_data
 
@@ -90,26 +65,6 @@ def undersample_data():
     in_data = all_dfs["input"].tolist()
 
 
-def build_model(hp):
-    maze_input = tf.keras.layers.Input(shape=(50, 50, 2))
-    flatten_array = tf.keras.layers.Flatten()(maze_input)
-    dense_1 = tf.keras.layers.Dense(
-        units=100, activation=tf.nn.relu)(flatten_array)
-    dense_2 = tf.keras.layers.Dense(
-        units=50, activation=tf.nn.relu)(dense_1)
-    logits = tf.keras.layers.Dense(units=4, activation=None)(dense_2)
-    probabilities = tf.keras.layers.Softmax()(logits)
-
-    model = tf.keras.Model(
-        inputs=maze_input, outputs=probabilities)
-
-    # opt = tf.keras.optimizers.Adam(learning_rate=0.01)
-
-    model.compile(opt, loss='categorical_crossentropy',
-                  metrics=['accuracy'])
-    return model
-
-
 def p1_dense():
 
     global in_data, out_data, model
@@ -120,16 +75,10 @@ def p1_dense():
     if opt == 'Y' or opt == 'y':
         createModel = True
 
-    # loadDataFromFile = False
-    # load_data(loadDataFromFile)
-
     generate_data(1)
     in_data = solve.input_states
     out_data = solve.output_states
     undersample_data()
-
-    # print(len(solve.input_states))
-    # print(len(solve.output_states))
 
     filename = 'p1_dense_history_log.csv'
     history_logger = tf.keras.callbacks.CSVLogger(
@@ -158,26 +107,13 @@ def p1_dense():
         model = tf.keras.Model(
             inputs=maze_input, outputs=probabilities)
 
-        # opt = tf.keras.optimizers.Adam(learning_rate=0.01)
-
         model.compile(loss='categorical_crossentropy',
                       metrics=['accuracy'])
-
-        # tuner = RandomSearch(build_model,
-        #                      objective='val_accuracy',
-        #                      max_trials=5)
-
-        # tuner.search(train_in, train_out, epochs=100,
-        #              validation_data=(test_in, test_out))
-
-        # model = tuner.get_best_models(num_models=1)[0]
 
         model.summary()
 
     else:
         model = tf.keras.models.load_model('./p1_dense_model_local')
-        # model.compile(optimizer='adam', loss='categorical_crossentropy',
-        #               metrics=['categorical_accuracy'])
 
     # GENERATING CONFUSION MATRICES
 

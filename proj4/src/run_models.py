@@ -19,6 +19,7 @@ opp_directions = {1: 0, 0: 1, 2: 3, 3: 2}
 cardinaldirections = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 totalplanningtime = 0
 trajectorylen = 0
+numplans = 0
 
 trajectory_results = []
 runtime_results = []
@@ -36,7 +37,7 @@ def compare_agents(modelname):
 
 
 def run_model():
-    global model, gridworld, location, trajectorylen, totalplanningtime
+    global model, gridworld, location, trajectorylen, totalplanningtime, numplans
 
     location = [0, 0]
 
@@ -65,6 +66,7 @@ def run_model():
         end = time.time()
 
         totalplanningtime += end-start
+        numplans += 1
 
         while True:
             # Save starting location
@@ -120,7 +122,7 @@ def run_model():
         currstate = get_actual_state(currstate)
 
         counter += 1
-        if counter > 2000:
+        if counter > 4000:
             break
 
     if not goalreached:
@@ -154,10 +156,10 @@ def is_in_bounds(x, y):
 
 
 def generate_all_data(projnum):
-    global trajectory_results, trajectorylen, totalplanningtime, planning_results, runtime_results
+    global trajectory_results, trajectorylen, totalplanningtime, planning_results, runtime_results, numplans
 
     # Initialize constants:
-    trials_per_agent = 20
+    trials_per_agent = 100
 
     # Initialize results matrix
     trajectory_results = [
@@ -189,11 +191,11 @@ def generate_all_data(projnum):
 
         trajectory_results[i][0] = solve.trajectorylen
         runtime_results[i][0] = stop_time_og - start_time_og
-        planning_results[i][0] = solve.totalplanningtime
+        planning_results[i][0] = solve.totalplanningtime / solve.numplans
 
         trajectory_results[i][1] = trajectorylen
         runtime_results[i][1] = stop_time_ml - start_time_ml
-        planning_results[i][1] = totalplanningtime
+        planning_results[i][1] = totalplanningtime / numplans
 
         print(i, "done")
 
@@ -202,3 +204,45 @@ def generate_all_data(projnum):
     print(trajectory_results)
     print(runtime_results)
     print(planning_results)
+
+    plot_traj()
+    plot_runtime()
+    plot_planning()
+
+
+def plot_traj():
+    global trajectory_results
+
+    plt.title('Trial vs. Trajectory')
+    plt.xlabel('Trial Number')
+    plt.ylabel('Trajectory Length')
+
+    plt.scatter(np.arange(100), trajectory_results[0])
+    plt.scatter(np.arange(100), trajectory_results[1])
+    plt.legend(["Original Agent", "ML Agent"])
+
+    plt.show()
+
+
+def plot_runtime():
+    global runtime_results
+    plt.title('Trial vs. Runtime')
+    plt.xlabel('Trial Number')
+    plt.ylabel('Runtime (s)')
+    # plotting the column as histogram
+    plt.scatter(np.arange(100), runtime_results[0])
+    plt.scatter(np.arange(100), runtime_results[1])
+    plt.legend(["Original Agent", "ML Agent"])
+    plt.show()
+
+
+def plot_planning():
+    global planning_results
+    plt.title('Trial vs. Average Time to Plan')
+    plt.xlabel('Trial Number')
+    plt.ylabel('Average Time Per Planning Step (s)')
+    # plotting the column as histogram
+    plt.scatter(np.arange(100), planning_results[0])
+    plt.scatter(np.arange(100), planning_results[1])
+    plt.legend(["Original Agent", "ML Agent"])
+    plt.show()

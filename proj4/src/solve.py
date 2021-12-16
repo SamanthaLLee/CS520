@@ -26,6 +26,7 @@ dim = 0
 fullgridworld = False
 
 totalplanningtime = 0
+numplans = 0
 
 input_states = []
 output_states = []
@@ -121,7 +122,7 @@ def astar(start, agent):
         Cell: The head of a Cell linked list containing the shortest path
         int: Length of returned final path
     """
-    global goal, gridworld, fullgridworld, cardinaldirections, numcellsprocessed, totalplanningtime
+    global goal, gridworld, fullgridworld, cardinaldirections, numcellsprocessed, totalplanningtime, numplans
     starttime = time.time()
     fringe = PriorityQueue()
     fringeSet = set()
@@ -173,6 +174,7 @@ def astar(start, agent):
     if len(fringeSet) == 0:
         endtime = time.time()
         totalplanningtime += endtime - starttime
+        numplans += 1
         return None, 0
 
     # Starting from goal cell, work backwards and reassign child attributes correctly
@@ -189,11 +191,13 @@ def astar(start, agent):
         start.parent = oldParent
         endtime = time.time()
         totalplanningtime += endtime - starttime
+        numplans += 1
 
         return start, astarlen
     else:
         endtime = time.time()
         totalplanningtime += endtime - starttime
+        numplans += 1
         return None, 0
 
 
@@ -208,6 +212,8 @@ def solve1():
     path, len = astar(gridworld[0][0], agent)
 
     currstate = np.full((dim, dim, 2), -1)
+
+    currstateslice = np.full((3, 3), -1)
 
     # Initial A* failed - unsolvable gridworld
     if path is None:
@@ -234,7 +240,7 @@ def solve1():
             currstate[curr.x][curr.y][0] = 1
             trajectorylen -= 1
             output_states.append(get_action(curr, curr.parent))
-            
+
             trajectorylen -= 1
             path, len = astar(curr.parent, agent)
             curr = path
@@ -257,7 +263,15 @@ def solve1():
 
         currstate[curr.x][curr.y][1] = 1
         currstate2 = copy.deepcopy(currstate)
-        input_states.append(currstate2)
+
+        for dx, dy in cardinaldirections:
+            xx, yy = curr.x + dx, curr.y + dy
+            currstateslice[1][1] = [curr.x][curr.y][1]
+            # Only mark blocked neighbors as seen
+            if is_in_bounds([xx, yy]):
+                currstateslice[1+dx][1+dy] = currstate[xx][yy][0]
+
+        input_states.append(currstateslice)
         currstate[curr.x][curr.y][1] = -1
 
 
@@ -299,7 +313,7 @@ def solve2():
 
         # Replan if agent has run into blocked cell
         if curr.blocked == True:
-            
+
             currstate[0][curr.x][curr.y] = 1
             output_states.append(get_action(curr, curr.parent))
 
@@ -336,7 +350,7 @@ def solve2():
         currstate[1][curr.x][curr.y] = -1
 
 
-def senseorcount(curr : Cell, sense, currstate):
+def senseorcount(curr: Cell, sense, currstate):
     """Sets curr's C, E, H, B values based on current KB
     Args:
         curr (cell): current cell
@@ -367,7 +381,7 @@ def senseorcount(curr : Cell, sense, currstate):
                 else:
                     curr.E += 1
                 curr.H -= 1
-                
+
     currstate[2][curr.x][curr.y] = curr.N
     currstate[3][curr.x][curr.y] = curr.C
     currstate[4][curr.x][curr.y] = curr.B

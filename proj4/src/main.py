@@ -217,6 +217,110 @@ def p1_dense():
     plt.show()
 
 
+def p1_dense_test():
+
+    global in_data, out_data, model
+    manual_variable_initialization(True)
+    opt = input("Are you creating a new model? Y/N ")
+
+    createModel = False
+    if opt == 'Y' or opt == 'y':
+        createModel = True
+
+    generate_data(1)
+    in_data = solve.input_states
+    out_data = solve.output_states
+    undersample_data()
+
+    # print(len(solve.input_states))
+    # print(len(solve.output_states))
+
+    filename = 'p1_dense_history_log.csv'
+    history_logger = tf.keras.callbacks.CSVLogger(
+        filename, separator=",", append=True)
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        in_data, out_data, test_size=0.5)
+
+    # Solve1
+    train_in = np.reshape(x_train, (-1, 3, 3))
+    test_in = np.reshape(x_test, (-1, 3, 3))
+
+    train_out = tf.keras.utils.to_categorical(y_train, 4)
+    test_out = tf.keras.utils.to_categorical(y_test, 4)
+
+    if createModel:
+        maze_input = tf.keras.layers.Input(shape=(3, 3))
+        flatten_array = tf.keras.layers.Flatten()(maze_input)
+        dense_1 = tf.keras.layers.Dense(
+            units=100, activation=tf.nn.relu)(flatten_array)
+        dense_2 = tf.keras.layers.Dense(
+            units=50, activation=tf.nn.relu)(dense_1)
+        logits = tf.keras.layers.Dense(units=4, activation=None)(dense_2)
+        probabilities = tf.keras.layers.Softmax()(logits)
+
+        model = tf.keras.Model(
+            inputs=maze_input, outputs=probabilities)
+
+        # opt = tf.keras.optimizers.Adam(learning_rate=0.01)
+
+        model.compile(loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+
+        # tuner = RandomSearch(build_model,
+        #                      objective='val_accuracy',
+        #                      max_trials=5)
+
+        # tuner.search(train_in, train_out, epochs=100,
+        #              validation_data=(test_in, test_out))
+
+        # model = tuner.get_best_models(num_models=1)[0]
+
+        model.summary()
+
+    else:
+        model = tf.keras.models.load_model('./p1_dense_model2')
+        # model.compile(optimizer='adam', loss='categorical_crossentropy',
+        #               metrics=['categorical_accuracy'])
+
+    # GENERATING CONFUSION MATRICES
+
+    # callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=20)
+
+    generate_confusion_matrix(test_in, y_test)
+    history = model.fit(train_in, train_out, validation_split=0.33,
+                        epochs=500, batch_size=64,
+                        callbacks=[history_logger],
+                        workers=0,
+                        shuffle=True)
+    generate_confusion_matrix(test_in, y_test)
+
+    results = model.evaluate(test_in, test_out, batch_size=128)
+    print("test loss, test acc:", results)
+
+    predictions = model.predict(test_in[:3])
+    print("predictions shape:", predictions.shape)
+
+    model.save("./p1_dense_model2")
+
+    # summarize history for accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
+
 def p1_cnn():
     global in_data, out_data, model
     manual_variable_initialization(True)

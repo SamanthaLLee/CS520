@@ -346,9 +346,29 @@ def solve2():
                 curr = curr.child
 
         currstate[1][curr.x][curr.y] = 1
-        input_states.append(copy.deepcopy(currstate))
+        append_local(currstate, curr.x, curr.y, 2)
         currstate[1][curr.x][curr.y] = -1
 
+# Append to input_states a deepcopy of currstate of size (2r+1)x(2r+1) around index (x,y)
+# r=1 -> 3x3    r=2 -> 5x5    r=3 -> 7x7
+# Out of bounds are considered blocked
+def append_local(currstate, x, y, r):
+    global input_states, gridworld
+
+    local_view = np.full((7, 2*r+1, 2*r+1), 0)
+    
+    for i in range(2*r+1):
+        for j in range(2*r+1):
+            if 0<=x-r+i<len(gridworld) and 0<=y-r+j<len(gridworld):
+                for k in range(7):
+                    local_view[k][i][j] = currstate[k][x-r+i][y-r+j]
+            else:
+                local_view[0][i][j] = 1
+                local_view[1][i][j] = -1
+    
+    input_states.append(local_view)
+
+    
 
 def senseorcount(curr: Cell, sense, currstate):
     """Sets curr's C, E, H, B values based on current KB

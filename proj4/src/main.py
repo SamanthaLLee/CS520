@@ -435,14 +435,14 @@ def p2_dense():
     x_train, x_test, y_train, y_test = train_test_split(
     in_data, out_data, test_size=0.1)
 
-    train_in = np.reshape(x_train, (-1, 7, 50, 50))
-    test_in = np.reshape(x_test, (-1, 7, 50, 50))
+    train_in = np.reshape(x_train, (-1, 7, 5, 5))
+    test_in = np.reshape(x_test, (-1, 7, 5, 5))
     train_out = tf.keras.utils.to_categorical(y_train, 4)
     test_out = tf.keras.utils.to_categorical(y_test, 4)
 
     # Create / load model
     if createModel:
-        maze_input = tf.keras.layers.Input(shape=(7, 50, 50))
+        maze_input = tf.keras.layers.Input(shape=(7, 5, 5))
         flatten_array = tf.keras.layers.Flatten()(maze_input)
         dense_1 = tf.keras.layers.Dense(
             units=100, activation=tf.nn.relu)(flatten_array)

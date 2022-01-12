@@ -14,4 +14,4 @@ An agent is put into an NxN maze where each available location has one of three 
 
 ## Project 4
 
-We built four neural networks to mimic the original agent from project 1 and the logical inference agent from project 2. For each project, we developed, trained, and, tested a model with full dense layers and a convolutional neural network. 
+We built four neural networks to mimic the original agent from project 1 and the logical inference agent from project 2. For each project, we developed, trained, and, tested Keras models with full dense layers and convolutional neural networks. 
